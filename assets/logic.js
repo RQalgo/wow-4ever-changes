@@ -6,6 +6,7 @@
  *
  * Sections:
  *   1. Constants      : class list/colours, vanilla talent trees, labels
+ *   1b. Tags          : category vocabulary, effectiveTags (schema v3 + fallback)
  *   2. Dates          : relative day hints
  *   3. Grouping       : turn a day's changes into class/spec/general sections
  *   4. Filtering      : class/spec/general semantics
@@ -13,6 +14,13 @@
  *   6. Suggestions    : skill-name suggestions for the search box
  *   7. URL hash state : encode / decode the shareable filter state
  *   8. Day kinds      : hotfix vs patch (schema v2), day identity, kind filter
+ *   9. Line decoration: extra tag chips and the icon cluster of one line
+ *
+ * Filtering never reads `scope`/`class`/`category` directly any more: every
+ * filter goes through effectiveTags(), which returns the schema v3 `tags` when
+ * a change has them and derives equivalent tags from the old fields otherwise.
+ * That keeps the app working with both the current data (no tags yet) and the
+ * v3 data that a scheduled job will publish later.
  */
 
 /* ======================= 1. Constants ======================= */
@@ -74,6 +82,142 @@ export function className(slug) {
 export function classColor(slug) {
   const known = CLASSES.find((c) => c.slug === slug);
   return known ? known.color : null;
+}
+
+/* ======================= 1b. Tags (schema v3) ======================= */
+
+/**
+ * The category chips the UI can offer, in display order. `slug` is the tag
+ * used in `change.tags`; `label` is the chip text.
+ */
+export const CATEGORIES = [
+  { slug: 'items', label: 'Items' },
+  { slug: 'quests', label: 'Quests' },
+  { slug: 'dungeons', label: 'Dungeons' },
+  { slug: 'professions', label: 'Professions' },
+  { slug: 'pvp', label: 'PvP' },
+  { slug: 'ui', label: 'Interface' },
+  { slug: 'world', label: 'World & NPCs' },
+  { slug: 'races', label: 'Races' },
+  { slug: 'events', label: 'Events' },
+  { slug: 'systems', label: 'Systems' },
+  { slug: 'bugfix', label: 'Bug fixes' },
+  { slug: 'known-issue', label: 'Known issues' },
+  { slug: 'other', label: 'Other' },
+];
+
+/** Category slugs as a Set, for quick membership tests. */
+const CATEGORY_SLUGS = new Set(CATEGORIES.map((c) => c.slug));
+
+/**
+ * Exact (lower-cased) published headings -> category tags. Headings that are
+ * not listed here fall through to the "known issue" substring rule and then
+ * to "other" (see categoryOfHeading).
+ */
+const HEADING_TAGS = {
+  'items': ['items'],
+  'quests': ['quests'],
+  'quests and world': ['quests', 'world'],
+  'dungeons': ['dungeons'],
+  'raids': ['dungeons'],
+  'dungeons and raids': ['dungeons'],
+  'professions': ['professions'],
+  'player versus player': ['pvp'],
+  'user interface': ['ui'],
+  'user interface and accessibility': ['ui'],
+  'cooldown manager': ['ui'],
+  'gamepad support': ['ui'],
+  'world': ['world'],
+  'enemies and npcs': ['world'],
+  'races': ['races'],
+  'racial abilities and traits': ['races'],
+  'legacy system': ['systems'],
+  'bugfixes': ['bugfix'],
+  'bug fixes': ['bugfix'],
+  'stranglethorn fishing extravaganza': ['events'],
+};
+
+/**
+ * Category tags for a published category heading (case-insensitive), e.g.
+ * "Quests and World" -> ["quests", "world"]. "Classes" yields no category
+ * (class lines are described by class/spec tags); an unknown heading is
+ * "other".
+ * @param {string|null|undefined} heading published `category`
+ * @returns {string[]} category tag slugs (possibly empty)
+ */
+export function categoryOfHeading(heading) {
+  const h = String(heading || '').trim().toLowerCase();
+  if (!h || h === 'classes') return [];
+  if (HEADING_TAGS[h]) return [...HEADING_TAGS[h]];
+  // Blizzard words these headings in several ways ("Known Issues – New with
+  // this build", "New to this build - Known Issues"), so match on substring.
+  if (h.includes('known issue')) return ['known-issue'];
+  return ['other'];
+}
+
+/**
+ * The tags every filter works with. Returns `change.tags` unchanged when it
+ * is a non-empty array (schema v3). Otherwise derives them from the old
+ * fields: `class:<class>` and `spec:<class>/<spec>` from the published
+ * heading, plus the category tag(s) mapped from `category` (only for lines
+ * published outside "Classes").
+ *
+ * An "all classes" line (published under Classes with no class heading) has
+ * no class tag and no category tag, so it can end up with an empty list.
+ * @param {object} change
+ * @returns {string[]}
+ */
+export function effectiveTags(change) {
+  const ch = change || {};
+  if (Array.isArray(ch.tags) && ch.tags.length) return ch.tags;
+  const tags = [];
+  if (ch.class) {
+    tags.push(`class:${ch.class}`);
+    if (ch.spec) tags.push(`spec:${ch.class}/${ch.spec}`);
+  }
+  // Class-scope lines carry the "Classes" heading, which has no category tag.
+  if (ch.scope !== 'class') tags.push(...categoryOfHeading(ch.category));
+  return [...new Set(tags)];
+}
+
+/**
+ * Class slugs a change is tagged with (`class:<slug>` tags), in tag order.
+ * @param {object} change
+ * @returns {string[]}
+ */
+export function classTagsOf(change) {
+  return effectiveTags(change).filter((t) => t.startsWith('class:')).map((t) => t.slice(6));
+}
+
+/**
+ * Category tags of a change: every tag that is not `class:`, `spec:` or
+ * `talent`. A tag outside the known vocabulary counts as "other" so that a
+ * future tag can never make a line impossible to show.
+ * @param {object} change
+ * @returns {string[]} unique category slugs
+ */
+export function categoryTagsOf(change) {
+  const out = [];
+  for (const t of effectiveTags(change)) {
+    if (t.startsWith('class:') || t.startsWith('spec:') || t === 'talent') continue;
+    const slug = CATEGORY_SLUGS.has(t) ? t : 'other';
+    if (!out.includes(slug)) out.push(slug);
+  }
+  return out;
+}
+
+/**
+ * Category chips worth showing for a dataset: only categories that occur in
+ * at least one change, in the display order of CATEGORIES.
+ * @param {{days: object[]}} data
+ * @returns {{slug: string, label: string}[]}
+ */
+export function availableCategories(data) {
+  const seen = new Set();
+  for (const day of data.days || []) {
+    for (const ch of day.changes || []) for (const c of categoryTagsOf(ch)) seen.add(c);
+  }
+  return CATEGORIES.filter((c) => seen.has(c.slug));
 }
 
 /* ======================= 2. Dates ======================= */

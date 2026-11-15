@@ -152,7 +152,7 @@ test('empty query suggests skill names, most frequently changed first', () => {
 });
 
 test('suggestions respect the class/spec filter', () => {
-  const names = (st) => L.buildSuggestions(data, st, '').map((s) => s.name);
+  const names = (st) => L.buildSuggestions(data, st, '', 50).map((s) => s.name);
   assert.ok(names(L.defaultState()).includes('Wild Growth'));
   assert.ok(!names({ ...L.defaultState(), cls: 'paladin' }).includes('Wild Growth'));
   assert.ok(!names({ ...L.defaultState(), cls: 'paladin', spec: 'holy' }).includes('Unsealed Fury'));
@@ -211,14 +211,14 @@ test('dayKey is date + kind, so same-date patch and hotfix differ and are all un
 
 test('visibleDays keeps same-date days separate, in data order', () => {
   const keys = L.visibleDays(data, L.defaultState()).map((v) => L.dayKey(v.day));
-  assert.deepEqual(keys, ['2026-11-14|patch', '2026-11-13|patch', '2026-11-13|hotfix', '2026-11-11|hotfix']);
+  assert.deepEqual(keys, ['2026-11-15|hotfix', '2026-11-14|patch', '2026-11-13|patch', '2026-11-13|hotfix', '2026-11-11|hotfix']);
 });
 
 test('kind filter: hotfix / patch / all', () => {
   const keys = (kind) => L.visibleDays(data, { ...L.defaultState(), kind }).map((v) => L.dayKey(v.day));
   assert.deepEqual(keys('patch'), ['2026-11-14|patch', '2026-11-13|patch']);
-  assert.deepEqual(keys('hotfix'), ['2026-11-13|hotfix', '2026-11-11|hotfix']); // legacy day counts as hotfix
-  assert.equal(keys('all').length, 4);
+  assert.deepEqual(keys('hotfix'), ['2026-11-15|hotfix', '2026-11-13|hotfix', '2026-11-11|hotfix']); // legacy day counts as hotfix
+  assert.equal(keys('all').length, 5);
   assert.equal(L.matchesKind({ kind: 'patch' }, 'hotfix'), false);
   assert.equal(L.matchesKind({}, 'hotfix'), true);
 });
@@ -240,7 +240,7 @@ test('per-day counts follow the visible lines', () => {
 });
 
 test('suggestions respect the kind filter', () => {
-  const names = (kind) => L.buildSuggestions(data, { ...L.defaultState(), kind }, '').map((s) => s.name);
+  const names = (kind) => L.buildSuggestions(data, { ...L.defaultState(), kind }, '', 50).map((s) => s.name);
   assert.ok(names('patch').includes('Fireball'));
   assert.ok(!names('hotfix').includes('Fireball'));
   assert.ok(names('hotfix').includes('Wild Growth'));
@@ -259,4 +259,71 @@ test('kind hash: encode omits all, decode ignores unknown values, round-trips', 
   assert.equal(L.decodeHash('#class=mage&kind=hotfix&general=0').kind, 'hotfix');
   const st = { cls: 'mage', spec: 'fire', q: 'fire', general: false, kind: 'patch' };
   assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
+});
+
+/* ---------- tags (schema v3) and the fallback for old data ---------- */
+/** Find a fixture change by id, whatever day it is on. */
+const byId = (id) => data.days.flatMap((d) => d.changes).find((c) => c.id === id);
+
+test('effectiveTags returns change.tags unchanged when it is a non-empty array', () => {
+  const v3 = byId('2026-11-15-000');
+  assert.deepEqual(L.effectiveTags(v3), ['class:shaman', 'class:warrior', 'class:rogue', 'talent']);
+  assert.equal(L.effectiveTags(v3), v3.tags); // pass-through, not a copy
+});
+
+test('effectiveTags derives class, spec and category tags from the old fields', () => {
+  // Old shape: no `tags` field at all (the live data today).
+  assert.ok(!('tags' in byId('2026-11-13-001')));
+  assert.deepEqual(L.effectiveTags(byId('2026-11-13-001')), ['class:druid', 'spec:druid/restoration']);
+  assert.deepEqual(L.effectiveTags(byId('2026-11-13-002')), ['class:paladin']);
+  assert.deepEqual(L.effectiveTags(byId('2026-11-13-000')), []); // all-classes line: no tags
+  assert.deepEqual(L.effectiveTags(byId('2026-11-13-003')), ['dungeons']);
+  assert.deepEqual(L.effectiveTags(byId('2026-11-13-004')), ['items']);
+  // An empty `tags` array also falls back to the derivation.
+  assert.deepEqual(L.effectiveTags(mk({ scope: 'general', category: 'Quests', tags: [] })), ['quests']);
+  assert.deepEqual(L.effectiveTags(null), []);
+});
+
+test('categoryOfHeading maps every published heading as specified (case-insensitive)', () => {
+  const t = (h) => L.categoryOfHeading(h);
+  assert.deepEqual(t('Items'), ['items']);
+  assert.deepEqual(t('quests'), ['quests']);
+  assert.deepEqual(t('Quests and World'), ['quests', 'world']);
+  assert.deepEqual(t('Dungeons'), ['dungeons']);
+  assert.deepEqual(t('Raids'), ['dungeons']);
+  assert.deepEqual(t('Professions'), ['professions']);
+  assert.deepEqual(t('Player versus Player'), ['pvp']);
+  for (const h of ['User Interface', 'User Interface and Accessibility', 'Cooldown Manager', 'Gamepad Support']) {
+    assert.deepEqual(t(h), ['ui'], h);
+  }
+  assert.deepEqual(t('World'), ['world']);
+  assert.deepEqual(t('Enemies and NPCs'), ['world']);
+  assert.deepEqual(t('Races'), ['races']);
+  assert.deepEqual(t('Racial Abilities and Traits'), ['races']);
+  assert.deepEqual(t('Legacy System'), ['systems']);
+  assert.deepEqual(t('Bugfixes'), ['bugfix']);
+  assert.deepEqual(t('Bug Fixes'), ['bugfix']);
+  for (const h of ['Known Issues – New with this build', 'Known Issues - New to this build', 'New to this build - Known Issues']) {
+    assert.deepEqual(t(h), ['known-issue'], h);
+  }
+  assert.deepEqual(t('Stranglethorn Fishing Extravaganza'), ['events']);
+  assert.deepEqual(t('Customer Support'), ['other']);
+  assert.deepEqual(t('Changes and Updates'), ['other']);
+  assert.deepEqual(t('Classes'), []); // class lines are described by class/spec tags
+});
+
+test('classTagsOf / categoryTagsOf split tags; unknown category tags count as "other"', () => {
+  const v3 = byId('2026-11-15-000');
+  assert.deepEqual(L.classTagsOf(v3), ['shaman', 'warrior', 'rogue']);
+  assert.deepEqual(L.categoryTagsOf(v3), []); // talent is not a category
+  assert.deepEqual(L.categoryTagsOf(byId('2026-11-15-004')), ['quests', 'world']);
+  assert.deepEqual(L.categoryTagsOf(mk({ tags: ['brand-new-tag', 'class:mage'] })), ['other']);
+});
+
+test('availableCategories lists only tags present in the data, in chip order', () => {
+  assert.deepEqual(L.availableCategories(data).map((c) => c.slug),
+    ['items', 'quests', 'dungeons', 'world', 'races', 'bugfix', 'known-issue']);
+  assert.deepEqual(L.availableCategories({ days: [] }), []);
+  // A line with only a class has no category, so it adds no chip.
+  assert.deepEqual(L.availableCategories({ days: [{ changes: [mk({ class: 'mage' })] }] }), []);
 });
