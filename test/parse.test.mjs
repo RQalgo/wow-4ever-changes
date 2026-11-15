@@ -536,3 +536,33 @@ describe('parsePatchPost (fixture: discourse-topic-sample.json)', async () => {
     assert.throws(() => parsePatchPost('<ul><li>a</li></ul>', { date: 'yesterday' }), /Invalid ISO date/);
   });
 });
+
+// --- Found in the first live run of the forum source ------------------------
+
+test('looksLikeHeadingText separates sub-heading titles from change lines', async () => {
+  const { looksLikeHeadingText } = await import('../scripts/parse.mjs');
+  for (const t of ['Fire', 'Ashenvale', 'Dun Morogh', 'Night Elf', 'Excavation Site: Wetlands']) {
+    assert.equal(looksLikeHeadingText(t), true, t);
+  }
+  for (const t of ['Improved rain visibility.', 'Reduced by 5', 'fixed', '“Body and Heart” fixed', 'This is a five word line']) {
+    assert.equal(looksLikeHeadingText(t), false, t);
+  }
+});
+
+test('plain-text sub-headings with a nested list become tree or group, not changes', async () => {
+  const { parsePatchPost } = await import('../scripts/parse.mjs');
+  const html = '<h2>Change Log</h2>' +
+    '<p><strong>Classes</strong></p><ul><li><strong>Mage</strong><ul>' +
+    '<li>Fire<ul><li>Heating Up is no longer consumed.</li></ul></li></ul></li></ul>' +
+    '<p><strong>Quests</strong></p><ul>' +
+    '<li>Ashenvale<ul><li>More guards are available.</li></ul></li>' +
+    '<li>Rogue<ul><li>Added map markers for the poison quest.</li></ul></li>' +
+    '<li>Stormwind</li><li>“The Attack!” is no longer an escort quest.</li></ul>';
+  const day = parsePatchPost(html, { date: '2026-10-15' });
+  assert.deepEqual(day.changes.map((c) => [c.category, c.class, c.spec, c.group, c.text]), [
+    ['Classes', 'mage', 'fire', null, 'Heating Up is no longer consumed.'],
+    ['Quests', null, null, 'Ashenvale', 'More guards are available.'],
+    ['Quests', null, null, 'Rogue', 'Added map markers for the poison quest.'],
+    ['Quests', null, null, 'Stormwind', '“The Attack!” is no longer an escort quest.'],
+  ]);
+});
