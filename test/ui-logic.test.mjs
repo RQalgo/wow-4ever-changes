@@ -780,3 +780,32 @@ test('media category: chip "Media" between Events and Systems, offered only when
   assert.ok(!L.availableCategories({ days: [{ changes: [mk({ scope: 'general', category: 'Items' })] }] }).some((c) => c.slug === 'media'));
   assert.deepEqual(L.decodeHash('#cats=media,items').cats, ['items', 'media']); // chip order
 });
+
+/* ---------- dev posts: search ---------- */
+/** A dev-post change as docs/SCHEMA.md v4 describes it. */
+const devPost = (o) => mk({
+  scope: 'general', category: 'Dev Posts', text: 'Player-Level Dungeon XP Adjustment - November 14',
+  notes: ['Yesterday, we updated dungeon play.'], url: 'https://us.forums.blizzard.com/en/wow/t/x/2416343/1',
+  author: 'Kaivax', authorTitle: 'Community Manager', postNumber: 1, tags: ['dungeons'], ...o,
+});
+
+test('isDevPost: author or postNumber marks a dev-post change', () => {
+  assert.equal(L.isDevPost(devPost()), true);
+  assert.equal(L.isDevPost(mk({ postNumber: 2 })), true);
+  assert.equal(L.isDevPost(mk({})), false);
+  assert.equal(L.isDevPost(null), false);
+});
+
+test('search: dev posts match title, notes, author, author title, subjects and tag words', () => {
+  const p = devPost({
+    tags: ['class:mage', 'spec:mage/fire', 'talent', 'media'],
+    subjects: [{ name: 'Pyroblast', type: 'spell', kind: 'talent' }],
+  });
+  for (const q of ['dungeon xp', 'yesterday', 'kaivax', 'community manager', 'pyroblast', 'mage', 'fire', 'talent', 'media'])
+    assert.ok(L.matchesQuery(p, q), q);
+  assert.ok(!L.matchesQuery(p, 'class:mage')); // raw tag spelling is not searched
+  assert.ok(!L.matchesQuery(p, 'warlock'));
+  assert.deepEqual(L.tagSearchWords(p), ['Mage', 'Fire', 'talent', 'Media']);
+  // Other lines keep searching their text only, not their tags.
+  assert.ok(!L.matchesQuery(mk({ text: 'Frost Nova', tags: ['class:mage'] }), 'mage'));
+});

@@ -369,14 +369,53 @@ export function queryTerms(q) {
 }
 
 /**
+ * Is this change a dev post (schema v4)? Dev-post changes are the only ones
+ * that carry `author` / `postNumber`, so the change itself tells, without
+ * its day. (The app renders by the day's kind; this is for code that only
+ * sees a change, such as the search haystack.)
+ * @param {object} ch change
+ * @returns {boolean}
+ */
+export function isDevPost(ch) {
+  return !!ch && (typeof ch.author === 'string' || Number.isInteger(ch.postNumber));
+}
+
+/**
+ * Readable words for a change's tags, for searching: class names
+ * ("Mage"), tree names ("Fire"), "talent" and category chip labels
+ * ("Dungeons", "Media"); the raw tag spelling ("class:mage") is never
+ * searched.
+ * @param {object} ch change
+ * @returns {string[]}
+ */
+export function tagSearchWords(ch) {
+  const words = [];
+  for (const t of effectiveTags(ch)) {
+    if (t.startsWith('class:')) words.push(className(t.slice(6)));
+    else if (t.startsWith('spec:')) words.push(titleCase(t.split('/')[1] || ''));
+    else if (t === 'talent') words.push('talent');
+    else {
+      const def = CATEGORIES.find((c) => c.slug === t);
+      words.push(def ? def.label : titleCase(t));
+    }
+  }
+  return words;
+}
+
+/**
  * The text a search is run against: line text, notes, subject names and aliases, group
- * and category, lower-cased and joined.
+ * and category, lower-cased and joined. Dev posts (schema v4) add the author,
+ * the author's title and the readable tag words: their short summary leaves
+ * out most of the post, while the tags were computed from the whole post, so
+ * "mage" finds a post about mages even when the summary does not say it.
+ * Other lines do not search their tags (their text is the whole change).
  * @param {object} ch change
  * @returns {string}
  */
 export function searchHaystack(ch) {
+  const dev = isDevPost(ch) ? [ch.author, ch.authorTitle, ...tagSearchWords(ch)] : [];
   // Subject aliases are searchable too: either the published or the in-game name finds the line.
-  return [ch.text, ...(ch.notes || []), ...(ch.subjects || []).flatMap((s) => [s.name, s.alias]), ch.group, ch.category]
+  return [ch.text, ...(ch.notes || []), ...(ch.subjects || []).flatMap((s) => [s.name, s.alias]), ch.group, ch.category, ...dev]
     .filter(Boolean)
     .join('\n')
     .toLowerCase();
