@@ -459,3 +459,80 @@ test('hotfix days carry kind "hotfix" and null title/sourceUrl', () => {
     assert.equal(d.sourceUrl, null);
   }
 });
+
+describe('parsePatchPost (fixture: discourse-topic-sample.json)', async () => {
+  const { parsePatchPost, formatDateLabel, patchChangeId } = await import('../scripts/parse.mjs');
+  const TOPIC = JSON.parse(readFileSync(new URL('./fixtures/discourse-topic-sample.json', import.meta.url), 'utf8'));
+  const post = (n) => TOPIC.post_stream.posts.find((p) => p.post_number === n).cooked;
+
+  test('formatDateLabel writes long US labels and rejects bad dates', () => {
+    assert.equal(formatDateLabel('2026-11-02'), 'November 2, 2026');
+    assert.equal(formatDateLabel('2027-01-31'), 'January 31, 2027');
+    assert.throws(() => formatDateLabel('2026-02-30'), /Invalid ISO date/);
+    assert.throws(() => formatDateLabel('Nov 2'), /Invalid ISO date/);
+    assert.equal(patchChangeId('2026-11-02', 0), '2026-11-02-p001');
+  });
+
+  test('day envelope: kind, title, sourceUrl, label, p-ids, empty subjects', () => {
+    const d = parsePatchPost(post(1), { date: '2026-09-24', title: 'Beta build notes', sourceUrl: 'https://x.test/t/1/1' });
+    assert.deepEqual(Object.keys(d), ['date', 'kind', 'title', 'sourceUrl', 'label', 'changes']);
+    assert.deepEqual([d.date, d.kind, d.title, d.sourceUrl, d.label],
+      ['2026-09-24', 'patch', 'Beta build notes', 'https://x.test/t/1/1', 'September 24, 2026']);
+    d.changes.forEach((c, i) => {
+      assert.equal(c.id, `2026-09-24-p${String(i + 1).padStart(3, '0')}`);
+      assert.deepEqual(c.subjects, []);
+    });
+    const defaults = parsePatchPost(post(4), { date: '2026-11-02' });
+    assert.equal(defaults.title, null);
+    assert.equal(defaults.sourceUrl, null);
+  });
+
+  test('shape A: <h2>Change Log</h2> + lists whose top-level bold items are categories', () => {
+    const d = parsePatchPost(post(1), { date: '2026-09-24' });
+    const cls = (klass, spec, group, text, notes = []) => ({ scope: 'class', category: 'Classes', class: klass, spec, group, text, notes });
+    const gen = (category, group, text, notes = []) => ({ scope: 'general', category, class: null, spec: null, group, text, notes });
+    assert.deepEqual(d.changes.map(brief), [
+      gen('Bugfixes', null, 'Fixed a bug with casters not playing their precast animations.'),
+      gen('Bugfixes', null, 'Fixed an issue where a buff could not be applied.', ['Players may now buff each other.']),
+      cls(null, null, null, 'If you have not recently logged in, your talents have been reset.'),
+      cls('hunter', null, 'Pets', 'Pet attack speed normalised.'), // "Pets" is not a talent tree
+      cls('hunter', 'marksmanship', null, 'Aimed Shot cast time reduced to 2.5 seconds (was 3 seconds).'),
+      cls('paladin', null, null, 'Retribution Aura base damage returned to the original values.'),
+      cls('paladin', 'protection', null, 'Reckoning: Now has a 1.5 second cooldown.', ['Developers’ notes: This keeps burst in check.']),
+      gen('Races', 'Tauren', 'Cultivation now has a cast time.'), // quirk: loose bold heading
+      gen('Quests', null, 'Elwynn Forest - Increased the spawn rate of Kobolds.'), // quirk: text-less wrapper item
+      gen('Quests', null, 'Durotar - Reduced the damage of Scorpids.'),
+      gen('New to this build - Known Issues', null, 'Banes and Curses do not properly stack.'),
+    ]);
+    assert.ok(!d.changes.some((c) => /Today, we updated|full Known Issues/.test(c.text)), 'paragraphs ignored');
+  });
+
+  test('shape B: CHANGE LOG then paragraph categories, like the hotfix post', () => {
+    const d = parsePatchPost(post(4), { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.id, c.scope, c.category, c.class, c.spec, c.text]), [
+      ['2026-11-02-p001', 'general', 'Bug Fixes', null, null, 'Improved rain visibility.'],
+      ['2026-11-02-p002', 'class', 'Classes', 'warrior', null, 'Berserker Rage is now available at level 30 (was 32).'],
+      ['2026-11-02-p003', 'class', 'Classes', 'warrior', 'protection', 'Last Stand moved one row up.'],
+    ]);
+  });
+
+  test('a category heading set by a paragraph keeps top-level bold items as classes/groups', () => {
+    const d = parsePatchPost('<p><strong>Dungeons</strong></p><ul><li><strong>Scholomance</strong><ul><li>x</li></ul></li></ul>', { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.category, c.group]), [['Dungeons', 'Scholomance']]);
+  });
+
+  test('plain items with no category at all go to "General"; empty posts give no changes', () => {
+    const d = parsePatchPost('<p>Intro.</p><ul><li>Loose line.</li></ul>', { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.scope, c.category, c.text]), [['general', 'General', 'Loose line.']]);
+    assert.deepEqual(parsePatchPost('', { date: '2026-11-02' }).changes, []);
+  });
+
+  test('a "Change Log" heading after a category resets it', () => {
+    const d = parsePatchPost('<h3>Items</h3><ul><li>a</li></ul><h2>Change log</h2><ul><li><strong>Quests</strong><ul><li>b</li></ul></li></ul>', { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.category, c.group, c.text]), [['Items', null, 'a'], ['Quests', null, 'b']]);
+  });
+
+  test('invalid date is rejected', () => {
+    assert.throws(() => parsePatchPost('<ul><li>a</li></ul>', { date: 'yesterday' }), /Invalid ISO date/);
+  });
+});
