@@ -3,13 +3,17 @@
 // Pipeline orchestrator for the WoW: Forever changes site.
 //
 // Design: this file only wires the other pipeline stages together
-// (fetch -> parse -> merge -> icons -> write) and holds the small pieces of
-// logic that belong to no single stage: merging a fresh parse into the
-// previously published data, change detection, and the safety checks that
-// stop a broken parse from wiping good data. The stages themselves
-// (scripts/fetch.mjs, parse.mjs, icons.mjs) are injected through `deps`, so
-// the tests can use stubs and this file can be imported even when the real
-// modules are not present.
+// (sources -> fetch -> parse -> merge -> icons -> write) and holds the small
+// pieces of logic that belong to no single stage: merging fresh days into
+// the previously published data, change detection, and the safety checks
+// that stop a broken source from wiping good data. The stages themselves
+// (scripts/sources.mjs, fetch.mjs, parse.mjs, icons.mjs) are injected through
+// `deps`, so the tests can use stubs and this file can be imported even when
+// the real modules are not present.
+//
+// Sources come from data/sources.json (docs/SCHEMA.md "Version 2"): the
+// rolling hotfix post and Blizzard forum topics with patch notes. A source
+// that fails is skipped and its stored days are kept.
 //
 // The output format is the contract in docs/SCHEMA.md.
 
@@ -110,21 +114,61 @@ async function readExisting(path) {
  * Load the real pipeline stages. Done lazily with dynamic import() so that
  * importing this module (e.g. from tests) never requires them to exist.
  *
- * @returns {Promise<{fetchPost: Function, parseHotfixHtml: Function,
- *   addSubjects: Function, SOURCE_URL: string}>}
+ * @returns {Promise<{loadSources: Function, fetchSourceDays: Function,
+ *   fetchPost: Function, fetchJson: Function, parseHotfixHtml: Function,
+ *   parsePatchPost: Function, addSubjects: Function}>}
  */
 async function loadDefaultDeps() {
-  const [fetchMod, parseMod, iconsMod] = await Promise.all([
+  const [fetchMod, parseMod, iconsMod, sourcesMod] = await Promise.all([
     import('./fetch.mjs'),
     import('./parse.mjs'),
     import('./icons.mjs'),
+    import('./sources.mjs'),
   ]);
   return {
+    loadSources: sourcesMod.loadSources,
+    fetchSourceDays: sourcesMod.fetchSourceDays,
     fetchPost: fetchMod.fetchPost,
+    fetchJson: fetchMod.fetchJson,
     parseHotfixHtml: parseMod.parseHotfixHtml,
+    parsePatchPost: parseMod.parsePatchPost,
     addSubjects: iconsMod.addSubjects,
-    SOURCE_URL: fetchMod.SOURCE_URL,
   };
+}
+
+/**
+ * Decide which sources to process, from the injected deps:
+ *   - `deps.sources`: an explicit list (tests);
+ *   - `deps.loadSources`: a loader, called with `sourcesPath` (production);
+ *   - only `deps.SOURCE_URL` (the pre-v2 stub style): that one hotfix post;
+ *   - otherwise the real loader from scripts/sources.mjs.
+ *
+ * @param {object} deps
+ * @param {string} sourcesPath
+ * @returns {Promise<Array<{kind:string,type:string,url:string,title?:string|null}>>}
+ */
+async function resolveSources(deps, sourcesPath) {
+  if (deps.sources) return deps.sources;
+  if (deps.loadSources) return deps.loadSources(sourcesPath);
+  if (deps.SOURCE_URL) return [{ kind: 'hotfix', type: 'news-rolling', url: deps.SOURCE_URL }];
+  const { loadSources } = await import('./sources.mjs');
+  return loadSources(sourcesPath);
+}
+
+/**
+ * Bring a stored day up to schema v2. Days written before v2 have no
+ * `kind`; they all came from the hotfix post, so they get kind "hotfix",
+ * no title and the hotfix post as their link. Other days are unchanged.
+ *
+ * @param {object} day Stored day.
+ * @param {string|null} hotfixUrl URL of the hotfix source.
+ * @returns {object}
+ */
+function upgradeStoredDay(day, hotfixUrl) {
+  if (day.kind) return day;
+  // Rebuild so the new fields sit in schema order after `date`.
+  const { date, ...rest } = day;
+  return { date, kind: 'hotfix', title: day.title ?? null, sourceUrl: day.sourceUrl ?? hotfixUrl, ...rest };
 }
 
 /**
@@ -138,60 +182,98 @@ function countChanges(days) {
 }
 
 /**
- * Run the whole pipeline once: fetch, parse, merge with the existing data,
- * resolve icons, and write `outPath` only if the content changed.
+ * Run the whole pipeline once: for every source in data/sources.json fetch
+ * and parse its days, merge them with the existing data, resolve icons, and
+ * write `outPath` only if the content changed.
  *
- * Safety: a parse that yields no days or no changes almost certainly means
- * the source layout changed or the fetch returned the wrong page. In that
- * case we throw and leave the existing file untouched, rather than
- * publishing an empty site.
+ * Safety: a source that throws, or yields no days or no changes, almost
+ * certainly broke (layout change, wrong page, outage). It is logged and
+ * skipped, and the days previously stored for it are kept, because
+ * mergeDays retains every stored day the fresh data does not replace. Only
+ * when EVERY source fails do we throw and leave the file untouched, rather
+ * than publishing a site with no fresh data at all.
  *
  * @param {object} [options]
  * @param {string} [options.outPath='data/changes.json'] output file
- * @param {object} [options.deps] injectable stages:
- *   { fetchPost, parseHotfixHtml, addSubjects, SOURCE_URL }
+ * @param {string} [options.sourcesPath='data/sources.json'] sources list
+ * @param {object} [options.deps] injectable stages (all optional except
+ *   addSubjects when deps is given):
+ *   { sources | loadSources | SOURCE_URL, fetchSourceDays, fetchPost,
+ *     fetchJson, parseHotfixHtml, parsePatchPost, addSubjects }
+ *   — see resolveSources for how the source list is chosen; the fetch/parse
+ *   stages are passed through to fetchSourceDays.
  * @param {() => Date} [options.now] clock, injectable for tests
  * @param {(msg: string) => void} [options.log] progress logger
  * @returns {Promise<{changed: boolean, days: number, changes: number}>}
- * @throws {Error} when the parse is empty ("refusing to overwrite")
+ * @throws {Error} when no source produced changes ("refusing to overwrite")
  */
 export async function runUpdate({
   outPath = 'data/changes.json',
+  sourcesPath = 'data/sources.json',
   deps,
   now = () => new Date(),
   log = console.error,
 } = {}) {
-  const { fetchPost, parseHotfixHtml, addSubjects, SOURCE_URL } =
-    deps ?? (await loadDefaultDeps());
+  const d = deps ?? (await loadDefaultDeps());
+  const fetchSourceDays = d.fetchSourceDays ?? (await import('./sources.mjs')).fetchSourceDays;
+  const sources = await resolveSources(d, sourcesPath);
+  const hotfixUrl = sources.find((s) => s.kind === 'hotfix')?.url ?? null;
 
-  // 1. Previous output (tolerates missing/corrupt).
+  // 1. Previous output (tolerates missing/corrupt), upgraded to schema v2.
   const existing = await readExisting(outPath);
-  const previousDays = existing?.days ?? [];
+  const previousDays = (existing?.days ?? []).map((day) => upgradeStoredDay(day, hotfixUrl));
 
-  // 2. Fetch and parse the source post.
-  log(`Fetching ${SOURCE_URL}`);
-  const html = await fetchPost(SOURCE_URL);
-  const parsed = parseHotfixHtml(html);
-  const freshDays = parsed?.days ?? [];
-
-  // 3. Safety check, before anything is written.
-  if (freshDays.length === 0 || countChanges(freshDays) === 0) {
+  // 2. Fetch and parse each source. Failures are collected, not thrown, so
+  //    one broken source does not block the others.
+  const stageDeps = {
+    fetchPost: d.fetchPost,
+    fetchJson: d.fetchJson,
+    parseHotfixHtml: d.parseHotfixHtml,
+    parsePatchPost: d.parsePatchPost,
+    log,
+  };
+  const freshDays = [];
+  const failures = [];
+  for (const source of sources) {
+    const name = `${source.kind} source ${source.url}`;
+    log(`Fetching ${name}`);
+    let days;
+    try {
+      days = (await fetchSourceDays(source, stageDeps)) ?? [];
+    } catch (err) {
+      failures.push(`${name}: ${err.message}`);
+      log(`Skipping ${name} (keeping its stored days): ${err.message}`);
+      continue;
+    }
+    // 3. Per-source safety check: nothing usable means the layout changed.
+    if (days.length === 0 || countChanges(days) === 0) {
+      failures.push(`${name}: no days or no changes`);
+      log(`Skipping ${name} (keeping its stored days): parse produced no days or no changes`);
+      continue;
+    }
+    freshDays.push(...days);
+  }
+  const okCount = sources.length - failures.length;
+  log(`Sources: ${okCount}/${sources.length} ok`);
+  if (okCount === 0) {
     throw new Error(
-      'Parse produced no days or no changes; refusing to overwrite ' +
-        `${outPath} (the source layout may have changed).`,
+      `No source produced any changes; refusing to overwrite ${outPath} ` +
+        `(the source layout may have changed). ${failures.join(' | ')}`,
     );
   }
 
   // 4. Merge with what we already had, then resolve icons for everything.
   //    Icon lookups are cached, so re-processing old days is cheap.
   const merged = mergeDays(previousDays, freshDays);
-  const days = await addSubjects(merged);
+  const days = await d.addSubjects(merged);
 
   // 5. Assemble the document per docs/SCHEMA.md. generatedAt is whole
-  //    seconds (no milliseconds) to match the documented format.
+  //    seconds (no milliseconds) to match the documented format. `source`
+  //    stays the hotfix post (pre-v2 readers); `sources` lists them all.
   const output = {
     generatedAt: now().toISOString().replace(/\.\d{3}Z$/, 'Z'),
-    source: { title: 'WoW: Forever Hotfixes', url: SOURCE_URL },
+    source: { title: 'WoW: Forever Hotfixes', url: hotfixUrl },
+    sources: sources.map((s) => ({ kind: s.kind, title: s.title ?? null, url: s.url })),
     days,
   };
   const summary = { days: days.length, changes: countChanges(days) };
