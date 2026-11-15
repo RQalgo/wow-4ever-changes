@@ -680,7 +680,7 @@ export async function buildGameIndexData({ fetchImpl = fetch, version, log = () 
 /**
  * Wraps index data in a synchronous lookup.
  * @param {{version?: string|null, spells?: object, items?: object}} data
- * @returns {{version: string|null, size: number,
+ * @returns {{version: string|null, size: number, counts: () => object,
  *   lookup: (name: string, opts?: {classSlug?: string, preferType?: string}) => object|null}}
  */
 export function makeGameIndex(data) {
@@ -729,7 +729,21 @@ export function makeGameIndex(data) {
     }
   }
 
-  return { version: data?.version ?? null, size, lookup };
+  /** Entry counts per kind, for diagnostics and the CLI. */
+  function counts() {
+    const c = { talents: 0, abilities: 0, spells: 0, items: 0 };
+    for (const list of Object.values(spells)) {
+      for (const e of Array.isArray(list) ? list : []) {
+        if (e.kind === 'talent') c.talents++;
+        else if (e.kind === 'ability') c.abilities++;
+        else c.spells++;
+      }
+    }
+    for (const list of Object.values(items)) c.items += Array.isArray(list) ? list.length : 0;
+    return c;
+  }
+
+  return { version: data?.version ?? null, size, lookup, counts };
 }
 
 // ---------------------------------------------------------------------------
@@ -884,4 +898,181 @@ export function mergeWowheadTalents(data, talents, { log = () => {} } = {}) {
   }
   if (added) log(`gamedata: added ${added} talents that only Wowhead knows`);
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Loading with an on-disk cache
+// ---------------------------------------------------------------------------
+
+/** How long the cached Wowhead talent file is reused. */
+const WOWHEAD_CACHE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Compares dotted version strings numerically ("1.60.1.70938").
+ * @returns {number} negative, zero or positive like a comparator
+ */
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+
+/** Reads and sanity-checks a cached index file; null if missing or corrupt. */
+async function readIndexFile(file) {
+  try {
+    const data = JSON.parse(await readFile(file, 'utf8'));
+    return data && typeof data.spells === 'object' && typeof data.items === 'object' ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Newest readable cached index (by version), or null. */
+async function readNewestCachedIndex(cacheDir) {
+  let names = [];
+  try {
+    names = await readdir(cacheDir);
+  } catch {
+    return null;
+  }
+  const versions = names
+    .map((n) => /^index-(.+)\.json$/.exec(n)?.[1])
+    .filter(Boolean)
+    .sort((a, b) => compareVersions(b, a));
+  for (const v of versions) {
+    const data = await readIndexFile(join(cacheDir, `index-${v}.json`));
+    if (data) return data;
+  }
+  return null;
+}
+
+/**
+ * Gets the client index data: from the cache when this build was already
+ * built, otherwise built from the downloaded tables and cached. Returns null
+ * after logging one line when that is impossible.
+ */
+async function loadClientData({ cacheDir, fetchImpl, log, pauseMs, verbose }) {
+  let version = null;
+  try {
+    const res = await request(fetchImpl, BUILDS_URL);
+    version = pickLatestBuild(await res.json());
+    if (!version) throw new Error('no "wowf" build in the builds list');
+  } catch (err) {
+    // Builds list unreachable: any cached index is better than none.
+    const cached = await readNewestCachedIndex(cacheDir);
+    if (cached) {
+      log(`gamedata: build list unavailable (${err.message}); using cached index ${cached.version}`);
+      return cached;
+    }
+    log(`gamedata: client data unavailable (${err.message})`);
+    return null;
+  }
+
+  const file = join(cacheDir, `index-${version}.json`);
+  const cached = await readIndexFile(file);
+  if (cached) return cached;
+
+  try {
+    const data = await buildGameIndexData({ fetchImpl, version, pauseMs, log: verbose ? log : () => {} });
+    await mkdir(cacheDir, { recursive: true });
+    // Write to a temp name first so a crash never leaves a half-written index.
+    const tmp = `${file}.tmp`;
+    await writeFile(tmp, JSON.stringify(data));
+    await rename(tmp, file);
+    // Keep only the newest index: delete the older index-*.json files.
+    for (const n of await readdir(cacheDir)) {
+      if (/^index-.+\.json$/.test(n) && n !== `index-${version}.json`) await unlink(join(cacheDir, n)).catch(() => {});
+    }
+    return data;
+  } catch (err) {
+    log(`gamedata: could not build the client index for ${version} (${err.message})`);
+    return null;
+  }
+}
+
+/**
+ * Wowhead talents, reusing <cacheDir>/wowhead-talents.json for 24 h. When the
+ * download fails a stale cache is still used. Never throws.
+ */
+async function loadWowheadTalents({ cacheDir, fetchImpl, log, nowMs }) {
+  const file = join(cacheDir, 'wowhead-talents.json');
+  let cached = null;
+  try {
+    const c = JSON.parse(await readFile(file, 'utf8'));
+    if (Array.isArray(c?.talents) && c.talents.length && Number.isFinite(c.fetchedAt)) cached = c;
+  } catch {
+    /* no usable cache */
+  }
+  if (cached && nowMs() - cached.fetchedAt < WOWHEAD_CACHE_MS) return cached.talents;
+
+  const talents = await fetchWowheadTalents({ fetchImpl, log });
+  if (talents.length) {
+    try {
+      await mkdir(cacheDir, { recursive: true });
+      await writeFile(file, JSON.stringify({ fetchedAt: nowMs(), talents }));
+    } catch {
+      /* a cache that cannot be written only costs a re-download next run */
+    }
+    return talents;
+  }
+  return cached ? cached.talents : [];
+}
+
+/**
+ * Loads the game-data index: client tables (cached per build) merged with the
+ * Wowhead talent calculator data (cached 24 h). Never throws; returns null when
+ * neither source is available.
+ *
+ * @param {{cacheDir?: string, fetchImpl?: typeof fetch, log?: (msg: string) => void,
+ *   now?: number|Date|(() => number), pauseMs?: number, verbose?: boolean}} [opts]
+ *   now: clock for the Wowhead cache age (injectable for tests);
+ *   verbose: also log download progress
+ * @returns {Promise<ReturnType<typeof makeGameIndex>|null>}
+ */
+export async function loadGameIndex({
+  cacheDir = '.cache/gamedata', fetchImpl = fetch, log = console.error, now = Date.now, pauseMs = TABLE_PAUSE_MS, verbose = false,
+} = {}) {
+  try {
+    const nowMs = () => (typeof now === 'function' ? now() : Number(now instanceof Date ? now.getTime() : now));
+    let data = await loadClientData({ cacheDir, fetchImpl, log, pauseMs, verbose });
+    const talents = await loadWowheadTalents({ cacheDir, fetchImpl, log, nowMs });
+    if (!data && talents.length === 0) return null;
+    if (!data) {
+      // Client tables unavailable: an index from Wowhead talents alone. Class
+      // and tree are known only if some older cached index has the tab table.
+      const old = await readNewestCachedIndex(cacheDir);
+      data = { version: null, builtAt: new Date(nowMs()).toISOString(), tabs: old?.tabs ?? {}, spells: {}, items: {} };
+      log('gamedata: using Wowhead talent data only');
+    }
+    if (talents.length) data = mergeWowheadTalents(data, talents, { log });
+    return makeGameIndex(data);
+  } catch (err) {
+    log(`gamedata: unexpected failure (${err?.message ?? err})`);
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// CLI:  node scripts/gamedata.mjs ["Name" ...]
+// ---------------------------------------------------------------------------
+
+/** Prints the index version, counts and the lookup result of each argument. */
+async function main(names) {
+  const index = await loadGameIndex({ verbose: true });
+  if (!index) {
+    console.log('no index available (see messages above)');
+    process.exitCode = 1;
+    return;
+  }
+  const c = index.counts();
+  console.log(`version ${index.version ?? '(wowhead only)'}: ${c.talents} talents, ${c.abilities} abilities, ${c.spells} spells, ${c.items} items`);
+  for (const n of names) console.log(`${n} ->`, JSON.stringify(index.lookup(n)));
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await main(process.argv.slice(2));
 }

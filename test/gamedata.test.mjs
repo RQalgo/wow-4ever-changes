@@ -7,11 +7,14 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { mkdtemp, readdir, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   classFromMask, normalizeName, treeSlug, parseCsv, csvRows, pickLatestBuild,
-  buildGameIndexData, makeGameIndex,
+  buildGameIndexData, makeGameIndex, loadGameIndex,
   parseWowheadTalentData, fetchWowheadTalents, mergeWowheadTalents,
 } from '../scripts/gamedata.mjs';
 
@@ -35,6 +38,7 @@ function makeFetch(overrides = {}) {
         return typeof val === 'function' ? val(url) : new Response(val);
       }
     }
+    if (String(url).includes('nether.wowhead.com')) return new Response(fixture('wowhead-talents.txt'));
     if (String(url).includes('/api/builds')) return new Response(fixture('builds.json'));
     const m = /\/db2\/(\w+)\/csv/.exec(String(url));
     if (m && TABLES.includes(m[1])) return new Response(fixture(`${m[1]}.csv`));
@@ -461,4 +465,138 @@ describe('mergeWowheadTalents', () => {
     mergeWowheadTalents(data, wh);
     assert.equal(JSON.stringify(data), before);
   });
+});
+
+describe('loadGameIndex', () => {
+  const silent = () => {};
+  /** Runs fn with a fresh temp cache dir, removed afterwards. */
+  async function withDir(fn) {
+    const dir = await mkdtemp(join(tmpdir(), 'gamedata-test-'));
+    try {
+      await fn(join(dir, 'cache'));
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }
+  const tableCalls = (f) => f.calls.filter((c) => c.url.includes('/db2/')).length;
+  const wowheadCalls = (f) => f.calls.filter((c) => c.url.includes('nether.wowhead.com')).length;
+  const T0 = Date.UTC(2026, 10, 15, 12, 0, 0);
+
+  test('builds the newest build, writes index-<version>.json and merges Wowhead data', () => withDir(async (cacheDir) => {
+    const f = makeFetch();
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: silent, now: T0, pauseMs: 0 });
+    assert.equal(idx.version, '1.60.1.70938'); // not the older build, not the bgdl one
+    assert.deepEqual(await readdir(cacheDir), ['index-1.60.1.70938.json', 'wowhead-talents.json']);
+    assert.equal(tableCalls(f), TABLES.length);
+    assert.equal(idx.lookup('Incineration').source, 'wowhead');
+    assert.equal(idx.lookup('Improved Fireball').verified, true);
+    assert.deepEqual(idx.counts(), { talents: idx.counts().talents, abilities: idx.counts().abilities, spells: idx.counts().spells, items: 3 });
+  }));
+
+  test('second call with the same build downloads no tables and no Wowhead file (within 24 h)', () => withDir(async (cacheDir) => {
+    await loadGameIndex({ cacheDir, fetchImpl: makeFetch(), log: silent, now: T0, pauseMs: 0 });
+    const f2 = makeFetch();
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f2, log: silent, now: T0 + 23 * 3600e3, pauseMs: 0 });
+    assert.equal(tableCalls(f2), 0);
+    assert.equal(wowheadCalls(f2), 0);
+    assert.equal(f2.calls.length, 1); // only the builds list
+    assert.equal(idx.lookup('Mortal Strike').kind, 'talent');
+    assert.equal(idx.lookup('Incineration').source, 'wowhead'); // merged from the cached Wowhead file
+  }));
+
+  test('Wowhead cache expires after 24 h and is re-fetched', () => withDir(async (cacheDir) => {
+    await loadGameIndex({ cacheDir, fetchImpl: makeFetch(), log: silent, now: T0, pauseMs: 0 });
+    const f2 = makeFetch();
+    await loadGameIndex({ cacheDir, fetchImpl: f2, log: silent, now: T0 + 25 * 3600e3, pauseMs: 0 });
+    assert.equal(wowheadCalls(f2), 1);
+    assert.equal(tableCalls(f2), 0);
+  }));
+
+  test('a new build replaces the old index file', () => withDir(async (cacheDir) => {
+    await loadGameIndex({ cacheDir, fetchImpl: makeFetch(), log: silent, now: T0, pauseMs: 0 });
+    const newer = JSON.stringify({ wowf: [{ product: 'wowf', version: '1.62.0.1', created_at: '2026-12-01 00:00:00', is_bgdl: false }] });
+    const f = makeFetch({ 'api/builds': newer });
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: silent, now: T0, pauseMs: 0 });
+    assert.equal(idx.version, '1.62.0.1');
+    assert.equal(tableCalls(f), TABLES.length);
+    assert.deepEqual((await readdir(cacheDir)).sort(), ['index-1.62.0.1.json', 'wowhead-talents.json']);
+  }));
+
+  test('builds request fails: newest cached index is used (one failure line)', () => withDir(async (cacheDir) => {
+    await loadGameIndex({ cacheDir, fetchImpl: makeFetch(), log: silent, now: T0, pauseMs: 0 });
+    const logs = [];
+    const f = makeFetch({ 'api/builds': () => new Response('down', { status: 503 }) });
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: (m) => logs.push(m), now: T0, pauseMs: 0 });
+    assert.equal(idx.version, '1.60.1.70938');
+    assert.equal(tableCalls(f), 0);
+    // (the merge step may add its own summary lines; the failure itself is one line)
+    const failure = logs.filter((l) => /build list/.test(l));
+    assert.equal(failure.length, 1);
+    assert.match(failure[0], /build list unavailable.*503.*cached index 1\.60\.1\.70938/);
+  }));
+
+  test('with several cached indexes the highest version wins (numeric compare)', () => withDir(async (cacheDir) => {
+    await loadGameIndex({ cacheDir, fetchImpl: makeFetch(), log: silent, now: T0, pauseMs: 0 });
+    for (const v of ['1.9.0.1', '1.100.0.1']) writeFileSync(join(cacheDir, `index-${v}.json`), JSON.stringify({ version: v, spells: {}, items: {} }));
+    const f = makeFetch({ 'api/builds': () => { throw new Error('offline'); } });
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: silent, now: T0, pauseMs: 0 });
+    assert.equal(idx.version, '1.100.0.1');
+  }));
+
+  test('corrupt cache file is rebuilt', () => withDir(async (cacheDir) => {
+    await loadGameIndex({ cacheDir, fetchImpl: makeFetch(), log: silent, now: T0, pauseMs: 0 });
+    writeFileSync(join(cacheDir, 'index-1.60.1.70938.json'), '{not json');
+    const f = makeFetch();
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: silent, now: T0, pauseMs: 0 });
+    assert.equal(tableCalls(f), TABLES.length);
+    assert.equal(idx.lookup('Mortal Strike').kind, 'talent');
+  }));
+
+  test('everything fails: null, no throw, exactly one line per failing source', () => withDir(async (cacheDir) => {
+    const logs = [];
+    const down = async () => { throw new Error('network down'); };
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: down, log: (m) => logs.push(m), now: T0, pauseMs: 0 });
+    assert.equal(idx, null);
+    assert.equal(logs.length, 2); // client data + Wowhead talent data
+    assert.ok(!existsSync(cacheDir) || (await readdir(cacheDir)).length === 0);
+  }));
+
+  test('bad CSV (missing column): client index null, Wowhead-only index returned', () => withDir(async (cacheDir) => {
+    const logs = [];
+    const f = makeFetch({ SpellName: 'ID,Other\n1,2\n' });
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: (m) => logs.push(m), now: T0, pauseMs: 0 });
+    assert.ok(logs.some((l) => /could not build the client index.*SpellName: missing column "Name_lang"/.test(l)), logs.join('|'));
+    assert.equal(idx.version, null);
+    const r = idx.lookup('Incineration');
+    assert.deepEqual([r.kind, r.class, r.tree, r.source], ['talent', null, null, 'wowhead']); // no tab table available
+    assert.equal(idx.lookup('Frostbolt'), null);
+    assert.deepEqual(await readdir(cacheDir), ['wowhead-talents.json']); // no half-built index left behind
+  }));
+
+  test('Wowhead-only index takes class/tree from an older cached index', () => withDir(async (cacheDir) => {
+    await loadGameIndex({ cacheDir, fetchImpl: makeFetch(), log: silent, now: T0, pauseMs: 0 });
+    // New build whose tables are broken; the older cached index still has the tab table.
+    const newer = JSON.stringify({ wowf: [{ product: 'wowf', version: '1.70.0.1', created_at: '2027-01-01 00:00:00', is_bgdl: false }] });
+    const f = makeFetch({ 'api/builds': newer, SpellName: () => new Response('x', { status: 500 }) });
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: silent, now: T0 + 30 * 3600e3, pauseMs: 0 });
+    const r = idx.lookup('Incineration');
+    assert.deepEqual([r.class, r.tree], ['mage', 'fire']);
+  }));
+
+  test('Wowhead fails but the client index works: client-only index, one log line', () => withDir(async (cacheDir) => {
+    const logs = [];
+    const f = makeFetch({ 'nether.wowhead.com': () => new Response('no', { status: 429 }) });
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: (m) => logs.push(m), now: T0, pauseMs: 0 });
+    assert.equal(logs.length, 1);
+    assert.match(logs[0], /Wowhead talent data unavailable.*429/);
+    assert.equal(idx.lookup('Mortal Strike').verified, undefined);
+    assert.equal(idx.lookup('Incineration'), null);
+  }));
+
+  test('stale Wowhead cache is used when the refresh fails', () => withDir(async (cacheDir) => {
+    await loadGameIndex({ cacheDir, fetchImpl: makeFetch(), log: silent, now: T0, pauseMs: 0 });
+    const f = makeFetch({ 'nether.wowhead.com': () => new Response('no', { status: 500 }) });
+    const idx = await loadGameIndex({ cacheDir, fetchImpl: f, log: silent, now: T0 + 48 * 3600e3, pauseMs: 0 });
+    assert.equal(idx.lookup('Incineration').source, 'wowhead');
+  }));
 });
