@@ -785,15 +785,34 @@ export async function lookupName(name, {
 // ---------------------------------------------------------------------------
 
 /**
- * Candidate groups of a whole change: the groups of its text first, then those
- * of each note, de-duplicated by name (a name found in the text is not looked
- * up again for the notes) and capped at MAX_SUBJECTS names in total.
+ * Texts of a change that subjects are taken from, in priority order: the
+ * change text, then its notes, or, instead of the notes, the lines of the
+ * TRANSIENT `_fullText` when it is set. `_fullText` is a dev post's title +
+ * whole body as plain text, one block per line (scripts/sources.mjs); it is
+ * never stored (scripts/update.mjs deletes it before writing). A dev post's
+ * notes are only a summary of that same body, so they are not read again.
  *
- * @param {{ text?: string, notes?: string[] }} change
+ * @param {{ text?: string, notes?: string[], _fullText?: string }} change
+ * @returns {string[]}
+ */
+function subjectSources(change) {
+  if (typeof change._fullText === 'string' && change._fullText.trim()) {
+    return [change.text ?? '', ...change._fullText.split('\n').filter((l) => l.trim())];
+  }
+  return [change.text ?? '', ...(Array.isArray(change.notes) ? change.notes : [])];
+}
+
+/**
+ * Candidate groups of a whole change: the groups of its text first, then those
+ * of each note (or of each line of a dev post's transient `_fullText`, see
+ * subjectSources), de-duplicated by name (a name found in the text is not
+ * looked up again for the notes) and capped at MAX_SUBJECTS names in total.
+ *
+ * @param {{ text?: string, notes?: string[], _fullText?: string }} change
  * @returns {import('./icons.mjs').CandidateGroup[]}
  */
 export function changeCandidateGroups(change) {
-  const sources = [change.text ?? '', ...(Array.isArray(change.notes) ? change.notes : [])];
+  const sources = subjectSources(change);
   const seen = new Set();
   const out = [];
   let count = 0;

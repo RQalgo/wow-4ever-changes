@@ -104,3 +104,27 @@ filter state in the URL hash, light/dark.
   and degrades: cached index, then Wowhead-only talents, then null. Never throws.
 - Real endpoints were not reachable from the development sandbox; the code is
   tested against fixture CSVs under `test/fixtures/gamedata/`.
+
+## Update: dev posts
+- Third source, `discourse-tracker` (docs/SCHEMA.md, version 4): the forum's
+  Blizzard tracker feed, filtered to category 347 (WoW: Forever General
+  Discussion). One `kind: "dev"` day per US Pacific date, one change per staff
+  post: the topic title (or `Reply in “…”`), a summary of at most 400
+  characters, link, author and post number.
+- Paging with `before_post_id` until an empty page, a page older than the
+  cutoff (oldest stored day, or 2026-09-01) or 30 pages; 500 ms between
+  requests. Bodies (`/posts/<id>.json`) only for posts not stored yet; a
+  failed body falls back to the feed excerpt. Stored posts are reused as
+  stored, so ids and tags stay stable and posts that fall off the feed stay.
+- Subjects and tags come from the whole post through the transient
+  `_fullText` field, which `update.mjs` deletes before writing.
+- New tag `media` (dev posts only) and conservative `systems` / `pvp` words.
+- Data fixes in the same change: a sentence is never a heading in the
+  parser (the "Gamepad Support › Gamepad Support has entered …" group);
+  groups are joined with " › " like the UI, and stored days are normalised;
+  NPC abilities outside Classes ("Deathless Guardian's Shield Slam") add no
+  class or talent tags.
+- The update workflow runs every 3 hours at :41 (the 6-hourly schedule never
+  fired).
+- Not verified against the live endpoints from the development sandbox (no
+  access); the code is tested against fixtures with the feed's real shape.

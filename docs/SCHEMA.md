@@ -22,7 +22,8 @@ app. Change it only together with all three.
           "class": "paladin",                   // lower-case class slug, or null
           "spec": "retribution",                // lower-case talent-tree slug, or null
           "group": null,                        // bold sub-heading inside a general
-                                                //   category (e.g. a dungeon name), or null
+                                                //   category (e.g. a dungeon name), or null;
+                                                //   nested headings joined with " › " (U+203A)
           "text": "Plain text of the change.",
           "notes": ["Developers' notes: ..."],  // zero or more follow-up notes
           "subjects": [                         // added by the icon resolver; [] before it runs
@@ -130,7 +131,10 @@ Tag vocabulary (all lower-case):
   `items`, `quests`, `dungeons` (dungeons and raids), `professions`, `pvp`,
   `ui` (User Interface, Cooldown Manager, Gamepad Support, accessibility),
   `world` (World, Enemies and NPCs, zones), `races`, `events`, `systems`
-  (Legacy system, perks, camps, experience), `bugfix`, `known-issue`, `other`.
+  (Legacy system, perks, camps, experience; since v4 also realms, servers,
+  login, queues, botting, RMT, gold buying, accounts), `media` (dev posts
+  only, since v4: podcasts, livestreams, videos), `bugfix`, `known-issue`,
+  `other`.
   A class line gets a category tag too when its text is clearly about one
   (e.g. a class quest → `quests`).
 - Every change has at least one tag. A change published outside **Classes**
@@ -247,3 +251,50 @@ Rules:
 
 UI: badge "Dev Post", kind filter gains a fourth option "Dev Posts"
 (hash `kind=dev`); each dev-post line links to its `url` and shows the author.
+
+### Version 4 addendum: pipeline details (2026-11-15)
+
+Transient field `_fullText` (never in `data/changes.json`):
+- `scripts/sources.mjs` sets `change._fullText` on every freshly fetched dev
+  post: the topic title, then every text block of the post body (paragraphs,
+  headings, list items; quotes of other users, link previews and images
+  removed), one block per line.
+- `scripts/icons.mjs` takes subjects from `text` and the lines of
+  `_fullText` (instead of the summary `notes`); `scripts/tags.mjs` adds it to
+  the texts its rules read.
+- `scripts/update.mjs` deletes it (`TRANSIENT_FIELDS`) before comparing and
+  writing the file. Any future transient field must start with `_` and be
+  listed there.
+- A stored dev post is not fetched again, so it has no `_fullText` on later
+  runs; it keeps its stored `subjects` and `tags` instead of being re-tagged
+  from its title and summary. (Rule changes therefore do not revise stored
+  dev posts; removing a dev day from the file makes the posts still on the
+  tracker be fetched and tagged again.)
+
+Source entry: `categoryId` may also be a list (`[347, 352]`) to keep several
+forum categories from the one feed; all their posts become Dev Posts.
+
+Tracker paging (`discourse-tracker`): pages are read with `before_post_id`
+until a page is empty, or a page's oldest post is older than the cutoff
+(default: the oldest date of any stored day, or 2026-09-01 when nothing is
+stored), or 30 pages; 500 ms between requests. Posts older than the cutoff
+and posts with a `post_type` other than 1 are dropped. A body that cannot be
+fetched falls back to the feed's excerpt.
+
+Tag rule changes:
+- `media` (new): only for dev posts (category "Dev Posts").
+- `systems`: realms, servers, login, queues (not "spell queue"), botting,
+  bots, RMT, gold buying / selling, accounts (not "to account for", "Bound to
+  Account"). `pvp`: also "faction balance".
+- NPC abilities: outside **Classes**, a subject written as the possession of
+  a capitalised name that is not a class word ("Deathless Guardian's Shield
+  Slam", "Deathless Sorcerer’s Fireball") keeps its icon but adds no `class:`,
+  `spec:` or `talent` tag, and such a line never gets `talent`.
+
+Parser rules:
+- `group` separator is " › " (U+203A with spaces), as in the UI; stored days
+  that no source re-parses are normalised from the old " > " on every run.
+- An item whose own text ends with `.` `!` `?`, has more than 6 words, or
+  starts with the category name followed by a lower-case word is never a
+  heading (class, spec, group or category): it is a change, and its nested
+  items are its notes. A sub-heading equal to the category adds no group.

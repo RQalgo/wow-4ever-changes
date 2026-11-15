@@ -27,6 +27,10 @@
  * - Patch notes (Blizzard forum posts) reuse the same block collector and
  *   list walker; they add <h2> headings, "Change Log" markers, categories
  *   named by top-level bold <li>s, and loose bold headings (see walkList).
+ * - Dev posts (schema v4, staff posts from the forum's Blizzard tracker) are
+ *   not lists of changes: parseDevPost turns one post's HTML into a short
+ *   summary (the `notes`) and the plain text of the whole post (the
+ *   transient `_fullText` that subjects and tags are computed from).
  * - Each pure helper is exported so it can be unit-tested on its own.
  */
 import { parse as parseDom, NodeType } from 'node-html-parser';
@@ -321,6 +325,14 @@ function collectNoteTexts(lists, out = []) {
 }
 
 /**
+ * Separator between nested group headings in a change's `group`
+ * ("The Drowned City › Deathless Marrow"): U+203A with a space on each side,
+ * the same separator the web app uses for breadcrumbs, so stored data and the
+ * UI never mix " > " and " › ".
+ */
+export const GROUP_SEPARATOR = ' \u203A ';
+
+/**
  * Build a change object (without its id, assigned per day later).
  * @param {object} ctx Walker context (see walkList).
  * @param {string} text
@@ -333,7 +345,7 @@ function makeChange(ctx, text) {
     category: ctx.category ?? FALLBACK_CATEGORY,
     class: ctx.inClasses ? ctx.class : null,
     spec: ctx.inClasses ? ctx.spec : null,
-    group: ctx.group.length ? ctx.group.join(' > ') : null,
+    group: ctx.group.length ? ctx.group.join(GROUP_SEPARATOR) : null,
     text,
     notes: [],
     subjects: [],
@@ -380,7 +392,7 @@ export function talentTreeSlug(classSlug, heading) {
  * Inside Classes the first heading level is the class, the second the spec
  * (only if it is a real talent tree of that class, see TALENT_TREES);
  * anything else, and every heading level in other categories, is appended
- * to `group` (joined later as "A > B").
+ * to `group` (joined later as "A › B", see GROUP_SEPARATOR).
  * @param {object} ctx
  * @param {string} heading
  */
@@ -431,6 +443,11 @@ function isHeadingItem(own) {
  * 4. Developer note sibling: attached to the previous change of this list.
  * 5. Ordinary change, with any nested items as its notes.
  *
+ * An item whose own text is a sentence (isSentenceLike: ends with . ! ?,
+ * more than MAX_HEADING_WORDS words, or "<category> <lower-case word>…") is
+ * never kind 1 or 2, whatever its formatting; and a sub-heading equal to the
+ * category name adds no group level (headingContext).
+ *
  * @param {import('node-html-parser').HTMLElement} list <ul> or <ol>
  * @param {{category:string|null,inClasses:boolean,class:string|null,spec:string|null,group:string[]}} ctx
  *   `category: null` means "no category yet" (patch notes after a
@@ -459,6 +476,54 @@ export function looksLikeHeadingText(text) {
   return text.split(/\s+/).length <= 4;
 }
 
+/** An item whose own text has more words than this is a sentence, not a heading. */
+export const MAX_HEADING_WORDS = 6;
+
+/**
+ * Number of words in a text; tokens without a letter or digit (a lone "-" or
+ * "–" between words) are not counted, so "New to this build - Known Issues"
+ * has six words.
+ *
+ * @param {string} text
+ * @returns {number}
+ */
+function wordCount(text) {
+  return cleanText(text).split(' ').filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+}
+
+/**
+ * True when an item's own text reads as a sentence and therefore can never be
+ * a heading (class, spec, group or category), however it is formatted. Seen
+ * in the live patch notes of 2026-11-02, where the bold item "Gamepad Support
+ * has entered a functional Beta state." under the category "Gamepad Support"
+ * became a group, so the site showed "Gamepad Support › Gamepad Support has
+ * entered …" above its sub-items. Rules:
+ *  - it ends with sentence punctuation (. ! ?), optionally followed by a
+ *    closing quote or bracket;
+ *  - it has more than MAX_HEADING_WORDS words;
+ *  - it starts with the current category's name followed by a lower-case word
+ *    ("Gamepad Support is now in Beta"): the category name is the subject of
+ *    a sentence. "Gamepad Support Changes" (capitalised rest) is still a
+ *    heading.
+ *
+ * @param {string} text Cleaned own text of a list item.
+ * @param {string|null} [category=null] Category the item is published under.
+ * @returns {boolean}
+ */
+export function isSentenceLike(text, category = null) {
+  const t = cleanText(text);
+  if (!t) return false;
+  // "." / "!" / "?" at the end, possibly inside a closing quote or bracket.
+  if (/[.!?]["'”’)\]]*$/.test(t)) return true;
+  if (wordCount(t) > MAX_HEADING_WORDS) return true;
+  const cat = cleanText(category);
+  if (cat && t.length > cat.length && t.toLowerCase().startsWith(`${cat.toLowerCase()} `)) {
+    // The first word after the category name starts with a lower-case letter.
+    if (/^\p{Ll}/u.test(t.slice(cat.length + 1))) return true;
+  }
+  return false;
+}
+
 function walkList(list, ctx, out) {
   // The last change emitted directly by *this* list; a developer note in a
   // sibling <li> attaches to it. It is not shared with nested or parent
@@ -470,8 +535,14 @@ function walkList(list, ctx, out) {
   const items = itemsOf(list).map((li) => splitListItem(li));
   // A heading item is bold-only (isHeadingItem) or a short plain-text title
   // such as "Fire" or "Ashenvale" (looksLikeHeadingText); the forum build
-  // notes use both forms for sub-headings.
-  const isHead = (nodes) => isHeadingItem(nodes) || looksLikeHeadingText(textOf(nodes));
+  // notes use both forms for sub-headings. A sentence is never a heading,
+  // even when it is bold (isSentenceLike): it is a change, and its nested
+  // items become its notes (kind 5 below).
+  const isHead = (nodes) => {
+    const t = textOf(nodes);
+    if (isSentenceLike(t, ctx.category)) return false;
+    return isHeadingItem(nodes) || looksLikeHeadingText(t);
+  };
   for (let i = 0; i < items.length; i++) {
     const { own, nested } = items[i];
     const text = textOf(own);
@@ -535,6 +606,9 @@ function walkList(list, ctx, out) {
  */
 function headingContext(ctx, heading) {
   if (ctx.category === null) return categoryContext(heading);
+  // A sub-heading that only repeats the category ("Gamepad Support" under
+  // Gamepad Support) adds no information: no group level is created for it.
+  if (cleanText(heading).toLowerCase() === cleanText(ctx.category).toLowerCase()) return ctx;
   return descend(ctx, heading);
 }
 
@@ -815,4 +889,146 @@ export function parsePatchPost(html, { date, title = null, sourceUrl = null } = 
  */
 export function patchChangeId(date, index) {
   return `${date}-p${String(index + 1).padStart(3, '0')}`;
+}
+
+// ---------------------------------------------------------------------------
+// Dev posts (docs/SCHEMA.md "Version 4")
+// ---------------------------------------------------------------------------
+
+/** Longest summary of a dev post, in characters, all notes together. */
+export const DEV_SUMMARY_MAX = 400;
+
+/**
+ * A second paragraph is only added to a summary when at least this many
+ * characters are left for it; a stub of a few words would read as noise.
+ */
+const MIN_SECOND_PARAGRAPH = 60;
+
+/**
+ * Elements removed from a dev post before reading it: quotes of other users
+ * (`<aside class="quote">`) and link previews (`<aside class="onebox">`) are
+ * not Blizzard's words; images and Discourse's image caption (`div.meta`:
+ * file name, size) carry no text worth keeping.
+ */
+const DEV_POST_DROP = 'aside.quote, aside.onebox, img, div.meta, svg, script, style';
+
+/** Block elements whose text is one paragraph-like block of a dev post. */
+const DEV_TEXT_BLOCKS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre']);
+
+/**
+ * Cut `text` to at most `max` characters at a word boundary and end it with
+ * "…". Text that already fits is returned unchanged. Trailing spaces and
+ * punctuation that would sit before the ellipsis (", ; : – —") are dropped.
+ *
+ * @param {string} text
+ * @param {number} max Maximum length of the result, "…" included.
+ * @returns {string} '' when not even one word fits.
+ */
+export function cutAtWord(text, max) {
+  const t = cleanText(text);
+  if (t.length <= max) return t;
+  if (max < 2) return '';
+  // Keep one character for "…". If the character right after the kept part
+  // is a space, the kept part already ends on a whole word; otherwise go
+  // back to the last space so no word is cut in half.
+  let cut = t.slice(0, max - 1);
+  if (t[max - 1] !== ' ') {
+    const space = cut.lastIndexOf(' ');
+    cut = space > 0 ? cut.slice(0, space) : '';
+  }
+  cut = cut.replace(/[\s,;:–—-]+$/u, '');
+  return cut ? `${cut}…` : '';
+}
+
+/**
+ * Text blocks of a dev post's HTML, in document order, after removing quotes,
+ * link previews and images (DEV_POST_DROP): one entry per paragraph, heading
+ * or list item (a list item's nested list gives entries of its own).
+ *
+ * @param {string} html A Discourse post's `cooked` HTML.
+ * @returns {{tag: string, text: string}[]} `tag` is the element name ("p",
+ *   "h2", "li", …; "" for loose text outside any element).
+ */
+export function devPostBlocks(html) {
+  const root = parseDom(String(html ?? ''), { comment: false });
+  for (const el of root.querySelectorAll(DEV_POST_DROP)) el.remove();
+  const out = [];
+  const push = (tag, text) => { const t = cleanText(text); if (t) out.push({ tag, text: t }); };
+  const visit = (node) => {
+    for (const child of node.childNodes) {
+      const tag = tagOf(child);
+      if (!tag) { if (child.nodeType === NodeType.TEXT_NODE) push('', child.text); continue; }
+      if (DEV_TEXT_BLOCKS.has(tag)) { push(tag, child.text); continue; }
+      if (tag === 'li') {
+        // The item's own text first, then its nested lists as separate blocks.
+        const { own, nested } = splitListItem(child);
+        push('li', textOf(own));
+        nested.forEach(visit);
+        continue;
+      }
+      if (tag === 'br') continue;
+      visit(child); // div, ul, ol, blockquote, details, …: look inside
+    }
+  };
+  visit(root);
+  return out;
+}
+
+/**
+ * Short summary of a dev post in Blizzard's words (docs/SCHEMA.md v4): the
+ * first one or two paragraphs, together at most `max` characters; the last
+ * one used is cut at a word boundary with "…" when it does not fit. A second
+ * paragraph is only added when at least MIN_SECOND_PARAGRAPH characters are
+ * left for it.
+ *
+ * @param {string[]} paragraphs Paragraph texts in order.
+ * @param {number} [max=DEV_SUMMARY_MAX]
+ * @returns {string[]} zero, one or two notes.
+ */
+export function devPostSummary(paragraphs, max = DEV_SUMMARY_MAX) {
+  const out = [];
+  let used = 0;
+  for (const p of paragraphs.slice(0, 2)) {
+    const room = max - used;
+    if (out.length && room < MIN_SECOND_PARAGRAPH) break;
+    const cut = cutAtWord(p, room);
+    if (!cut) break;
+    out.push(cut);
+    used += cut.length;
+    if (cut !== cleanText(p)) break; // this paragraph was cut: the summary ends here
+  }
+  return out;
+}
+
+/**
+ * Read one dev post: its summary notes and the plain text of the whole post.
+ * The summary takes the post's paragraphs (`<p>`); a post without any (only
+ * headings or a list) uses its first blocks of any kind instead.
+ *
+ * @param {string} html A Discourse post's `cooked` HTML.
+ * @param {{ title?: string }} [options] `title` (the topic title) is put on
+ *   the first line of `fullText`, so subjects and tags see title + body.
+ * @returns {{ notes: string[], fullText: string }} `fullText` has one block
+ *   per line; quotes of other users and images are not part of it.
+ */
+export function parseDevPost(html, { title = '' } = {}) {
+  const blocks = devPostBlocks(html);
+  const paragraphs = blocks.filter((b) => b.tag === 'p').map((b) => b.text);
+  const notes = devPostSummary(paragraphs.length ? paragraphs : blocks.map((b) => b.text));
+  const fullText = [cleanText(title), ...blocks.map((b) => b.text)].filter(Boolean).join('\n');
+  return { notes, fullText };
+}
+
+/**
+ * Plain text of a tracker feed `excerpt` (used when a post's full body could
+ * not be fetched): HTML entities decoded, tags removed, and the trailing
+ * ellipsis Discourse adds to a cut excerpt ("…" / "&hellip;") stripped.
+ *
+ * @param {string} excerpt
+ * @returns {string}
+ */
+export function excerptText(excerpt) {
+  const text = cleanText(parseDom(String(excerpt ?? ''), { comment: false }).text);
+  // "&hellip;" is decoded to "…" by .text; "..." is the ASCII spelling.
+  return text.replace(/\s*(?:…|\.\.\.)$/u, '').trim();
 }

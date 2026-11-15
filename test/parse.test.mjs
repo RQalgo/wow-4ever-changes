@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs';
 import { parse as parseDom } from 'node-html-parser';
 import {
   cleanText, slugify, parseDateLabel, parseHotfixHtml, isDeveloperNote, findArticleHtmlInScripts,
+  GROUP_SEPARATOR,
 } from '../scripts/parse.mjs';
 
 const FIXTURE = readFileSync(new URL('./fixtures/hotfixes-sample.html', import.meta.url), 'utf8');
@@ -133,16 +134,18 @@ describe('list walker', () => {
     ]);
   });
 
-  test('nested bold headings in general categories join into "A > B"', () => {
+  test('nested bold headings in general categories join into "A › B"', () => {
     const html = day('Dungeons', `<ul>
       <li><strong>Blackrock Depths</strong><ul>
         <li><strong>Lyceum</strong><ul><li>Fewer adds.</li></ul></li>
         <li>Door fixed.</li>
       </ul></li></ul>`);
     assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.scope, c.class, c.group, c.text]), [
-      ['general', null, 'Blackrock Depths > Lyceum', 'Fewer adds.'],
+      ['general', null, 'Blackrock Depths › Lyceum', 'Fewer adds.'],
       ['general', null, 'Blackrock Depths', 'Door fixed.'],
     ]);
+    // The separator is U+203A with spaces, as in the UI; never " > ".
+    assert.equal(GROUP_SEPARATOR, ' \u203A ');
   });
 
   test('a bold-only item without a nested list is a change', () => {
@@ -565,4 +568,146 @@ test('plain-text sub-headings with a nested list become tree or group, not chang
     ['Quests', null, null, 'Rogue', 'Added map markers for the poison quest.'],
     ['Quests', null, null, 'Stormwind', '“The Attack!” is no longer an escort quest.'],
   ]);
+});
+
+// --- Found while reviewing the live site (2026-11-15) -------------------------
+
+describe('a sentence is never a heading', async () => {
+  const { parsePatchPost, isSentenceLike } = await import('../scripts/parse.mjs');
+  const BETA = 'Gamepad Support has entered a functional Beta state.';
+  const SUB1 = 'In World of Warcraft: Forever, all major gameplay and core user interface experiences are supported.';
+  const SUB2 = 'Gamepad settings can be customized through Edit Mode and the Options menu.';
+
+  test('isSentenceLike: punctuation, word count, "<category> <lower-case word>"', () => {
+    for (const t of [BETA, 'Thunderfury is back!', 'Is this a heading?', '“Done.”', 'One two three four five six seven']) {
+      assert.equal(isSentenceLike(t), true, t);
+    }
+    for (const t of ['Gamepad Support', 'The Drowned City', 'New to this build - Known Issues', 'Excavation Site: Wetlands', '']) {
+      assert.equal(isSentenceLike(t), false, t);
+    }
+    assert.equal(isSentenceLike('Gamepad Support is now Beta', 'Gamepad Support'), true);
+    assert.equal(isSentenceLike('Gamepad Support Changes', 'Gamepad Support'), false);
+    assert.equal(isSentenceLike('Gamepad Support', 'Gamepad Support'), false);
+  });
+
+  test('bold sentence with a nested list under its own category (Nov 2 patch notes) is one change with notes', () => {
+    // The shape of the live post: the category is a top-level bold item after
+    // "Change Log", the bold sentence sits under it with its own nested list.
+    const html = '<h2>Change Log</h2><ul><li><strong>Gamepad Support</strong><ul>'
+      + `<li><strong>${BETA}</strong><ul><li>${SUB1}</li><li>${SUB2}</li></ul></li>`
+      + '</ul></li></ul>';
+    const d = parsePatchPost(html, { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.category, c.group, c.text, c.notes]), [
+      ['Gamepad Support', null, BETA, [SUB1, SUB2]],
+    ]);
+  });
+
+  test('the same sentence as a paragraph category + loose bold item is a change; its siblings stay changes', () => {
+    const html = '<p><strong>Gamepad Support</strong></p><ul>'
+      + `<li><strong>${BETA}</strong></li><li>${SUB1}</li><li>${SUB2}</li></ul>`;
+    const d = parsePatchPost(html, { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.group, c.text]), [[null, BETA], [null, SUB1], [null, SUB2]]);
+  });
+
+  test('a loose bold sentence no longer swallows unrelated siblings (Oct 8 patch notes)', () => {
+    const html = '<p><strong>Changes and Updates</strong></p><ul>'
+      + '<li><strong>Now available for testing: the new City of Dalaran dungeon.</strong></li>'
+      + '<li>Players will once again be able to swap multiple weapons.</li></ul>';
+    const d = parsePatchPost(html, { date: '2026-10-08' });
+    assert.deepEqual(d.changes.map((c) => c.group), [null, null]);
+  });
+
+  test('a sub-heading that repeats the category adds no group level', () => {
+    const html = '<p><strong>Gamepad Support</strong></p><ul><li><strong>Gamepad Support</strong><ul>'
+      + '<li><strong>Menus</strong><ul><li>Faster.</li></ul></li><li>Plain.</li></ul></li></ul>';
+    const d = parsePatchPost(html, { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.group, c.text]), [['Menus', 'Faster.'], [null, 'Plain.']]);
+  });
+
+  test('a capitalised heading that starts with the category name stays a group', () => {
+    const html = '<p><strong>Gamepad Support</strong></p><ul><li><strong>Gamepad Support Menus</strong><ul><li>Faster.</li></ul></li></ul>';
+    const d = parsePatchPost(html, { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.group, c.text]), [['Gamepad Support Menus', 'Faster.']]);
+  });
+
+  test('hotfix post: a bold sentence with nested items is a change, not a group', () => {
+    const html = day('Dungeons', '<ul><li><strong>The Deadmines is now available at level 15.</strong><ul><li>Loot updated.</li></ul></li></ul>');
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.group, c.text, c.notes]), [
+      [null, 'The Deadmines is now available at level 15.', ['Loot updated.']],
+    ]);
+  });
+});
+
+// --- Dev posts (schema v4) ---------------------------------------------------
+
+describe('dev posts: parseDevPost and helpers', async () => {
+  const { parseDevPost, devPostBlocks, devPostSummary, cutAtWord, excerptText, DEV_SUMMARY_MAX } = await import('../scripts/parse.mjs');
+  const post = (id) => JSON.parse(readFileSync(new URL(`./fixtures/tracker-post-${id}.json`, import.meta.url), 'utf8')).cooked;
+
+  test('cutAtWord: unchanged when it fits, else a word boundary + "…" within the limit', () => {
+    assert.equal(cutAtWord('Short text.', 400), 'Short text.');
+    assert.equal(cutAtWord('one two three four', 12), 'one two…');
+    assert.equal(cutAtWord('one two, three', 9), 'one two…'); // trailing comma dropped
+    assert.equal(cutAtWord('one two three', 8), 'one two…'); // the boundary falls right on a space
+    assert.equal(cutAtWord('Supercalifragilistic', 5), '');
+    const long = 'word '.repeat(200);
+    const cut = cutAtWord(long, DEV_SUMMARY_MAX);
+    assert.ok(cut.length <= DEV_SUMMARY_MAX && cut.endsWith('word…'), cut.length);
+  });
+
+  test('quotes of other users and images are dropped', () => {
+    const blocks = devPostBlocks(post('30850001'));
+    assert.deepEqual(blocks.map((b) => b.tag), ['p']);
+    assert.ok(!blocks.some((b) => /RP-PvP realms\?/.test(b.text)), 'the quoted player question is gone');
+    const withImage = devPostBlocks('<p>Look <img src="x.jpg" alt="art"></p><div class="lightbox-wrapper"><a class="lightbox"><img src="y.png"><div class="meta"><span class="filename">shot.png</span> 1920×1080 300 KB</div></a></div>');
+    assert.deepEqual(withImage, [{ tag: 'p', text: 'Look' }]);
+  });
+
+  test('list items give one block each, nested lists included; headings are blocks', () => {
+    assert.deepEqual(devPostBlocks('<h2>Mage</h2><ul><li>One<ul><li>Two</li></ul></li></ul>Loose'), [
+      { tag: 'h2', text: 'Mage' }, { tag: 'li', text: 'One' }, { tag: 'li', text: 'Two' }, { tag: '', text: 'Loose' },
+    ]);
+  });
+
+  test('summary: first one or two paragraphs, at most 400 characters, cut at a word with "…"', () => {
+    const { notes, fullText } = parseDevPost(post('30912982'), { title: 'Player-Level Dungeon XP Adjustment - November 14' });
+    assert.equal(notes.length, 2);
+    assert.ok(notes.join('').length <= DEV_SUMMARY_MAX);
+    assert.ok(notes[0].startsWith('Yesterday, we updated dungeon play'));
+    assert.ok(notes[1].endsWith('…') && !notes[1].includes('Deadmines'));
+    // The whole post is in fullText (title first), the third paragraph too.
+    assert.equal(fullText.split('\n')[0], 'Player-Level Dungeon XP Adjustment - November 14');
+    assert.ok(fullText.includes('The Deadmines and Blackfathom Deeps') && fullText.includes('Thank you for the feedback!'));
+  });
+
+  test('summary skips headings (paragraphs only) and the image; fullText keeps the headings', () => {
+    const { notes, fullText } = parseDevPost(post('30700001'));
+    assert.deepEqual(notes, [
+      'Mages and Shamans get a fresh look in WoW: Forever.',
+      'Fire Mages now have Heating Up, and Arcane Missiles no longer consumes Clearcasting.',
+    ]);
+    assert.deepEqual(fullText.split('\n'), [
+      'Mages and Shamans get a fresh look in WoW: Forever.', 'Mage',
+      'Fire Mages now have Heating Up, and Arcane Missiles no longer consumes Clearcasting.', 'Shaman',
+      'Enhancement Shamans gain Maelstrom Weapon, and Windfury Totem has been reworked.',
+    ]);
+  });
+
+  test('devPostSummary: a long first paragraph is the only note; no short stub as a second', () => {
+    assert.deepEqual(devPostSummary(['a '.repeat(300), 'second']).length, 1);
+    assert.deepEqual(devPostSummary(['x'.repeat(350), 'second paragraph that would only fit as a stub of a few words']), ['x'.repeat(350)]);
+    assert.deepEqual(devPostSummary(['One.', 'Two.', 'Three.']), ['One.', 'Two.']);
+    assert.deepEqual(devPostSummary([]), []);
+  });
+
+  test('a post without paragraphs summarises its first blocks', () => {
+    assert.deepEqual(parseDevPost('<ul><li>First.</li><li>Second.</li><li>Third.</li></ul>').notes, ['First.', 'Second.']);
+  });
+
+  test('excerptText decodes entities and strips the trailing ellipsis', () => {
+    assert.equal(excerptText('Yesterday, we updated dungeon play so that experience &hellip;'), 'Yesterday, we updated dungeon play so that experience');
+    assert.equal(excerptText('To clarify, it&#39;s <b>only</b> PvP…'), 'To clarify, it\'s only PvP');
+    assert.equal(excerptText('Plain...'), 'Plain');
+    assert.equal(excerptText(undefined), '');
+  });
 });

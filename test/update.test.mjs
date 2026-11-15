@@ -7,12 +7,12 @@
 // scripts/sources.mjs; the multi-source tests stub fetchSourceDays directly.
 // Each runUpdate test writes into its own temp directory.
 
-import { test } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, stat, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { mergeDays, sameContent, runUpdate, dayKind } from '../scripts/update.mjs';
+import { mergeDays, sameContent, runUpdate, dayKind, normalizeGroupSeparators } from '../scripts/update.mjs';
 
 /**
  * Build a minimal schema-shaped day with n changes.
@@ -76,6 +76,35 @@ test('mergeDays orders newest date first, and patch before hotfix on the same da
     '2026-11-13 patch', '2026-11-13 hotfix', '2026-11-02 patch', '2026-11-01 hotfix',
   ]);
   assert.equal(dayKind({}), 'hotfix');
+});
+
+test('normalizeGroupSeparators rewrites " > " to " › " in stored groups only', () => {
+  const days = [{ date: '2026-11-09', changes: [
+    { id: 'a', group: 'The Drowned City > Deathless Marrow', text: 'Lowered X > Y.' },
+    { id: 'b', group: 'A > B > C' },
+    { id: 'c', group: null },
+    { id: 'd' },
+    { id: 'e', group: 'Already › fine' },
+  ] }];
+  assert.equal(normalizeGroupSeparators(days), days);
+  assert.deepEqual(days[0].changes.map((c) => c.group), [
+    'The Drowned City › Deathless Marrow', 'A › B › C', null, undefined, 'Already › fine',
+  ]);
+  assert.equal(days[0].changes[0].text, 'Lowered X > Y.'); // text is never touched
+});
+
+test('runUpdate normalises the separator of stored days no source returns any more', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    const stored = { ...day('2026-10-01'), kind: 'hotfix' };
+    stored.changes[0].group = 'Old Dungeon > Boss';
+    await writeFile(out, JSON.stringify({ generatedAt: 'x', days: [stored] }));
+    await runUpdate({ outPath: out, deps: stubDeps([day('2026-11-13')]), now: fixedNow, log: quiet });
+    const data = JSON.parse(await readFile(out, 'utf8'));
+    assert.equal(data.days.find((d) => d.date === '2026-10-01').changes[0].group, 'Old Dungeon › Boss');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test('sameContent ignores generatedAt but not other differences', () => {
@@ -333,7 +362,7 @@ test('runUpdate loads sources through deps.loadSources with sourcesPath and pass
     };
     await runUpdate({ outPath: out, sourcesPath: '/x/sources.json', deps, now: fixedNow, log: quiet });
     assert.equal(seen.path, '/x/sources.json');
-    assert.deepEqual(seen.stages, ['fetchJson', 'fetchPost', 'log', 'parseHotfixHtml', 'parsePatchPost']);
+    assert.deepEqual(seen.stages, ['fetchJson', 'fetchPost', 'log', 'parseDevPost', 'parseHotfixHtml', 'parsePatchPost', 'storedDays']);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -401,4 +430,92 @@ test('runUpdate continues with gameIndex null when the index is missing, throws 
       await rm(dir, { recursive: true, force: true });
     }
   }
+});
+
+// ---------------------------------------------------------------------------
+// v4: dev posts (Blizzard tracker), through the real scripts/sources.mjs
+// ---------------------------------------------------------------------------
+
+test('mergeDays: on one date the order is patch, hotfix, dev', () => {
+  const k = (date, kind) => ({ ...day(date), kind });
+  const merged = mergeDays([k('2026-11-02', 'dev'), k('2026-11-02', 'hotfix')], [k('2026-11-02', 'patch'), k('2026-11-03', 'dev')]);
+  assert.deepEqual(merged.map((d) => `${d.date} ${d.kind}`), ['2026-11-03 dev', '2026-11-02 patch', '2026-11-02 hotfix', '2026-11-02 dev']);
+});
+
+test('stripTransientFields deletes _fullText only', async () => {
+  const { stripTransientFields, TRANSIENT_FIELDS } = await import('../scripts/update.mjs');
+  const days = [{ changes: [{ id: 'a', text: 't', _fullText: 'long' }, { id: 'b' }] }];
+  assert.deepEqual(stripTransientFields(days), [{ changes: [{ id: 'a', text: 't' }, { id: 'b' }] }]);
+  assert.deepEqual(TRANSIENT_FIELDS, ['_fullText']);
+});
+
+describe('runUpdate with the tracker source', async () => {
+  const { readFileSync } = await import('node:fs');
+  const fx = (name) => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
+  const DEV_SRC = { kind: 'dev', type: 'discourse-tracker', url: 'https://us.forums.blizzard.com/en/wow/groups/blizzard-tracker/posts.json', categoryId: 347, title: 'Dev Posts' };
+
+  /** fetchJson over the tracker fixtures; `pages` replaces the feed pages. */
+  const trackerJson = (urls, pages = { '': fx('tracker-page1.json'), 30850001: fx('tracker-page2.json') }) => async (url) => {
+    urls.push(url);
+    const u = new URL(url);
+    if (u.pathname.endsWith('/posts.json')) return structuredClone(pages[u.searchParams.get('before_post_id') ?? ''] ?? { posts: [] });
+    return fx(`tracker-post-${/\/posts\/(\d+)\.json$/.exec(u.pathname)[1]}.json`);
+  };
+
+  /**
+   * addSubjects stub standing in for the client index: talents named in the
+   * text or the transient _fullText (never in the summary only). Records
+   * which changes still had _fullText when the icon stage ran.
+   */
+  const TALENTS = { 'Heating Up': ['mage', 'fire'], 'Maelstrom Weapon': ['shaman', 'enhancement'] };
+  const subjectStub = (sawFullText) => async (days) => {
+    for (const d of days) for (const c of d.changes) {
+      if (c._fullText) sawFullText.push(c.id);
+      const text = `${c.text}\n${c._fullText ?? (c.notes ?? []).join('\n')}`;
+      c.subjects = Object.entries(TALENTS).filter(([n]) => text.includes(n))
+        .map(([name, [klass, tree]]) => ({ name, type: 'spell', kind: 'talent', class: klass, tree, icon: 'i', source: 'client' }));
+    }
+    return days;
+  };
+
+  test('dev days are written with tags from the whole post; _fullText never reaches the file', async () => {
+    const [dir, out] = await tmpOut();
+    try {
+      const urls = [];
+      const saw = [];
+      const deps = { sources: [DEV_SRC], fetchJson: trackerJson(urls), addSubjects: subjectStub(saw), trackerOptions: { delayMs: 0 } };
+      const r = await runUpdate({ outPath: out, deps, now: fixedNow, log: quiet });
+      assert.deepEqual(r, { changed: true, days: 3, changes: 3 });
+      const text = await readFile(out, 'utf8');
+      assert.ok(!text.includes('_fullText'));
+      const data = JSON.parse(text);
+      assert.deepEqual(saw.sort(), ['2026-10-07-d001', '2026-11-10-d001', '2026-11-14-d001'], 'the icon stage saw the full text');
+      const byDate = Object.fromEntries(data.days.map((d) => [d.date, d.changes[0]]));
+      assert.deepEqual(byDate['2026-10-07'].tags, ['class:mage', 'class:shaman', 'spec:mage/fire', 'spec:shaman/enhancement', 'talent', 'other']);
+      assert.deepEqual(byDate['2026-11-10'].tags, ['pvp', 'systems']); // "PvP rulesets", "Battleground queues"
+      assert.deepEqual(byDate['2026-11-14'].tags, ['dungeons']); // "dungeon", The Deadmines, Blackfathom Deeps
+      assert.deepEqual(data.sources, [{ kind: 'dev', title: 'Dev Posts', url: DEV_SRC.url }]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test('a second run reuses stored posts (no body requests), keeps their tags and kept days', async () => {
+    const [dir, out] = await tmpOut();
+    try {
+      const deps = (urls, pages) => ({ sources: [DEV_SRC], fetchJson: trackerJson(urls, pages), addSubjects: subjectStub([]), trackerOptions: { delayMs: 0 } });
+      await runUpdate({ outPath: out, deps: deps([]), now: fixedNow, log: quiet });
+      const first = JSON.parse(await readFile(out, 'utf8'));
+      // Second run: the Oct 7 post is no longer on the feed (only page 1 left).
+      const urls = [];
+      const r = await runUpdate({ outPath: out, deps: deps(urls, { '': fx('tracker-page1.json') }), now: fixedNow, log: quiet });
+      assert.ok(!urls.some((u) => /\/posts\/\d+\.json$/.test(u)), urls.join('\n'));
+      assert.equal(r.changed, false, 'same content: ids, subjects and tags are stable');
+      const second = JSON.parse(await readFile(out, 'utf8'));
+      assert.deepEqual(second.days, first.days);
+      assert.ok(second.days.some((d) => d.date === '2026-10-07' && d.kind === 'dev'), 'the day that fell off the feed is kept');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });

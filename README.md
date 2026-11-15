@@ -54,18 +54,29 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
 
 ## How the data stays current
 
-`.github/workflows/update-data.yml` runs every 6 hours (and on demand from the
-Actions tab). It downloads Blizzard's rolling hotfix post, parses it, looks up
-icons, and commits `data/changes.json` when something changed. GitHub Pages
-(deploy from branch `main`, root) then republishes by itself. Days that
-Blizzard later drops from the post are kept.
+`.github/workflows/update-data.yml` runs every 3 hours, at minute 41 UTC
+(00:41, 03:41, ... 21:41; an off-peak minute, because GitHub delays or skips
+scheduled runs at busy times), and on demand from the Actions tab. It
+downloads every source, parses it, looks up icons, and commits
+`data/changes.json` when something changed. GitHub Pages (deploy from branch
+`main`, root) then republishes by itself. Days that Blizzard later drops from
+a source are kept.
 
-Sources are listed in `data/sources.json`. There are two today: the rolling
-hotfix post (`kind: "hotfix"`) and Blizzard's forum topic of build notes
-(`kind: "patch"`, one dated entry per Blizzard post). When Blizzard publishes a
-new patch-notes topic, add an entry like the existing `discourse-topic` one
-with its forum URL; it is not discovered automatically. If one source fails,
-the other still updates and the failed source's stored days are kept.
+Sources are listed in `data/sources.json`. There are three today: the rolling
+hotfix post (`kind: "hotfix"`), Blizzard's forum topic of build notes
+(`kind: "patch"`, one dated entry per Blizzard post), and the forum's
+[Blizzard tracker](https://us.forums.blizzard.com/en/wow/g/blizzard-tracker/activity/posts)
+(`kind: "dev"`, shown as **Dev Posts**): every staff post in *World of
+Warcraft: Forever General Discussion* becomes one line with the thread title
+(or "Reply in “…”"), a short summary in Blizzard's words, the author and a
+link to the post. Its tags come from the whole post, not just the summary.
+The tracker is read page by page back to the oldest stored date (at most 30
+pages, 500 ms apart); a post's full text is fetched once, when it first
+appears, and stored posts are kept when they drop off the tracker. When
+Blizzard publishes a new patch-notes topic, add an entry like the existing
+`discourse-topic` one with its forum URL; it is not discovered automatically.
+If one source fails, the others still update and the failed source's stored
+days are kept.
 
 Icon lookups are rate-limited on purpose (250 Wowhead lookups per run, 1.5 s
 apart) and cached in `data/icon-cache.json`; names that are still unknown are
@@ -96,6 +107,18 @@ it locally with `node scripts/gamedata.mjs "Mortal Strike"`.
   `data/name-aliases.json`, e.g. `{ "unsealed fury": "Unsealed Wrath" }` (key:
   lower-cased name as written; value: the name to look up). The subject keeps
   the written name and records `"alias"`.
+- **Another forum category as dev posts:** in the `discourse-tracker` entry
+  of `data/sources.json`, turn `categoryId` into a list and add the new
+  category's id, e.g. `"categoryId": [347, 352]`. The id is the
+  `category_id` of one of that category's posts in the tracker feed
+  (`…/groups/blizzard-tracker/posts.json`). Its posts then appear as Dev
+  Posts too. Use one entry with a list rather than a second entry: both would
+  produce `kind: "dev"` days for the same dates, and days are keyed by date +
+  kind, so one would replace the other.
+- **Re-tag stored dev posts after a tag-rule change:** their full text is not
+  stored, so they keep the tags they got when first fetched. Delete their
+  `kind: "dev"` days from `data/changes.json`; the next run fetches the posts
+  still on the tracker again.
 - **A run failed:** open the run in the Actions tab; the "Run update" step
   prints the reason. If Blizzard changes the page layout the parser refuses to
   overwrite good data, so the site keeps showing the last good version.

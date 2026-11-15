@@ -5,7 +5,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeTags, addTags, classMentions } from '../scripts/tags.mjs';
+import { computeTags, addTags, classMentions, isNpcOwned } from '../scripts/tags.mjs';
 
 /** Build a change; defaults describe a general line with no subjects. */
 const ch = (o) => ({ scope: 'general', category: 'Items', class: null, spec: null, group: null, notes: [], subjects: [], ...o });
@@ -155,5 +155,96 @@ describe('addTags', () => {
   test('re-tagging replaces old tags (rules revised on every run)', () => {
     const days = [{ date: 'd', changes: [{ ...cls('mage', null, 'Frost Nova.'), tags: ['stale', 'old'] }] }];
     assert.deepEqual(addTags(days)[0].changes[0].tags, ['class:mage']);
+  });
+});
+
+describe('NPC abilities outside Classes', () => {
+  test('isNpcOwned: "<Name>\'s <Skill>" and "’s", optional quote; not class owners or pronouns', () => {
+    assert.equal(isNpcOwned('Shield Slam', "Reduced the cast frequency of the Deathless Guardian's Shield Slam ability by about 50%."), true);
+    assert.equal(isNpcOwned('Fireball', 'Lowered the damage of the Deathless Sorcerer’s Fireball by 25%.'), true);
+    assert.equal(isNpcOwned('Smash', 'The Twilight Enforcer\'s "Smash" deals less damage.'), true);
+    assert.equal(isNpcOwned('Charge', 'Hogger’s Charge stuns for less time.'), true);
+    assert.equal(isNpcOwned('Retribution Aura', 'The Paladin’s Retribution Aura is fixed.'), false);
+    assert.equal(isNpcOwned('Hunter’s Mark', 'Hunter’s Mark now lasts longer.'), false);
+    assert.equal(isNpcOwned('Fireball', "It's Fireball that hits hard."), false);
+    assert.equal(isNpcOwned('Slam', "The Deathless Guardian's Shield Slam is weaker."), false); // whole words only
+    assert.equal(isNpcOwned('Fireball', 'Fireball is fine.'), false);
+  });
+
+  test('the Deathless Guardian\'s Shield Slam keeps its icon but adds no class or talent tag', () => {
+    const c = ch({ category: 'Dungeons', group: 'The Drowned City › Deathless Marrow',
+      text: "Reduced the cast frequency of the Deathless Guardian's Shield Slam ability by about 50%.",
+      subjects: [subj('Shield Slam', 'talent', 'warrior', 'protection')] });
+    assert.deepEqual(computeTags(c), ['dungeons']);
+    assert.equal(c.subjects.length, 1); // the subject (icon) stays
+  });
+
+  test('the same possessive under Classes still counts (only lines outside Classes are guarded)', () => {
+    const c = cls('warrior', null, "The Deathless Guardian's Shield Slam no longer resets.", {
+      subjects: [subj('Shield Slam', 'talent', 'warrior', 'protection')] });
+    assert.deepEqual(computeTags(c), ['class:warrior', 'spec:warrior/protection', 'talent']);
+  });
+
+  test('outside Classes an NPC-ability line is never "talent", even when it says talent', () => {
+    const c = ch({ category: 'Dungeons', text: 'The Deathless Sorcerer’s Fireball now ignores the Fire Ward talent.',
+      subjects: [subj('Fireball', 'ability', 'mage')] });
+    assert.deepEqual(computeTags(c), ['dungeons']);
+  });
+
+  test('a player talent named outside Classes still tags class and talent', () => {
+    const c = ch({ category: 'Bug Fixes', text: 'Roots from procs now have Diminishing Returns. Includes Entrapment.',
+      subjects: [subj('Entrapment', 'talent', 'hunter', 'survival')] });
+    assert.deepEqual(computeTags(c), ['class:hunter', 'spec:hunter/survival', 'talent', 'bugfix']);
+  });
+});
+
+describe('text rules added with dev posts', () => {
+  const dev = (text, o = {}) => ch({ category: 'Dev Posts', text, ...o });
+
+  test('systems: realms, servers, login, queues, botting, RMT, gold buying, accounts', () => {
+    for (const t of ['Realm maintenance tonight.', 'Server restarts are planned.', 'Login issues are resolved.',
+      'Queues are shorter now.', 'We banned accounts for botting.', 'RMT hurts the economy.', 'Gold buying is against the rules.']) {
+      assert.ok(computeTags(dev(t)).includes('systems'), t);
+    }
+  });
+
+  test('systems: not "spell queue", "to account for", "Bound to Account", lower-case "rmt"', () => {
+    for (const t of ['You can spell queue another spell.', 'Skill-ups lowered to account for this.',
+      'The item becomes soulbound (was Bound to Account).', 'rmt']) {
+      assert.ok(!computeTags(ch({ category: 'Items', text: t })).includes('systems'), t);
+    }
+  });
+
+  test('pvp: faction balance, PvP rulesets, battleground', () => {
+    assert.deepEqual(computeTags(dev('Faction Balance Updates - November 10')), ['pvp']);
+    assert.deepEqual(computeTags(dev('This applies to PvP rulesets.')), ['pvp']);
+    assert.deepEqual(computeTags(dev('Battleground queues are not affected.')), ['pvp', 'systems']);
+  });
+
+  test('media only for dev posts: podcast, livestream, video, "watch it now"', () => {
+    for (const t of ['Listen to the new podcast.', 'Join our livestream on Friday.', 'Our developer video is out.', 'Watch it now on YouTube.', 'Watch live on Twitch.']) {
+      assert.deepEqual(computeTags(dev(t)), ['media'], t);
+    }
+    assert.deepEqual(computeTags(dev('Keep watch for the patrol.')), ['other']);
+    assert.ok(!computeTags(ch({ category: 'User Interface', text: 'Video settings were reset.' })).includes('media'));
+  });
+
+  test('raid: "until raids open" is not a dungeon line (existing rule), "raids" is', () => {
+    assert.deepEqual(computeTags(dev('Until raids open, this vendor sells the item.')), ['other']);
+    assert.deepEqual(computeTags(dev('Raids will unlock in phases.')), ['dungeons']);
+  });
+
+  test('a dev post with no specific category tag gets "other"', () => {
+    assert.deepEqual(computeTags(dev('Thank you for the feedback!')), ['other']);
+  });
+});
+
+describe('dev posts: the transient _fullText', () => {
+  test('classes and categories come from _fullText as well as text and notes', () => {
+    const c = ch({ category: 'Dev Posts', text: 'Player-Level Dungeon XP Adjustment - November 14', notes: ['Yesterday, we updated it.'],
+      _fullText: 'Player-Level Dungeon XP Adjustment - November 14\nThis affects The Deadmines most. Rogues are happy.' });
+    assert.deepEqual(computeTags(c), ['class:rogue', 'dungeons']);
+    assert.deepEqual(computeTags({ ...c, _fullText: undefined }), ['dungeons']); // "Dungeon" in the title alone
+    assert.deepEqual(computeTags({ ...c, text: 'Hello', _fullText: undefined }), ['other']);
   });
 });
