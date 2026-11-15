@@ -318,6 +318,9 @@ export function groupChanges(changes) {
   return { classSections, general, count: changes.length };
 }
 
+/** Title of the single card of a dev-post day. */
+export const DEV_CARD_TITLE = 'Dev Posts';
+
 /**
  * Flatten one day's changes into "cards" with compact headings, so the page
  * never repeats a name (no "Druid" above "DRUID > RESTORATION").
@@ -331,12 +334,21 @@ export function groupChanges(changes) {
  * Order: all-classes card, classes alphabetically, then general categories in
  * first-seen order (same as groupChanges).
  *
+ * A dev-post day (`dayKind` "dev", schema v4) is different: all its lines go
+ * on ONE card titled "Dev Posts", in published order, whatever their
+ * category or tags (the tag chips under each line carry that information).
+ *
  * @param {object[]} changes changes of a single day
- * @returns {{count: number, cards: {kind: 'class'|'general', class: string|null,
+ * @param {string} [kind] the day's kind (see dayKind); only "dev" changes the result
+ * @returns {{count: number, cards: {kind: 'class'|'general'|'dev', class: string|null,
  *   category: string|null, headings: {title: string[], spec: string|null,
  *   group: string|null, changes: object[]}[]}[]}}
  */
-export function flattenSections(changes) {
+export function flattenSections(changes, kind = 'hotfix') {
+  if (kind === 'dev') {
+    const headings = changes.length ? [{ title: [DEV_CARD_TITLE], spec: null, group: null, changes }] : [];
+    return { count: changes.length, cards: headings.length ? [{ kind: 'dev', class: null, category: DEV_CARD_TITLE, headings }] : [] };
+  }
   const g = groupChanges(changes);
   const cards = [];
   for (const sec of g.classSections) {
@@ -996,6 +1008,25 @@ export function extraTagsForLine(ch) {
     out.push({ type: 'category', slug, label: def ? def.label : titleCase(slug) });
   }
   return out;
+}
+
+/**
+ * What a dev-post line shows besides its text (schema v4):
+ *  - `href`: the post's `url` when it is an absolute http(s) URL, else null
+ *    (the data is not trusted blindly; a null href means the title is shown
+ *    as plain text)
+ *  - `meta`: "Kaivax · Community Manager", plus "· reply" for a staff reply
+ *    inside a thread (`postNumber` > 1); missing parts are left out
+ * @param {object} ch dev-post change
+ * @returns {{href: string|null, meta: string, reply: boolean}}
+ */
+export function devPostInfo(ch) {
+  const url = typeof ch.url === 'string' ? ch.url.trim() : '';
+  const href = /^https?:\/\/[^\s/]+/i.test(url) ? url : null;
+  const reply = Number.isInteger(ch.postNumber) && ch.postNumber > 1;
+  const clean = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+  const meta = [clean(ch.author), clean(ch.authorTitle), reply ? 'reply' : null].filter(Boolean).join(' · ');
+  return { href, meta, reply };
 }
 
 /** Most subject icons shown on one line; further subjects stay as name chips. */

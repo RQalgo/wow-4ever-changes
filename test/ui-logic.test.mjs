@@ -809,3 +809,38 @@ test('search: dev posts match title, notes, author, author title, subjects and t
   // Other lines keep searching their text only, not their tags.
   assert.ok(!L.matchesQuery(mk({ text: 'Frost Nova', tags: ['class:mage'] }), 'mage'));
 });
+
+/* ---------- dev posts: card and line ---------- */
+test('flattenSections: a dev day is ONE "Dev Posts" card in published order, not split by category', () => {
+  const a = devPost({ id: 'a', tags: ['dungeons'] });
+  const b = devPost({ id: 'b', category: 'Something else', tags: ['class:mage'] });
+  const c = devPost({ id: 'c', tags: ['media'] });
+  const v = L.flattenSections([a, b, c], 'dev');
+  assert.equal(v.count, 3);
+  assert.equal(v.cards.length, 1);
+  assert.equal(v.cards[0].kind, 'dev');
+  assert.deepEqual(v.cards[0].headings.map((h) => h.title), [['Dev Posts']]);
+  assert.deepEqual(v.cards[0].headings[0].changes.map((x) => x.id), ['a', 'b', 'c']);
+  assert.deepEqual(L.flattenSections([], 'dev'), { count: 0, cards: [] });
+  // Other kinds (and the default) group as before.
+  assert.equal(L.flattenSections([a, b, c]).cards.length, 2);
+});
+
+test('devPostInfo: http(s) link only, author meta, "reply" for postNumber > 1', () => {
+  assert.deepEqual(L.devPostInfo(devPost()), {
+    href: 'https://us.forums.blizzard.com/en/wow/t/x/2416343/1', meta: 'Kaivax · Community Manager', reply: false,
+  });
+  assert.equal(L.devPostInfo(devPost({ postNumber: 7 })).meta, 'Kaivax · Community Manager · reply');
+  assert.equal(L.devPostInfo(devPost({ postNumber: 7 })).reply, true);
+  for (const url of ['javascript:alert(1)', '/t/x/1/1', 'data:text/html,x', 'https://', '', null, 42])
+    assert.equal(L.devPostInfo(devPost({ url })).href, null, String(url));
+  assert.equal(L.devPostInfo(devPost({ url: 'http://example.org/t/1' })).href, 'http://example.org/t/1');
+  assert.equal(L.devPostInfo(devPost({ authorTitle: null })).meta, 'Kaivax');
+  assert.equal(L.devPostInfo(devPost({ author: ' ', authorTitle: '', postNumber: 2 })).meta, 'reply');
+});
+
+test('dev posts are never class changes and keep their extra tag chips', () => {
+  const p = devPost({ tags: ['class:mage', 'spec:mage/fire', 'talent', 'media'] });
+  assert.equal(L.isClassChange(p), false);
+  assert.deepEqual(L.extraTagsForLine(p).map((t) => t.label), ['Mage', 'Talent', 'Media']);
+});
