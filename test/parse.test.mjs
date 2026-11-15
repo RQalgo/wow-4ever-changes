@@ -275,3 +275,57 @@ describe('developer notes', () => {
     assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => c.notes), [['Developer’s note: why.', 'Developers’ notes: and more.']]);
   });
 });
+
+describe('<script> fallback', () => {
+  const FRAGMENT = '<hr><p><strong>November 13, 2026</strong></p><p><strong>Classes</strong></p>'
+    + '<ul><li><strong>Warlock</strong><ul><li>Fear “fixed”.</li>'
+    + '<li><em>Developers’ notes: because.</em></li></ul></li></ul>';
+  const EXPECTED = [{
+    scope: 'class', category: 'Classes', class: 'warlock', spec: null, group: null,
+    text: 'Fear “fixed”.', notes: ['Developers’ notes: because.'],
+  }];
+
+  test('reads the article from a __NEXT_DATA__ JSON blob with \\u003c escapes', () => {
+    const json = JSON.stringify({ props: { pageProps: { article: { title: 'x', body: FRAGMENT } } } })
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+    const html = `<html><body><div id="__next"></div>
+      <script id="__NEXT_DATA__" type="application/json">${json}</script></body></html>`;
+    const { days } = parseHotfixHtml(html);
+    assert.deepEqual(days.map((d) => [d.date, d.label]), [['2026-11-13', 'November 13, 2026']]);
+    assert.deepEqual(days[0].changes.map(brief), EXPECTED);
+    assert.equal(days[0].changes[0].id, '2026-11-13-001');
+  });
+
+  test('reads the article from a string literal in a JS assignment', () => {
+    const html = `<script>window.__STATE__ = { id: 1, content: ${JSON.stringify(FRAGMENT)}, ok: !0 };</script>`;
+    assert.deepEqual(changes(parseHotfixHtml(html)).map(brief), EXPECTED);
+  });
+
+  test('reads double-encoded JSON inside a JSON string value', () => {
+    const inner = JSON.stringify({ html: FRAGMENT });
+    const html = `<script type="application/json">${JSON.stringify({ payload: inner })}</script>`;
+    assert.deepEqual(changes(parseHotfixHtml(html)).map(brief), EXPECTED);
+  });
+
+  test('prefers the candidate with the most dates', () => {
+    const teaser = '<p><strong>Latest:</strong> November 13, 2026</p>';
+    const two = FRAGMENT + '<p><strong>November 11, 2026</strong></p><p><strong>Items</strong></p><ul><li>a</li></ul>';
+    const html = `<script>var a = ${JSON.stringify(teaser)}; var b = ${JSON.stringify(two)};</script>`;
+    const found = findArticleHtmlInScripts(html);
+    assert.equal(found[0], two);
+    assert.deepEqual(parseHotfixHtml(html).days.map((d) => d.date), ['2026-11-13', '2026-11-11']);
+  });
+
+  test('DOM content wins over script data when date headings exist', () => {
+    const html = day('Items', '<ul><li>From DOM.</li></ul>')
+      + `<script>var s = ${JSON.stringify(FRAGMENT)};</script>`;
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => c.text), ['From DOM.']);
+  });
+
+  test('no dates anywhere gives { days: [] }', () => {
+    const html = '<p>Nothing here</p><script>var x = "<strong>bold</strong> but no date";</script>'
+      + '<script type="application/json">{"a":"November 13, 2026 without markup"}</script>';
+    assert.deepEqual(findArticleHtmlInScripts(html), []);
+    assert.deepEqual(parseHotfixHtml(html), { days: [] });
+  });
+});
