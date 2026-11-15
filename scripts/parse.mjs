@@ -1,6 +1,7 @@
 /**
  * scripts/parse.mjs — turn the "WoW: Forever Hotfixes" post HTML into the
- * `{ days: [...] }` structure defined in docs/SCHEMA.md.
+ * `{ days: [...] }` structure defined in docs/SCHEMA.md, and (parsePatchPost)
+ * one forum patch-notes post into a single `kind: "patch"` day (schema v2).
  *
  * Step 2 of the pipeline (docs/PLAN.md). The icon resolver later fills each
  * change's `subjects`; this module always emits `subjects: []`.
@@ -23,6 +24,9 @@
  * - If the DOM has no date headings at all (e.g. the article is rendered
  *   client-side), we look inside `<script>` tags for a string value that holds
  *   the article HTML, JSON-unescape it, and parse that fragment instead.
+ * - Patch notes (Blizzard forum posts) reuse the same block collector and
+ *   list walker; they add <h2> headings, "Change Log" markers, categories
+ *   named by top-level bold <li>s, and loose bold headings (see walkList).
  * - Each pure helper is exported so it can be unit-tested on its own.
  */
 import { parse as parseDom, NodeType } from 'node-html-parser';
@@ -87,6 +91,26 @@ export function parseDateLabel(label) {
   const d = new Date(Date.UTC(year, month - 1, day));
   if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) return null;
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/** Full month names, index 0 = January, for long US date labels. */
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+/**
+ * Format an ISO date as a long US label, the way the hotfix post writes its
+ * date headings: "2026-11-02" -> "November 2, 2026".
+ *
+ * @param {string} iso "YYYY-MM-DD"
+ * @returns {string}
+ * @throws {Error} if `iso` is not a valid calendar date.
+ */
+export function formatDateLabel(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? ''));
+  const label = m && `${MONTH_NAMES[Number(m[2]) - 1]} ${Number(m[3])}, ${Number(m[1])}`;
+  // Round-trip through parseDateLabel to reject e.g. "2026-02-30".
+  if (!label || parseDateLabel(label) !== iso) throw new Error(`Invalid ISO date: ${iso}`);
+  return label;
 }
 
 // ---------------------------------------------------------------------------
@@ -713,4 +737,56 @@ export function parseHotfixHtml(html) {
     }
   }
   return { days: finalizeDays(days) };
+}
+
+/**
+ * Parse one forum patch-notes post (a Discourse post's `cooked` HTML) into
+ * ONE day of changes, per docs/SCHEMA.md v2.
+ *
+ * Unlike the hotfix post there are no date headings: the caller supplies the
+ * date (the post's creation date in US Pacific time). Every list in the post
+ * is read, in document order:
+ * - <h2>/<h3>/<h4> and bold-only paragraphs are headings. "Change Log"
+ *   resets the category to "none"; any other heading is the category
+ *   (e.g. "Bug Fixes", "New to this build - Known Issues").
+ * - With no category, a top-level bold-only <li> names the category
+ *   (`<li><strong>Bugfixes</strong><ul>…</ul></li>`), and plain items fall
+ *   back to "General".
+ * - Paragraphs that are not headings (intro text, links) are ignored.
+ *
+ * @param {string} html The post's HTML.
+ * @param {object} options
+ * @param {string} options.date ISO date of the day, "YYYY-MM-DD".
+ * @param {string|null} [options.title=null] Short name of the patch/post.
+ * @param {string|null} [options.sourceUrl=null] Link to this post.
+ * @returns {{date:string,kind:'patch',title:string|null,sourceUrl:string|null,label:string,changes:object[]}}
+ *   Changes have ids "<date>-pNNN" (1-based, 3 digits) and `subjects: []`.
+ * @throws {Error} if `date` is not a valid ISO date.
+ */
+export function parsePatchPost(html, { date, title = null, sourceUrl = null } = {}) {
+  const label = formatDateLabel(date); // validates `date` before any work
+  const root = parseDom(String(html ?? ''), { comment: false });
+  const changes = [];
+  let category = null; // null = no category yet (start, or after "Change Log")
+  for (const block of collectBlocks(root, [], PATCH_HEADING_TAGS)) {
+    if (block.type === 'heading') {
+      category = isChangeLogHeading(block.text) ? null : block.text;
+      continue;
+    }
+    walkList(block.el, categoryContext(category), changes);
+  }
+  changes.forEach((c, i) => { c.id = patchChangeId(date, i); });
+  return { date, kind: 'patch', title, sourceUrl, label, changes };
+}
+
+/**
+ * Id of the i-th (0-based) change of a patch day: "<date>-pNNN", 1-based.
+ * Exported so callers that merge two posts into one day can renumber.
+ *
+ * @param {string} date ISO date.
+ * @param {number} index 0-based position within the day.
+ * @returns {string} e.g. "2026-11-02-p001"
+ */
+export function patchChangeId(date, index) {
+  return `${date}-p${String(index + 1).padStart(3, '0')}`;
 }
