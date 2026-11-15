@@ -3,7 +3,7 @@
 // Pipeline orchestrator for the WoW: Forever changes site.
 //
 // Design: this file only wires the other pipeline stages together
-// (sources -> fetch -> parse -> merge -> icons -> write) and holds the small
+// (sources -> fetch -> parse -> merge -> icons -> tags -> write) and holds the small
 // pieces of logic that belong to no single stage: merging fresh days into
 // the previously published data, change detection, and the safety checks
 // that stop a broken source from wiping good data. The stages themselves
@@ -21,6 +21,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
+import { addTags as defaultAddTags } from './tags.mjs';
 
 /**
  * Kind of a stored day; data written before schema v2 has no `kind` and is
@@ -116,7 +117,8 @@ async function readExisting(path) {
  *
  * @returns {Promise<{loadSources: Function, fetchSourceDays: Function,
  *   fetchPost: Function, fetchJson: Function, parseHotfixHtml: Function,
- *   parsePatchPost: Function, addSubjects: Function}>}
+ *   parsePatchPost: Function, addSubjects: Function, addTags: Function,
+ *   loadGameIndex: Function}>}
  */
 async function loadDefaultDeps() {
   const [fetchMod, parseMod, iconsMod, sourcesMod] = await Promise.all([
@@ -133,6 +135,10 @@ async function loadDefaultDeps() {
     parseHotfixHtml: parseMod.parseHotfixHtml,
     parsePatchPost: parseMod.parsePatchPost,
     addSubjects: iconsMod.addSubjects,
+    addTags: defaultAddTags,
+    // The game-client data index is a separate module that may be missing or
+    // fail; runUpdate treats any problem as "client data unavailable".
+    loadGameIndex: async (opts) => (await import('./gamedata.mjs')).loadGameIndex(opts),
   };
 }
 
@@ -172,6 +178,28 @@ function upgradeStoredDay(day, hotfixUrl) {
 }
 
 /**
+ * Load the game-client data index through the injectable `loadGameIndex` dep.
+ * A missing dep (tests that pass their own stubs), a thrown error or a null
+ * result all mean "no index": one log line, and the run continues with
+ * Wowhead only (`gameIndex = null`).
+ *
+ * @param {object} d  deps
+ * @param {(msg: string) => void} log
+ * @returns {Promise<object|null>}
+ */
+async function loadIndexSafely(d, log) {
+  if (!d.loadGameIndex) return null;
+  try {
+    const index = await d.loadGameIndex({ log });
+    if (index) return index;
+    log('client data unavailable (no index returned); using Wowhead only');
+  } catch (err) {
+    log(`client data unavailable (${err.message}); using Wowhead only`);
+  }
+  return null;
+}
+
+/**
  * Total number of individual changes across all days.
  *
  * @param {Array<{changes?: unknown[]}>} days
@@ -199,7 +227,11 @@ function countChanges(days) {
  * @param {object} [options.deps] injectable stages (all optional except
  *   addSubjects when deps is given):
  *   { sources | loadSources | SOURCE_URL, fetchSourceDays, fetchPost,
- *     fetchJson, parseHotfixHtml, parsePatchPost, addSubjects }
+ *     fetchJson, parseHotfixHtml, parsePatchPost, addSubjects, addTags,
+ *     loadGameIndex }
+ *   (addTags defaults to scripts/tags.mjs; loadGameIndex defaults to
+ *   scripts/gamedata.mjs only when no `deps` are given at all, so stubbed
+ *   tests never touch the network)
  *   — see resolveSources for how the source list is chosen; the fetch/parse
  *   stages are passed through to fetchSourceDays.
  * @param {() => Date} [options.now] clock, injectable for tests
@@ -265,7 +297,12 @@ export async function runUpdate({
   // 4. Merge with what we already had, then resolve icons for everything.
   //    Icon lookups are cached, so re-processing old days is cheap.
   const merged = mergeDays(previousDays, freshDays);
-  const days = await d.addSubjects(merged);
+  const gameIndex = await loadIndexSafely(d, log);
+  const withSubjects = await d.addSubjects(merged, { gameIndex });
+  // Tags are recomputed for ALL days, including stored days no source has any
+  // more, so that a change of the rules revises the whole history on the next
+  // run (sameContent then sees the difference and the file is rewritten).
+  const days = (d.addTags ?? defaultAddTags)(withSubjects);
 
   // 5. Assemble the document per docs/SCHEMA.md. generatedAt is whole
   //    seconds (no milliseconds) to match the documented format. `source`
