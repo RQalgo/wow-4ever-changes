@@ -37,6 +37,92 @@ export const DEFAULT_TIMEOUT_MS = 30_000;
  * @throws {Error} On network failure, timeout, or a non-2xx HTTP status.
  */
 export async function fetchPost(url = SOURCE_URL, { fetchImpl = fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+  // Blizzard's news site (a Next.js app) answers the short article URL with a
+  // redirect to the full URL including the title slug. That redirect is not
+  // sent as a Location header: the response is "307" with an HTML body holding
+  // <meta http-equiv="refresh" content="1;url=/en-us/article/<id>/<slug>">.
+  // The slug changes whenever the post is retitled with a new date, so it
+  // cannot be hard-coded; we follow the in-body redirect like a browser does.
+  let current = url;
+  for (let hop = 0; ; hop++) {
+    const { response, body } = await requestOnce(current, { fetchImpl, timeoutMs });
+    const target = metaRefreshTarget(body, current);
+    const isRedirectStatus = response.status >= 300 && response.status < 400;
+    if (target && target !== current && (isRedirectStatus || !response.ok || body.includes('__next-page-redirect'))) {
+      if (hop >= MAX_META_REDIRECTS) {
+        throw new Error(`Failed to fetch ${url}: too many in-page redirects (last: ${target})`);
+      }
+      current = target;
+      continue;
+    }
+    if (!response.ok) throw httpError(current, response, body);
+    return body;
+  }
+}
+
+/** Maximum number of in-body (meta refresh) redirects followed per fetch. */
+export const MAX_META_REDIRECTS = 3;
+
+/**
+ * Extract the target of an HTML meta-refresh redirect, resolved against the
+ * page URL. Only same-site http(s) targets are returned, so a page can never
+ * send the fetcher to a different host.
+ *
+ * @param {string} html Response body.
+ * @param {string} baseUrl URL the body was fetched from.
+ * @returns {string|null} Absolute target URL, or null when there is none.
+ */
+export function metaRefreshTarget(html, baseUrl) {
+  // Match <meta … http-equiv="refresh" … content="<seconds>;url=<target>" …>
+  // with the two attributes in either order.
+  const tag = /<meta\b[^>]*http-equiv=["']?refresh["']?[^>]*>/i.exec(html ?? '');
+  if (!tag) return null;
+  const content = /content=["']\s*\d*\s*;\s*url=([^"']+)["']/i.exec(tag[0]);
+  if (!content) return null;
+  try {
+    const target = new URL(content[1].trim().replace(/&amp;/g, '&'), baseUrl);
+    const base = new URL(baseUrl);
+    if (!/^https?:$/.test(target.protocol) || target.host !== base.host) return null;
+    return target.href;
+  } catch {
+    return null; // malformed URL in the tag
+  }
+}
+
+/**
+ * Build the Error for a failed response, including the headers that explain
+ * why (redirect target, answering server) and the start of the body, so a
+ * failing scheduled run can be diagnosed from its log alone.
+ *
+ * @param {string} url URL that failed.
+ * @param {Response} response The non-2xx response.
+ * @param {string} body Its body text (may be empty).
+ * @returns {Error}
+ */
+function httpError(url, response, body) {
+  const statusText = response.statusText ? ` ${response.statusText}` : '';
+  const h = (name) => response.headers?.get?.(name);
+  const details = ['location', 'server', 'content-type', 'cf-mitigated', 'retry-after']
+    .filter((name) => h(name))
+    .map((name) => `${name}=${h(name)}`)
+    .join('; ');
+  const snippet = (body ?? '').replace(/\s+/g, ' ').slice(0, 200);
+  return new Error(
+    `Failed to fetch ${url}: HTTP ${response.status}${statusText}` +
+      (details ? ` [${details}]` : '') +
+      (snippet ? ` body: ${snippet}` : ''),
+  );
+}
+
+/**
+ * Perform one HTTP request and read its body, translating network failures
+ * and timeouts into clear Errors. Does not judge the HTTP status.
+ *
+ * @param {string} url
+ * @param {{fetchImpl: typeof fetch, timeoutMs: number}} options
+ * @returns {Promise<{response: Response, body: string}>}
+ */
+async function requestOnce(url, { fetchImpl, timeoutMs }) {
   let response;
   try {
     response = await fetchImpl(url, {
@@ -56,27 +142,11 @@ export async function fetchPost(url = SOURCE_URL, { fetchImpl = fetch, timeoutMs
     throw new Error(`Network error fetching ${url}: ${err?.message ?? err}`, { cause: err });
   }
 
-  if (!response.ok) {
-    const statusText = response.statusText ? ` ${response.statusText}` : '';
-    // Include the headers that explain *why* a request failed (where a
-    // redirect pointed, which server answered) plus the start of the body, so
-    // a failing scheduled run can be diagnosed from its log alone.
-    const h = (name) => response.headers?.get?.(name);
-    const details = ['location', 'server', 'content-type', 'cf-mitigated', 'retry-after']
-      .filter((name) => h(name))
-      .map((name) => `${name}=${h(name)}`)
-      .join('; ');
-    let snippet = '';
-    try {
-      snippet = (await response.text()).replace(/\s+/g, ' ').slice(0, 200);
-    } catch {
-      // Body unavailable; the status and headers are still reported.
-    }
-    throw new Error(
-      `Failed to fetch ${url}: HTTP ${response.status}${statusText}` +
-        (details ? ` [${details}]` : '') +
-        (snippet ? ` body: ${snippet}` : ''),
-    );
+  let body = '';
+  try {
+    body = await response.text();
+  } catch {
+    // Body unavailable (e.g. connection dropped); status is still reported.
   }
-  return await response.text();
+  return { response, body };
 }
