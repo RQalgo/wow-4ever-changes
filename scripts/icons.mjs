@@ -210,7 +210,8 @@ function isGenericToken(token) {
 function isGenericPhrase(tokens) {
   const phrase = normalizeName(tokens.join(' ')).replace(/:/g, '');
   if (GENERIC_SET.has(phrase) || CLASS_AND_SPEC_SET.has(phrase)) return true;
-  return tokens.every((t) => isGenericToken(t));
+  // Lower-case connectors are ignored so "Mace and Sword" counts as all-generic.
+  return tokens.every((t) => CONNECTORS.has(t) || isGenericToken(t));
 }
 
 /**
