@@ -27,7 +27,7 @@ on:
     # Note: GitHub registers a schedule when the workflow file on the default
     # branch changes. The previous line ('17 */6 * * *') never fired on its
     # own; editing the cron expression makes GitHub register it afresh.
-    - cron: '41 */3 * * *'
+    - cron: '09 */3 * * *'
   # Allow running it manually from the Actions tab.
   workflow_dispatch:
 
