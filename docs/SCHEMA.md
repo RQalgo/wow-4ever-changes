@@ -144,6 +144,25 @@ Filter semantics used by the app:
 - Category chips: a change with no `class:` tag is shown when at least one of
   its category tags is switched on. With a class selected, class-tagged
   changes are always shown regardless of the category chips.
+- Class choice "No classes" (hash `class=none`, the third option beside
+  "All classes" and one class): hides every **class change**, i.e. every line
+  published under **Classes** (`scope` is not `"general"`: class and tree
+  headings and the all-class lines), even when it also has a category tag
+  (a Paladin quest line tagged `quests` stays hidden). Every other line is
+  shown when at least one of its category tags is on; while classes are
+  hidden its `class:` tags no longer exempt it from the chips, so "No
+  classes" together with no categories shows nothing (the app says so and
+  offers a reset). Choosing "All classes" or a class turns the hiding off;
+  choosing "No classes" clears any selected class and tree.
+- Why the published section and not the `class:` tags decides what a class
+  change is: in the data of 2026-11-15, 36 of the 524 lines published outside
+  Classes carry a `class:` tag, and roughly a third of those mention a class only
+  in passing (a dungeon boss's "Shield Slam", a racial trait, an item that
+  shares a cooldown with Sprint). Hiding them would take lines away from
+  categories the reader left switched on — 8 of 26 known issues and 8 of 47
+  race lines, for example. They stay visible, still showing their class chip.
+  Consequence: "All classes" + no categories and "No classes" + all
+  categories overlap in those lines; the two views are not exact complements.
 
 ### Version 3 addendum: two icon sources
 
