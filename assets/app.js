@@ -19,7 +19,7 @@
 import {
   CLASSES, flattenSections, relativeDay, classColor, defaultState, visibleDays,
   specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
-  highlightSegments, buildSuggestions, encodeHash, decodeHash, sanitizeSelection,
+  highlightSegments, buildSuggestions, iconSlots, extraTagsForLine, encodeHash, decodeHash, sanitizeSelection,
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
   availableCategories, toggleCategory, normalizeCats, isCategoryOn,
   activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
@@ -126,14 +126,15 @@ const GLYPHS = {
 /**
  * Build the inline SVG fallback glyph for a change.
  * @param {object} ch change (scope/category decide the glyph)
+ * @param {number} [size] pixel size of the glyph
  * @returns {SVGElement}
  */
-function glyphSvg(ch) {
+function glyphSvg(ch, size = 22) {
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('width', '22');
-  svg.setAttribute('height', '22');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('fill', 'none');
   svg.setAttribute('stroke', 'currentColor');
@@ -147,43 +148,102 @@ function glyphSvg(ch) {
 }
 
 /**
- * Build the fixed 36px icon box for a line. The box always has the same
- * size, so the image loading (or failing) never shifts the layout. Uses the
- * first subject's Wowhead icon; falls back to a coloured glyph tile when
- * there is no subject, the name is unusable, or the image fails to load.
+ * Build one icon tile of the cluster. The tile has a fixed CSS size (set by
+ * the cluster class), so an image loading or failing never shifts the layout.
+ * A subject with a usable icon shows its Wowhead image (lazy); anything else,
+ * including an image that fails to load, becomes the glyph tile. Talents get
+ * the `tile-talent` class (a corner pip) and "(talent)" in the title, so the
+ * kind never relies on the mark or colour alone.
+ * @param {object} ch the change (decides glyph and fallback colour)
+ * @param {{name: string, icon?: string, talent: boolean, title: string}|null} slot subject slot, or null for the "no subjects" tile
+ * @param {object|null} subject raw subject (for its class colour)
+ * @param {number} glyphPx glyph size used by the fallback
+ * @returns {HTMLElement}
+ */
+function renderTile(ch, slot, subject, glyphPx) {
+  const tile = el('div', 'tile');
+  tile.style.setProperty('--cc', classColor((subject && subject.class) || ch.class) || 'var(--muted)');
+  if (slot) {
+    tile.title = slot.title;
+    if (slot.talent) { tile.classList.add('tile-talent'); tile.dataset.kind = 'talent'; }
+  }
+  const url = slot ? iconUrl(slot.icon) : null;
+
+  /** Swap whatever is in the tile for the glyph. */
+  const useFallback = () => {
+    tile.classList.add('tile-fallback');
+    tile.classList.toggle('tile-class', ch.scope !== 'general' && !!ch.class);
+    // Keep the pip (a ::after) but replace the image with the glyph.
+    tile.replaceChildren(glyphSvg(ch, glyphPx));
+  };
+
+  if (!url) { useFallback(); return tile; }
+  const img = new Image(32, 32);
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.alt = slot.title;
+  img.addEventListener('error', useFallback, { once: true });
+  img.src = url;
+  tile.append(img);
+  return tile;
+}
+
+/**
+ * Build the icon cluster of a line: up to MAX_ICONS subject icons in subject
+ * order. One icon is a single 32px tile; 2-4 icons are small tiles in a
+ * 2-wide grid (a row for two, 2x2 for three or four). The cluster box has a
+ * fixed width, so text lines up from line to line. A line without subjects
+ * gets one fallback tile (class or category glyph).
  * @param {object} ch change
  * @returns {HTMLElement}
  */
-function renderIcon(ch) {
-  const box = el('div', 'icon');
-  box.style.setProperty('--cc', classColor(ch.class) || 'var(--muted)');
-  const subject = (ch.subjects || [])[0];
-  const url = subject ? iconUrl(subject.icon) : null;
-
-  /** Swap whatever is in the box for the glyph tile. */
-  const useFallback = () => {
-    box.classList.add('icon-fallback');
-    box.classList.toggle('icon-class', ch.scope !== 'general' && !!ch.class);
-    box.replaceChildren(glyphSvg(ch));
-  };
-
-  if (!url) {
-    useFallback();
+function renderIcons(ch) {
+  const { slots } = iconSlots(ch);
+  const subjects = (ch.subjects || []).filter((x) => x && x.name);
+  const box = el('div', `icons icons-${Math.max(1, slots.length)}`);
+  if (!slots.length) {
+    box.append(renderTile(ch, null, null, 20));
     return box;
   }
-  const img = new Image(36, 36);
-  img.loading = 'lazy';
-  img.decoding = 'async';
-  img.alt = subject.name || '';
-  img.addEventListener('error', useFallback, { once: true });
-  img.src = url;
-  box.append(img);
+  const glyphPx = slots.length === 1 ? 20 : 13;
+  slots.forEach((slot, i) => box.append(renderTile(ch, slot, subjects[i], glyphPx)));
   return box;
 }
 
 /**
- * Render one change line: icon, text and notes (highlighting and extra
- * subject chips are layered on in the search step).
+ * Build one "extra tag" chip under a line. Class chips (class colour dot +
+ * name) set the class filter, category chips show only that category; the
+ * Talent chip is informational. Real <button>s, so they are keyboard
+ * accessible.
+ * @param {object} tag from extraTagsForLine
+ * @returns {HTMLElement}
+ */
+function renderTagChip(tag) {
+  if (tag.type === 'talent') {
+    const t = el('span', 'subject-chip tag-chip tag-talent');
+    t.append(el('span', 'talent-pip'), 'Talent');
+    t.title = 'Involves a talent';
+    return t;
+  }
+  const b = el('button', 'subject-chip tag-chip ' + (tag.type === 'class' ? 'tag-class' : 'tag-cat'));
+  b.type = 'button';
+  if (tag.type === 'class') {
+    b.style.setProperty('--cc', tag.color || 'var(--muted)');
+    b.append(el('span', 'chip-dot'), tag.label);
+    b.title = `Show only ${tag.label} changes`;
+    b.addEventListener('click', () => setState({ ...state, cls: tag.slug, spec: '' }));
+  } else {
+    b.textContent = tag.label;
+    b.title = `Show only ${tag.label}`;
+    b.addEventListener('click', () => setState({ ...state, cats: [tag.slug] }));
+  }
+  return b;
+}
+
+/**
+ * Render one change line: icon cluster, text, extra tag chips (other classes,
+ * Talent, other categories), overflow subject chips and notes. The line is
+ * drawn once, in its published section; the chips say what else it touches.
  * @param {object} ch a change from the data
  * @returns {HTMLElement} <li>
  */
@@ -201,18 +261,19 @@ function renderLine(ch) {
   }
   text.append(highlighted(ch.text));
   body.append(text);
-  // Extra subjects (beyond the one used for the icon) become search chips.
-  const extra = (ch.subjects || []).slice(1);
-  if (extra.length) {
+  const tags = extraTagsForLine(ch).map(renderTagChip);
+  // Subjects beyond the icon cluster stay as search chips.
+  const more = iconSlots(ch).more.map((sub) => {
+    const b = el('button', 'subject-chip');
+    b.type = 'button';
+    b.title = `Search for ${sub.name}`;
+    b.append(highlighted(sub.name));
+    b.addEventListener('click', () => { setState({ ...state, q: sub.name }); });
+    return b;
+  });
+  if (tags.length || more.length) {
     const chips = el('div', 'subject-chips');
-    for (const sub of extra) {
-      const b = el('button', 'subject-chip');
-      b.type = 'button';
-      b.title = `Search for ${sub.name}`;
-      b.append(highlighted(sub.name));
-      b.addEventListener('click', () => { setState({ ...state, q: sub.name }); });
-      chips.append(b);
-    }
+    chips.append(...tags, ...more);
     body.append(chips);
   }
   for (const note of ch.notes || []) {
@@ -220,7 +281,7 @@ function renderLine(ch) {
     n.append(highlighted(note));
     body.append(n);
   }
-  li.append(renderIcon(ch), body);
+  li.append(renderIcons(ch), body);
   return li;
 }
 

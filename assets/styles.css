@@ -242,16 +242,29 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .filter-summary::after { content: ""; position: absolute; inset: -6px 0; }   /* 44px touch target */
 .filter-summary[hidden] { display: none; }
 
-/* Icon box: fixed 36px so images loading or failing never move the layout. */
-.icon {
-  flex: none; width: 36px; height: 36px; border-radius: 6px; overflow: hidden;
+/* Icon cluster: fixed 44px-wide box so line text aligns and loading images never shift anything.
+   1 icon = one 32px tile; 2 icons = a row of 21px tiles; 3-4 icons = a 2x2 grid of 21px tiles. */
+.icons { flex: none; width: 44px; display: grid; gap: 2px; align-content: start; justify-content: start; margin-top: 2px; }
+.icons-1 { grid-template-columns: 32px; }
+.icons-2, .icons-3, .icons-4 { grid-template-columns: repeat(2, 21px); }
+.tile {
+  position: relative; width: 21px; height: 21px; border-radius: 4px; overflow: visible;
   border: 1px solid color-mix(in srgb, var(--cc, var(--muted)) 70%, var(--border));
-  background: var(--surface-2); display: grid; place-items: center; margin-top: 2px;
+  background: var(--surface-2); display: grid; place-items: center;
 }
-.icon img { display: block; width: 36px; height: 36px; object-fit: cover; }
+.icons-1 .tile { width: 32px; height: 32px; border-radius: 6px; }
+/* box-sizing is border-box, so the image fills the tile inside its 1px border. */
+.tile img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
 /* Fallback tile: tinted with the class colour; glyph stays in the text colour for contrast. */
-.icon-fallback { color: var(--text); background: color-mix(in srgb, var(--muted) 18%, var(--surface-2)); }
-.icon-fallback.icon-class { background: color-mix(in srgb, var(--cc) 30%, var(--surface-2)); border-color: var(--cc); }
+.tile-fallback { color: var(--text); background: color-mix(in srgb, var(--muted) 18%, var(--surface-2)); }
+.tile-fallback.tile-class { background: color-mix(in srgb, var(--cc) 30%, var(--surface-2)); border-color: var(--cc); }
+/* Talent mark: a small diamond pip on the top-right corner (a shape, not only a colour;
+   the title also says "talent"). It sits half outside the tile, on top of the image. */
+.tile-talent::after {
+  content: ""; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; transform: rotate(45deg);
+  background: var(--accent); border: 1.5px solid var(--surface); box-shadow: 0 0 0 1px var(--text);
+}
+.icons-1 .tile-talent::after { width: 10px; height: 10px; top: -5px; right: -5px; }
 
 /* Search box. The dropdown is anchored to the input; on narrow screens it spans the
    whole bar instead (see the media query), where the sticky .filters is the containing block. */
@@ -269,6 +282,12 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   min-height: 28px; padding: 0 .65rem; background: var(--surface-2); color: var(--text); cursor: pointer;
   border: 1px solid var(--border); border-radius: 999px; font: 500 .8rem var(--sans); position: relative;
 }
+/* Extra tag chips (other classes / Talent / categories) share the subject-chip look. */
+.tag-class { display: inline-flex; align-items: center; gap: .35rem; }
+.tag-class .chip-dot { width: 9px; height: 9px; }
+.tag-talent { display: inline-flex; align-items: center; gap: .35rem; cursor: default; }
+.tag-talent::after { display: none; }
+.talent-pip { width: 7px; height: 7px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 0 1px var(--text); }
 /* Invisible padding grows the touch target to ~44px without enlarging the chip. */
 .subject-chip::after { content: ""; position: absolute; inset: -8px -2px; }
 .subject-chip:hover { border-color: var(--accent); }
