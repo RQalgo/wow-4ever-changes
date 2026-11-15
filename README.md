@@ -47,9 +47,13 @@ new patch-notes topic, add an entry like the existing `discourse-topic` one
 with its forum URL; it is not discovered automatically. If one source fails,
 the other still updates and the failed source's stored days are kept.
 
-Icon lookups are rate-limited on purpose (150 new names per run, 1.2 s apart)
-and cached in `data/icon-cache.json`; names that are still unknown are retried
-on later runs. Lines without an icon show a class or category tile.
+Icon lookups are rate-limited on purpose (250 Wowhead lookups per run, 1.5 s
+apart) and cached in `data/icon-cache.json`; names that are still unknown are
+retried on later runs. Names are looked up in the change text and its notes;
+the game-client data index (when available) is the primary source and Wowhead
+the fallback and cross-check. Lines without an icon show a class or category
+tile. Every change also gets `tags` (classes, talent trees, categories) that
+the filters use; they are recomputed for all days on every run.
 
 Icons come from two sources. The primary one is the game client's own data
 tables for the newest WoW: Forever build, published as CSV by wago.tools
@@ -65,7 +69,13 @@ it locally with `node scripts/gamedata.mjs "Mortal Strike"`.
 
 - **Wrong or missing icon:** edit `data/icon-overrides.json`. Keys are
   lower-case names; a value of `{ "name", "type", "icon" }` forces an icon,
-  `null` stops a word from being treated as a skill.
+  `null` stops a word from being treated as a skill. The value may also carry
+  `"kind"` (`talent`, `ability`, `spell`, `item`), `"class"` (class slug) and
+  `"tree"` (talent-tree slug), which feed the class / spec tags.
+- **Notes use another name than the game data:** add it to
+  `data/name-aliases.json`, e.g. `{ "unsealed fury": "Unsealed Wrath" }` (key:
+  lower-cased name as written; value: the name to look up). The subject keeps
+  the written name and records `"alias"`.
 - **A run failed:** open the run in the Actions tab; the "Run update" step
   prints the reason. If Blizzard changes the page layout the parser refuses to
   overwrite good data, so the site keeps showing the last good version.

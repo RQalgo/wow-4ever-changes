@@ -11,7 +11,7 @@ import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { extractCandidates, lookupName, addSubjects, createLimits } from '../scripts/icons.mjs';
+import { extractCandidates, extractCandidateGroups, lookupName, addSubjects, createLimits } from '../scripts/icons.mjs';
 
 // ---------------------------------------------------------------------------
 // 1. Candidate extraction
@@ -38,7 +38,44 @@ describe('extractCandidates', () => {
     ['Fixed a bug with diminishing returns on creature stuns.', []],
     ['All Mace and Sword users take less damage.', []],
     ['Resolved an issue with Developers notes and the UI.', []],
-    ['Sap and Gouge now share diminishing returns.', ['Sap and Gouge']],
+    // v3: "A and B" lists are split into parts (the whole is kept separately in
+    // extractCandidateGroups, see the groups tests below); before v3 this
+    // returned the single candidate 'Sap and Gouge'.
+    ['Sap and Gouge now share diminishing returns.', ['Sap', 'Gouge']],
+
+    // --- v3 rules: patch-note style lines (each example from the owner's brief) ---
+    ['Reckoning: Now has a 1.5 second cooldown on how often it can be triggered.', ['Reckoning']],
+    ['Righteous Fury: Holy threat increase increased to 60% (was 90%).', ['Righteous Fury']],
+    ['Lightning Bolt: Base damage increased to 40.', ['Lightning Bolt']],
+    ['Aspect of the Hawk: Ranged Attack Power bonus has been reduced.', ['Aspect of the Hawk']],
+    ['Bear Form and Dire Bear Form: Threat generation has been reduced.', ['Bear Form', 'Dire Bear Form']],
+    ['New Talent Oath of Light in Row 4. 40-yard range, 8% of Base Mana cost. No cooldown. Swear an Oath to protect an ally.', ['Oath of Light']],
+    ['New Talent: Quick Getaway grants movement speed after vanishing.', ['Quick Getaway']],
+    ['New Talent Stoicism added to Row 5. Reduces the duration of Stun and Charm effects on you.', ['Stoicism']],
+    ['Added: Shank deals damage to the target.', ['Shank']],
+    ['Instrument of Law Removed.', ['Instrument of Law']],
+    ['Lava Burst: Removed.', ['Lava Burst']],
+    ['Holy Shield moved to Row 5 (Was Row 7).', ['Holy Shield']],
+    ['Holy Shield’s chance to Block changed to 30% (was 20%).', ['Holy Shield']],
+    ['Consecration’s Spell Power Coefficient per tick has been changed.', ['Consecration']],
+    ['Blessing of Salvation and Greater Blessing of Salvation have been replaced with Salvation and Mass Salvation.',
+      ['Blessing of Salvation', 'Greater Blessing of Salvation', 'Salvation', 'Mass Salvation']],
+    ['Judgement of Righteousness and Judgement of Fury now have the correct spell power coefficients.',
+      ['Judgement of Righteousness', 'Judgement of Fury']],
+    ['Improved Seal of Fury and Shield Specialization no longer generate threat.', ['Improved Seal of Fury', 'Shield Specialization']],
+    ['Shield Specialization Mana restored to the Paladin lowered to 4%.', ['Shield Specialization']],
+    ['Twist of Light now additionally reduces the Mana cost of your Seal spells by 20%.', ['Twist of Light']],
+    ['Fireball: Renamed Accelerant.', ['Fireball', 'Accelerant']],
+    ['Hemorrhage and Ghostly Strike now deal more damage.', ['Hemorrhage', 'Ghostly Strike']],
+    ['Rupture and Garrote now refresh correctly.', ['Rupture', 'Garrote']],
+    ['Cure Disease and Abolish Disease no longer conflict.', ['Cure Disease', 'Abolish Disease']],
+    ['Heart of the Wild and Gift of the Earthmother now stack.', ['Heart of the Wild', 'Gift of the Earthmother']],
+    // A real "Word:" name keeps its colon part; stoplisted nouns are never names.
+    ['Power Word: Shield and Shadow Word: Pain were adjusted.', ['Power Word: Shield', 'Shadow Word: Pain']],
+    ['Row 5 Base Mana Attack Power Combo Points and Diminishing Returns.', []],
+    // junk found by the dry check over data/changes.json
+    ['However, you can edit the Target Frame in Edit Mode. They can use the Gamepad, Lua and Vanilla WoW rules.', []],
+    ['Improved Lighting ‘Bloom Intensity’ in options. The Fire-based and Frost-based Wrath-era talents.', ['Improved Lighting', 'Bloom Intensity']],
   ];
   for (const [line, expected] of cases) {
     test(line.slice(0, 60), () => assert.deepEqual(extractCandidates(line), expected));
@@ -58,16 +95,36 @@ describe('extractCandidates', () => {
     assert.deepEqual(curly, ['Windfury Totem']);
   });
 
-  test('is capped at 4 candidates and de-duplicated in order', () => {
-    const got = extractCandidates('Sap, Gouge, Kick, Evasion, Vanish and Sap again, plus Garrote.');
-    assert.equal(got.length, 4);
-    assert.deepEqual(got, ['Sap', 'Gouge', 'Kick', 'Evasion']);
+  test('is capped at 6 candidates and de-duplicated in order', () => {
+    const got = extractCandidates('Sap, Gouge, Kick, Evasion, Vanish and Sap again, plus Garrote and Ambush.');
+    assert.equal(got.length, 6);
+    assert.deepEqual(got, ['Sap', 'Gouge', 'Kick', 'Evasion', 'Vanish', 'Garrote']);
     assert.deepEqual(extractCandidates('Sap now works. Sap is great.'), ['Sap']);
   });
 
   test('class and spec names alone are not candidates', () => {
     assert.deepEqual(extractCandidates('Retribution Paladin changes.'), []);
     assert.deepEqual(extractCandidates('Rogues and Warriors are happier.'), []);
+  });
+
+  test('groups: "A and B" with one word per side keeps the whole as a first try', () => {
+    assert.deepEqual(extractCandidateGroups('Slice and Dice now lasts longer.'),
+      [{ whole: 'Slice and Dice', parts: ['Slice', 'Dice'] }]);
+    assert.equal(extractCandidateGroups('Shadow and Flame is a talent.')[0].whole, 'Shadow and Flame');
+    // multi-word sides are lists, not names: no whole
+    assert.deepEqual(extractCandidateGroups('Cure Disease and Abolish Disease are fine.'),
+      [{ whole: null, parts: ['Cure Disease', 'Abolish Disease'] }]);
+    // "of the" never splits
+    assert.deepEqual(extractCandidateGroups('Heart of the Wild is fine.'), [{ whole: null, parts: ['Heart of the Wild'] }]);
+  });
+
+  test('"The Quick and the Dead" survives its generic parts as a whole-phrase try', () => {
+    assert.deepEqual(extractCandidateGroups('The Quick and the Dead now works.'), [{ whole: 'The Quick and the Dead', parts: [] }]);
+  });
+
+  test('a plural category noun after one capital word is not a name; a longer run is kept', () => {
+    assert.deepEqual(extractCandidates('Reduces the cost of your Seal spells.'), []);
+    assert.deepEqual(extractCandidates('Windfury Totem attacks now proc.'), ['Windfury Totem']);
   });
 
   test('classSlug option is accepted', () => {
@@ -109,7 +166,7 @@ describe('lookupName', () => {
   test('accepts an exact name match, case-insensitively and with curly apostrophes', async () => {
     const f = stubFetch(() => [spell("Hunter's Mark", 'ability_hunter_snipershot')]);
     const r = await lookupName('hunter’s mark', { fetchImpl: f, cache: {} });
-    assert.deepEqual(r, { name: "Hunter's Mark", type: 'spell', icon: 'ability_hunter_snipershot' });
+    assert.deepEqual(r, { name: "Hunter's Mark", type: 'spell', kind: 'spell', class: null, icon: 'ability_hunter_snipershot' });
   });
 
   test('rejects partial matches, other types and results without icon', async () => {
@@ -152,7 +209,8 @@ describe('lookupName', () => {
   test('classSlug prefers the spell whose pin text mentions the class, else the first', async () => {
     const results = [
       spell('Judgement', 'icon_warrior', { pinBreadcrumb: 'Warrior' }),
-      spell('Judgement', 'icon_paladin', { pinDescription: 'Paladin ability' }),
+      // v3: the class is read from "Requires <Class>" (or a breadcrumb element).
+      spell('Judgement', 'icon_paladin', { pinDescription: 'Requires Paladin' }),
     ];
     const pal = await lookupName('Judgement', { fetchImpl: stubFetch(() => results), cache: {}, preferType: 'spell', classSlug: 'paladin' });
     assert.equal(pal.icon, 'icon_paladin');
@@ -167,7 +225,7 @@ describe('lookupName', () => {
     const b = await lookupName('SAP', { fetchImpl: f, cache });
     assert.deepEqual(a, b);
     assert.equal(f.calls.length, 1);
-    assert.deepEqual(cache.sap, { name: 'Sap', type: 'spell', icon: 'ability_sap' });
+    assert.deepEqual(cache.sap, { name: 'Sap', type: 'spell', kind: 'spell', class: null, icon: 'ability_sap' });
     assert.equal(await lookupName('Nothing Here', { fetchImpl: f, cache }), null);
     assert.equal(await lookupName('nothing here', { fetchImpl: f, cache }), null);
     assert.equal(f.calls.length, 2);
@@ -275,8 +333,8 @@ describe('addSubjects', () => {
       const days = makeDays();
       const out = await addSubjects(days, { cachePath, overridesPath, fetchImpl: f, delayMs: 0, log: quiet });
       assert.equal(out, days); // mutated and returned
-      assert.deepEqual(days[0].changes[0].subjects, [{ name: 'Judgement of Command', type: 'spell', icon: 'ability_warrior_innerrage' }]);
-      assert.deepEqual(days[0].changes[1].subjects, [{ name: 'Taran Icebreaker', type: 'item', icon: 'inv_mace_13' }]);
+      assert.deepEqual(days[0].changes[0].subjects, [{ name: 'Judgement of Command', type: 'spell', kind: 'spell', class: null, tree: null, icon: 'ability_warrior_innerrage', source: 'wowhead' }]);
+      assert.deepEqual(days[0].changes[1].subjects, [{ name: 'Taran Icebreaker', type: 'item', kind: 'item', class: null, tree: null, icon: 'inv_mace_13', source: 'wowhead' }]);
       assert.deepEqual(days[0].changes[2].subjects, []);
       // Misses for "Lesser Rock Elemental" and its shrunk variants were tried once each.
       const queried = f.calls.map((c) => c.q);
@@ -368,6 +426,345 @@ describe('addSubjects', () => {
       assert.equal(second.sap.type, 'item');
     } finally {
       await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 4. v3: kind / class from breadcrumbs and the match preference
+// ---------------------------------------------------------------------------
+
+/** Spell result with a breadcrumb, as the real endpoint returns them. */
+const crumb = (name, icon, pinBreadcrumb, extra = {}) => spell(name, icon, { pinBreadcrumb, ...extra });
+
+describe('lookupName: kind and class from the breadcrumb', () => {
+  const one = async (result, opts = {}) =>
+    lookupName(result.name, { fetchImpl: stubFetch(() => [result]), cache: {}, ...opts });
+
+  test('Talents -> talent, Abilities -> ability, Uncategorized -> spell, class lower-cased', async () => {
+    assert.deepEqual(await one(crumb('Oath of Light', 'i1', ['Talents', 'Paladin'])),
+      { name: 'Oath of Light', type: 'spell', kind: 'talent', class: 'paladin', icon: 'i1' });
+    assert.deepEqual(await one(crumb('Smite', 'i2', ['Abilities', 'Priest'])),
+      { name: 'Smite', type: 'spell', kind: 'ability', class: 'priest', icon: 'i2' });
+    assert.deepEqual(await one(crumb('Odd', 'i3', ['Uncategorized'])),
+      { name: 'Odd', type: 'spell', kind: 'spell', class: null, icon: 'i3' });
+    assert.deepEqual(await one(crumb('Odd2', 'i4', ['Uncategorized', 'Warlock'])),
+      { name: 'Odd2', type: 'spell', kind: 'spell', class: 'warlock', icon: 'i4' });
+  });
+
+  test('items are kind "item"; a class can come from "Requires <Class>" in pinDescription', async () => {
+    assert.deepEqual(await one(item('Ring', 'r')), { name: 'Ring', type: 'item', kind: 'item', class: null, icon: 'r' });
+    const r = await one(spell('Thing', 't', { pinDescription: 'Requires Rogue. Does things.' }));
+    assert.equal(r.class, 'rogue');
+    assert.equal(r.kind, 'spell');
+  });
+});
+
+describe('lookupName: choosing among several exact matches', () => {
+  /** The three "Judgement" matches seen on the real endpoint. */
+  const judgement = [
+    crumb('Judgement', 'ability_pal', ['Abilities', 'Paladin']),
+    crumb('Judgement', 'unc1', ['Uncategorized', 'Paladin']),
+    crumb('Judgement', 'unc2', ['Uncategorized']),
+  ];
+  /** "Holy Shield" is both a talent and an ability of the paladin. */
+  const holyShield = [
+    crumb('Holy Shield', 'abil', ['Abilities', 'Paladin']),
+    crumb('Holy Shield', 'tal', ['Talents', 'Paladin']),
+  ];
+  const pick = (results, name, opts) => lookupName(name, { fetchImpl: stubFetch(() => results), cache: {}, ...opts });
+
+  test('Judgement: the Abilities/Paladin match wins for any asking class', async () => {
+    assert.equal((await pick(judgement, 'Judgement', { classSlug: 'paladin' })).icon, 'ability_pal');
+    assert.equal((await pick(judgement, 'Judgement', { classSlug: 'rogue' })).icon, 'ability_pal');
+    assert.equal((await pick(judgement, 'Judgement')).kind, 'ability');
+  });
+
+  test('Holy Shield: the talent beats the ability and keeps kind "talent"', async () => {
+    const r = await pick(holyShield, 'Holy Shield', { classSlug: 'paladin' });
+    assert.deepEqual([r.kind, r.icon], ['talent', 'tal']);
+    assert.equal((await pick(holyShield, 'Holy Shield')).kind, 'talent');
+  });
+
+  test('rank 1 (own class) beats rank 2 (other class)', async () => {
+    const results = [crumb('Strike', 'war', ['Abilities', 'Warrior']), crumb('Strike', 'rog', ['Abilities', 'Rogue'])];
+    assert.equal((await pick(results, 'Strike', { classSlug: 'rogue' })).icon, 'rog');
+    assert.equal((await pick(results, 'Strike', { classSlug: 'mage' })).icon, 'war'); // no own class: first
+  });
+
+  test('rank 3: an own-class Uncategorized spell beats a generic one', async () => {
+    const results = [crumb('Zap', 'gen', ['Uncategorized']), crumb('Zap', 'mine', ['Uncategorized', 'Mage'])];
+    assert.equal((await pick(results, 'Zap', { classSlug: 'mage' })).icon, 'mine');
+    assert.equal((await pick(results, 'Zap')).icon, 'gen');
+  });
+
+  test('NPC Abilities only win when nothing else matches; quests and guides never', async () => {
+    const npc = crumb('Bite', 'npc', ['NPC Abilities']);
+    assert.equal((await pick([npc, crumb('Bite', 'unc', ['Uncategorized'])], 'Bite')).icon, 'unc');
+    assert.equal((await pick([npc], 'Bite')).icon, 'npc');
+    const quest = { type: 5, id: 9, name: 'Bite', typeName: 'Quest', icon: 'q', pinBreadcrumb: ['Dungeons'] };
+    const guide = { type: 9, id: 8, name: 'Bite', typeName: 'Guide' };
+    assert.equal(await pick([quest, guide], 'Bite'), null);
+  });
+
+  test('preferType still filters before ranking', async () => {
+    const results = [crumb('Sap', 'tal', ['Talents', 'Rogue']), item('Sap', 'it')];
+    assert.equal((await pick(results, 'Sap', { preferType: 'item' })).type, 'item');
+    assert.equal((await pick(results, 'Sap', { preferType: 'spell' })).type, 'spell');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5. v3: cache migration, notes, processing order, game-data index
+// ---------------------------------------------------------------------------
+
+/** Run addSubjects in a temp dir with the given cache / overrides contents. */
+async function runIn(days, { cache = {}, overrides = {}, ...opts } = {}) {
+  const dir = await mkdtemp(join(tmpdir(), 'icons-v3-'));
+  try {
+    const cachePath = join(dir, 'cache.json');
+    const overridesPath = join(dir, 'overrides.json');
+    await writeFile(cachePath, JSON.stringify(cache));
+    await writeFile(overridesPath, JSON.stringify(overrides));
+    await addSubjects(days, { cachePath, overridesPath, delayMs: 0, log: quiet, ...opts });
+    return JSON.parse(await readFile(cachePath, 'utf8'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
+/** One-change day helper. */
+const oneDay = (change, date = '2026-11-13') => [{ date, changes: [{ id: 'x', scope: 'class', category: 'Classes', class: null, notes: [], subjects: [], ...change }] }];
+
+describe('addSubjects: notes, cache migration and ordering', () => {
+  test('subjects come from the text first, then the notes, de-duplicated', async () => {
+    const days = oneDay({
+      class: 'shaman', text: 'Windfury Totem is now activated by all melee abilities.',
+      notes: ['Developers’ notes: Abilities like Whirlwind or Mutilate do not proc Windfury Totem.'],
+    });
+    const f = stubFetch((q) => [crumb(q, `ic_${q.replace(/ /g, '')}`, ['Abilities', 'Shaman'])]);
+    await runIn(days, { fetchImpl: f });
+    assert.deepEqual(days[0].changes[0].subjects.map((s) => s.name), ['Windfury Totem', 'Whirlwind', 'Mutilate']);
+    assert.equal(f.calls.filter((c) => c.q === 'Windfury Totem').length, 1);
+  });
+
+  test('a change has at most 8 subjects', async () => {
+    const names = ['Aa', 'Bb', 'Cc', 'Dd', 'Ee', 'Ff'];
+    const days = oneDay({ text: `${names.join(', ')}.`, notes: ['Gg, Hh, Ii and Jj changed.'] });
+    await runIn(days, { fetchImpl: stubFetch((q) => [spell(q, 'i')]) });
+    assert.equal(days[0].changes[0].subjects.length, 8);
+  });
+
+  test('old-shape spell hits are used at once and refreshed when budget allows; old items need no call', async () => {
+    const days = oneDay({ class: 'paladin', text: 'Holy Shield and Ring of Fire changed. Taran Icebreaker too.' });
+    const cache = {
+      'holy shield': { name: 'Holy Shield', type: 'spell', icon: 'old_icon' },
+      'ring of fire': { name: 'Ring of Fire', type: 'item', icon: 'ring' },
+      'taran icebreaker': { name: 'Taran Icebreaker', type: 'item', icon: 'mace' },
+      'misses stay': null,
+    };
+    const f = stubFetch((q) => (q === 'Holy Shield' ? [crumb('Holy Shield', 'new_icon', ['Talents', 'Paladin'])] : []));
+    const out = await runIn(days, { cache, fetchImpl: f });
+    assert.deepEqual(f.calls.map((c) => c.q), ['Holy Shield']); // only the stale spell is re-fetched
+    assert.deepEqual(out['holy shield'], { name: 'Holy Shield', type: 'spell', kind: 'talent', class: 'paladin', icon: 'new_icon' });
+    assert.equal(out['ring of fire'].icon, 'ring'); // item entries untouched in the cache
+    assert.equal(out['misses stay'], null);
+    const subs = days[0].changes[0].subjects;
+    assert.deepEqual(subs.map((s) => [s.name, s.kind]), [['Holy Shield', 'talent'], ['Ring of Fire', 'item'], ['Taran Icebreaker', 'item']]);
+  });
+
+  test('stale entries keep working when the budget is 0 (kind spell, class null)', async () => {
+    const days = oneDay({ text: 'Sap is fixed.' });
+    const f = stubFetch(() => { throw new Error('no network expected'); });
+    const out = await runIn(days, { cache: { sap: { name: 'Sap', type: 'spell', icon: 'old' } }, fetchImpl: f, maxLookups: 0 });
+    assert.equal(f.calls.length, 0);
+    assert.deepEqual(out.sap, { name: 'Sap', type: 'spell', icon: 'old' }); // not rewritten
+    const s = days[0].changes[0].subjects[0];
+    assert.deepEqual([s.kind, s.class, s.icon], ['spell', null, 'old']);
+  });
+
+  test('a refresh that finds nothing keeps the old icon in the new shape', async () => {
+    const days = oneDay({ text: 'Sap is fixed.' });
+    const out = await runIn(days, { cache: { sap: { name: 'Sap', type: 'spell', icon: 'old' } }, fetchImpl: stubFetch(() => []) });
+    assert.deepEqual(out.sap, { name: 'Sap', type: 'spell', kind: 'spell', class: null, icon: 'old' });
+  });
+
+  test('budget goes to never-looked-up names first, class lines before general lines, then to stale refreshes', async () => {
+    const days = [
+      { date: '2026-11-13', changes: [
+        { id: 'g1', scope: 'general', category: 'Items', class: null, text: 'Gengen is fixed.', notes: [], subjects: [] },
+        { id: 'c1', scope: 'class', category: 'Classes', class: 'mage', text: 'Classnew is fixed.', notes: [], subjects: [] },
+      ] },
+      { date: '2026-11-12', changes: [
+        { id: 'c0', scope: 'class', category: 'Classes', class: 'mage', text: 'Classold is fixed.', notes: [], subjects: [] },
+        { id: 's0', scope: 'class', category: 'Classes', class: 'mage', text: 'Stalespell is fixed.', notes: [], subjects: [] },
+      ] },
+    ];
+    const cache = { stalespell: { name: 'Stalespell', type: 'spell', icon: 'o' } };
+    const f = stubFetch((q) => [spell(q, 'i')]);
+    await runIn(days, { cache, fetchImpl: f, maxLookups: 3 });
+    // newest class line, older class line, then the general line; the stale refresh gets nothing
+    assert.deepEqual(f.calls.map((c) => c.q), ['Classnew', 'Classold', 'Gengen']);
+    const f2 = stubFetch((q) => [spell(q, 'i')]);
+    await runIn(structuredClone(days), { cache, fetchImpl: f2, maxLookups: 4 });
+    assert.deepEqual(f2.calls.map((c) => c.q), ['Classnew', 'Classold', 'Gengen', 'Stalespell']);
+  });
+
+  test('"Slice and Dice": the whole name is tried first, the parts only on a miss', async () => {
+    const hitWhole = oneDay({ class: 'rogue', text: 'Slice and Dice now lasts longer.' });
+    const f = stubFetch((q) => (q === 'Slice and Dice' ? [crumb(q, 'snd', ['Abilities', 'Rogue'])] : []));
+    await runIn(hitWhole, { fetchImpl: f });
+    assert.deepEqual(hitWhole[0].changes[0].subjects.map((s) => s.name), ['Slice and Dice']);
+    assert.deepEqual(f.calls.map((c) => c.q), ['Slice and Dice']);
+
+    const parts = oneDay({ class: 'rogue', text: 'Rupture and Garrote now refresh.' });
+    const f2 = stubFetch((q) => (q === 'Rupture' || q === 'Garrote' ? [spell(q, `i_${q}`)] : []));
+    await runIn(parts, { fetchImpl: f2 });
+    assert.deepEqual(parts[0].changes[0].subjects.map((s) => s.name), ['Rupture', 'Garrote']);
+  });
+
+  test('overrides may carry kind / class / tree', async () => {
+    const days = oneDay({ text: 'Unsealed Fury no longer echoes.' });
+    await runIn(days, { fetchImpl: stubFetch(() => []), overrides: {
+      'unsealed fury': { name: 'Unsealed Fury', type: 'spell', kind: 'talent', class: 'paladin', tree: 'retribution', icon: 'ic' } } });
+    assert.deepEqual(days[0].changes[0].subjects[0],
+      { name: 'Unsealed Fury', type: 'spell', kind: 'talent', class: 'paladin', tree: 'retribution', icon: 'ic', source: 'override' });
+  });
+});
+
+/** A stub game-data index over a plain object keyed by lower-case name. */
+function stubIndex(table, calls = []) {
+  return {
+    calls,
+    lookup(name, opts) {
+      calls.push([name, opts]);
+      return table[name.toLowerCase()] ?? null;
+    },
+  };
+}
+const clientHit = (name, icon, extra = {}) => ({ name, type: 'spell', kind: 'ability', class: 'rogue', tree: null, icon, ...extra });
+
+describe('addSubjects with a game-data index', () => {
+  test('null index: everything comes from Wowhead (source "wowhead", tree null)', async () => {
+    const days = oneDay({ text: 'Sap is fixed.' });
+    await runIn(days, { fetchImpl: stubFetch((q) => [spell(q, 'w')]), gameIndex: null });
+    assert.deepEqual(days[0].changes[0].subjects[0], { name: 'Sap', type: 'spell', kind: 'spell', class: null, tree: null, icon: 'w', source: 'wowhead' });
+  });
+
+  test('source order: override, then client, then Wowhead; the client costs no network', async () => {
+    const days = oneDay({ class: 'rogue', text: 'Ambush, Gouge and Kick changed.' });
+    const index = stubIndex({ ambush: clientHit('Ambush', 'ab_client'), gouge: clientHit('Gouge', 'gouge_client') });
+    const f = stubFetch((q) => [spell(q, `${q}_wh`)]);
+    await runIn(days, { fetchImpl: f, gameIndex: index, maxLookups: 0,
+      overrides: { gouge: { name: 'Gouge', type: 'spell', icon: 'gouge_override' } } });
+    const subs = days[0].changes[0].subjects;
+    assert.deepEqual(subs.map((s) => [s.name, s.source, s.icon]),
+      [['Ambush', 'client', 'ab_client'], ['Gouge', 'override', 'gouge_override']]); // Kick: unknown, no budget
+    assert.equal(f.calls.length, 0);
+    assert.deepEqual(index.calls[0][1], { classSlug: 'rogue', preferType: 'spell' });
+  });
+
+  test('a name unknown to the client falls back to Wowhead', async () => {
+    const days = oneDay({ class: 'rogue', text: 'Ambush, Shank changed.' });
+    const index = stubIndex({ ambush: clientHit('Ambush', 'ab') });
+    await runIn(days, { fetchImpl: stubFetch((q) => [spell(q, 'wh')]), gameIndex: index, maxLookups: 1 });
+    // budget of 1: Shank (unknown to the client) is looked up, Ambush's cross-check has to wait
+    assert.deepEqual(days[0].changes[0].subjects.map((s) => [s.name, s.source, s.verified]),
+      [['Ambush', 'client', undefined], ['Shank', 'wowhead', undefined]]);
+  });
+
+  test('verified: true when icons agree (case-insensitive), false when they differ, absent without a Wowhead answer', async () => {
+    const days = oneDay({ class: 'rogue', text: 'Ambush, Gouge and Kick changed.' });
+    const index = stubIndex({ ambush: clientHit('Ambush', 'AB_Icon'), gouge: clientHit('Gouge', 'g_client'), kick: clientHit('Kick', 'k') });
+    const logs = [];
+    const cache = {
+      ambush: { name: 'Ambush', type: 'spell', kind: 'ability', class: 'rogue', icon: 'ab_icon' },
+      gouge: { name: 'Gouge', type: 'spell', kind: 'ability', class: 'rogue', icon: 'g_wowhead' },
+    };
+    await runIn(days, { cache, fetchImpl: stubFetch(() => { throw new Error('offline'); }), gameIndex: index, log: (m) => logs.push(m) });
+    const [a, g, k] = days[0].changes[0].subjects;
+    assert.equal(a.verified, true);
+    assert.equal(g.verified, false);
+    assert.equal(g.icon, 'g_client'); // the client icon is kept
+    assert.ok(!('verified' in k));
+    assert.equal(logs.filter((m) => /mismatch/.test(m)).length, 1);
+  });
+
+  test('budget order: unknown-to-client first, then at most 100 verifications, then stale refreshes', async () => {
+    const names = Array.from({ length: 105 }, (_, i) => `Cn${String.fromCharCode(97 + (i % 26))}${String.fromCharCode(97 + Math.floor(i / 26))}`);
+    const days = [{ date: '2026-11-13', changes: [
+      ...names.map((n, i) => ({ id: `c${i}`, scope: 'class', category: 'Classes', class: 'rogue', text: `${n} changed.`, notes: [], subjects: [] })),
+      { id: 'u', scope: 'class', category: 'Classes', class: 'rogue', text: 'Unknownx changed.', notes: [], subjects: [] },
+      { id: 's', scope: 'class', category: 'Classes', class: 'rogue', text: 'Stalex changed.', notes: [], subjects: [] },
+    ] }];
+    const table = Object.fromEntries(names.map((n) => [n.toLowerCase(), clientHit(n, 'c')]));
+    const f = stubFetch((q) => [spell(q, 'w')]);
+    await runIn(days, { fetchImpl: f, gameIndex: stubIndex(table), maxLookups: 1000,
+      cache: { stalex: { name: 'Stalex', type: 'spell', icon: 'o' } } });
+    const q = f.calls.map((c) => c.q);
+    assert.equal(q[0], 'Unknownx'); // unknown to the client: first
+    assert.equal(q.length, 1 + 100 + 1); // then exactly 100 verifications, then the stale refresh
+    assert.ok(q.slice(1, 101).every((n) => names.includes(n)));
+    assert.equal(q[101], 'Stalex');
+  });
+
+  test('a throwing index is treated as "not found"', async () => {
+    const days = oneDay({ text: 'Sap is fixed.' });
+    const index = { lookup() { throw new Error('boom'); } };
+    await runIn(days, { fetchImpl: stubFetch((q) => [spell(q, 'w')]), gameIndex: index });
+    assert.equal(days[0].changes[0].subjects[0].source, 'wowhead');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. v3: name aliases
+// ---------------------------------------------------------------------------
+
+describe('addSubjects: name aliases', () => {
+  /** Run with an alias file (or none when `aliases` is undefined). */
+  const withAliases = async (days, aliases, opts = {}) => {
+    const dir = await mkdtemp(join(tmpdir(), 'icons-alias-'));
+    try {
+      const aliasesPath = join(dir, 'aliases.json');
+      if (aliases !== undefined) await writeFile(aliasesPath, typeof aliases === 'string' ? aliases : JSON.stringify(aliases));
+      await addSubjects(days, { cachePath: join(dir, 'c.json'), overridesPath: join(dir, 'o.json'), aliasesPath, delayMs: 0, log: opts.log ?? quiet, ...opts });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  };
+  const retIndex = stubIndex({ 'unsealed wrath': { name: 'Unsealed Wrath', type: 'spell', kind: 'talent', class: 'paladin', tree: 'retribution', icon: 'spell_holy_blessedresillience' } });
+
+  test('alias hit: the written name is kept, the canonical one is resolved and recorded', async () => {
+    const days = oneDay({ class: 'paladin', text: 'Unsealed Fury no longer generates echoes.' });
+    await withAliases(days, { 'Unsealed Fury': 'Unsealed Wrath' }, { gameIndex: retIndex, fetchImpl: stubFetch(() => []) });
+    assert.deepEqual(days[0].changes[0].subjects, [{ name: 'Unsealed Fury', type: 'spell', kind: 'talent', class: 'paladin',
+      tree: 'retribution', icon: 'spell_holy_blessedresillience', source: 'client', alias: 'Unsealed Wrath' }]);
+  });
+
+  test('alias works through Wowhead too, and queries the canonical name', async () => {
+    const days = oneDay({ class: 'paladin', text: 'Unsealed Fury no longer generates echoes.' });
+    const f = stubFetch((q) => (q === 'Unsealed Wrath' ? [crumb(q, 'wh_icon', ['Talents', 'Paladin'])] : []));
+    await withAliases(days, { 'unsealed fury': 'Unsealed Wrath' }, { fetchImpl: f });
+    assert.deepEqual(f.calls.map((c) => c.q), ['Unsealed Wrath']);
+    const s = days[0].changes[0].subjects[0];
+    assert.deepEqual([s.name, s.alias, s.kind, s.icon, s.source], ['Unsealed Fury', 'Unsealed Wrath', 'talent', 'wh_icon', 'wowhead']);
+  });
+
+  test('alias whose target is unknown falls through to a normal miss', async () => {
+    const days = oneDay({ class: 'paladin', text: 'Unsealed Fury no longer generates echoes.' });
+    const f = stubFetch(() => []);
+    await withAliases(days, { 'unsealed fury': 'Nothing Like It' }, { fetchImpl: f });
+    assert.deepEqual(days[0].changes[0].subjects, []);
+    assert.ok(f.calls.some((c) => c.q === 'Nothing Like It') && f.calls.some((c) => c.q === 'Unsealed Fury'));
+  });
+
+  test('no alias file (or a corrupt one): no aliases and one log line', async () => {
+    for (const aliases of [undefined, '{not json']) {
+      const days = oneDay({ class: 'paladin', text: 'Unsealed Fury no longer generates echoes.' });
+      const logs = [];
+      await withAliases(days, aliases, { gameIndex: retIndex, fetchImpl: stubFetch(() => []), log: (m) => logs.push(m) });
+      assert.deepEqual(days[0].changes[0].subjects, []);
+      assert.equal(logs.filter((m) => /alias/.test(m)).length, 1);
     }
   });
 });

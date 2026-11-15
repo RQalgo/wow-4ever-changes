@@ -338,3 +338,67 @@ test('runUpdate loads sources through deps.loadSources with sourcesPath and pass
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+// ---------------------------------------------------------------------------
+// v3: tags and the game-data index
+// ---------------------------------------------------------------------------
+
+test('runUpdate tags every change, including stored days that no source returns any more', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    // A stored day from an older run: no tags, not in the fresh data.
+    const stored = { date: '2026-10-01', kind: 'hotfix', title: null, sourceUrl: 'https://example.test/post', label: 'x',
+      changes: [{ id: '2026-10-01-000', scope: 'class', category: 'Classes', class: 'mage', spec: 'fire', group: null,
+        text: 'Fixed an issue with Fireball.', notes: [], subjects: [] }] };
+    await writeFile(out, JSON.stringify({ generatedAt: 'x', source: {}, days: [stored] }));
+    const deps = stubDeps([day('2026-11-13')]);
+    const r = await runUpdate({ outPath: out, deps, now: fixedNow, log: quiet });
+    assert.equal(r.changed, true);
+    const written = JSON.parse(await readFile(out, 'utf8'));
+    const old = written.days.find((d) => d.date === '2026-10-01');
+    assert.deepEqual(old.changes[0].tags, ['class:mage', 'spec:mage/fire', 'bugfix']);
+    for (const d of written.days) for (const c of d.changes) assert.ok(Array.isArray(c.tags) && c.tags.length > 0);
+    // A second identical run changes nothing: tags are deterministic.
+    const again = await runUpdate({ outPath: out, deps, now: fixedNow, log: quiet });
+    assert.equal(again.changed, false);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('runUpdate uses an injected addTags and passes the game index to addSubjects', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    const index = { lookup: () => null };
+    let received;
+    const deps = {
+      ...stubDeps([day('2026-11-13')]),
+      loadGameIndex: async () => index,
+      addSubjects: async (days, opts) => { received = opts; return days; },
+      addTags: (days) => { days.forEach((d) => d.changes.forEach((c) => { c.tags = ['custom']; })); return days; },
+    };
+    await runUpdate({ outPath: out, deps, now: fixedNow, log: quiet });
+    assert.equal(received.gameIndex, index);
+    assert.deepEqual(JSON.parse(await readFile(out, 'utf8')).days[0].changes[0].tags, ['custom']);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('runUpdate continues with gameIndex null when the index is missing, throws or returns null', async () => {
+  for (const loadGameIndex of [undefined, async () => null, async () => { throw new Error('boom'); },
+    async () => { throw new Error("Cannot find module './gamedata.mjs'"); }]) {
+    const [dir, out] = await tmpOut();
+    try {
+      let received = 'unset';
+      const logs = [];
+      const deps = { ...stubDeps([day('2026-11-13')]), loadGameIndex, addSubjects: async (days, opts) => { received = opts.gameIndex; return days; } };
+      const r = await runUpdate({ outPath: out, deps, now: fixedNow, log: (m) => logs.push(m) });
+      assert.equal(received, null);
+      assert.equal(r.changed, true);
+      if (loadGameIndex) assert.ok(logs.some((m) => /client data unavailable/.test(m)));
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }
+});
