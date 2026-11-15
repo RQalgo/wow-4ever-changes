@@ -289,13 +289,16 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 /* Fallback tile: tinted with the class colour; glyph stays in the text colour for contrast. */
 .tile-fallback { color: var(--text); background: color-mix(in srgb, var(--muted) 18%, var(--surface-2)); }
 .tile-fallback.tile-class { background: color-mix(in srgb, var(--cc) 30%, var(--surface-2)); border-color: var(--cc); }
-/* Talent mark: a small diamond pip on the top-right corner (a shape, not only a colour;
-   the title also says "talent"). It sits half outside the tile, on top of the image. */
+/* Talent mark: a small diamond pip in the top-right corner (a shape, not only a colour;
+   the title also says "talent"), on top of the image. It stays INSIDE its own tile for every
+   cluster size: a pip hanging over the corner covered the neighbouring tile in 2-4 icon
+   clusters (the tiles are only 2px apart). A rotated square's corners reach ~0.21 x its size
+   beyond its box, so the offsets keep the whole diamond, ring included, within the tile. */
 .tile-talent::after {
-  content: ""; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; transform: rotate(45deg);
-  background: var(--accent); border: 1.5px solid var(--surface); box-shadow: 0 0 0 1px var(--text);
+  content: ""; position: absolute; top: 2px; right: 2px; width: 6px; height: 6px; transform: rotate(45deg);
+  background: var(--accent); border: 1px solid var(--surface); box-shadow: 0 0 0 1px var(--text);
 }
-.icons-1 .tile-talent::after { width: 10px; height: 10px; top: -5px; right: -5px; }
+.icons-1 .tile-talent::after { width: 8px; height: 8px; top: 3px; right: 3px; border-width: 1.5px; }
 
 /* Search box. The dropdown is anchored to the input; on narrow screens it spans the
    whole bar instead (see the media query), where the sticky .filters is the containing block. */
