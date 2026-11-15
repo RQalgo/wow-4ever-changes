@@ -1,18 +1,245 @@
 {
   "generatedAt": "2026-11-15T00:00:00Z",
-  "source": { "title": "WoW: Forever Hotfixes", "url": "https://news.blizzard.com/en-us/article/24315281" },
+  "source": {
+    "title": "WoW: Forever Hotfixes",
+    "url": "https://news.blizzard.com/en-us/article/24315281"
+  },
   "days": [
-    { "date": "2026-11-13", "label": "November 13, 2026", "changes": [
-      { "id": "2026-11-13-000", "scope": "class", "category": "Classes", "class": null, "spec": null, "group": null, "text": "Fixed a bug with diminishing returns on creature stuns.", "notes": [], "subjects": [] },
-      { "id": "2026-11-13-001", "scope": "class", "category": "Classes", "class": "druid", "spec": "restoration", "group": null, "text": "Wild Growth healing coefficient increased to 6.6% (was 3.3%).", "notes": [], "subjects": [ { "name": "Wild Growth", "type": "spell", "icon": "ability_druid_flourish" } ] },
-      { "id": "2026-11-13-002", "scope": "class", "category": "Classes", "class": "paladin", "spec": null, "group": null, "text": "Judgement of Command now counts as a melee attack.", "notes": ["Developers’ notes: Other judgements stay ranged."], "subjects": [ { "name": "Judgement of Command", "type": "spell", "icon": "ability_warrior_innerrage" } ] },
-      { "id": "2026-11-13-003", "scope": "general", "category": "Dungeons", "class": null, "spec": null, "group": "The Deadmines", "text": "Sneed now ejects properly when the Shredder is stunned.", "notes": [], "subjects": [] },
-      { "id": "2026-11-13-004", "scope": "general", "category": "Items", "class": null, "spec": null, "group": null, "text": "Taran Icebreaker now behaves as a 2-handed Mace (was 1-handed).", "notes": [], "subjects": [ { "name": "Taran Icebreaker", "type": "item", "icon": "inv_mace_13" } ] }
-    ] },
-    { "date": "2026-11-11", "label": "November 11, 2026", "changes": [
-      { "id": "2026-11-11-000", "scope": "class", "category": "Classes", "class": "paladin", "spec": null, "group": null, "text": "Judgement is now considered a Ranged Attack.", "notes": [], "subjects": [ { "name": "Judgement", "type": "spell", "icon": "spell_holy_righteousfury" } ] },
-      { "id": "2026-11-11-001", "scope": "class", "category": "Classes", "class": "paladin", "spec": "retribution", "group": null, "text": "Unsealed Fury no longer generates echoes from Windfury Totem attacks.", "notes": [], "subjects": [ { "name": "Unsealed Fury", "type": "spell", "icon": "spell_holy_sealofmight" }, { "name": "Windfury Totem", "type": "spell", "icon": "spell_nature_windfury" } ] },
-      { "id": "2026-11-11-002", "scope": "general", "category": "Quests", "class": null, "spec": null, "group": null, "text": "Fixed an issue with the quest \"Helping Hands.\"", "notes": [], "subjects": [] }
-    ] }
+    {
+      "date": "2026-11-14",
+      "kind": "patch",
+      "title": "Beta build notes",
+      "sourceUrl": "https://us.forums.blizzard.com/en/wow/t/2360696/9",
+      "label": "November 14, 2026",
+      "changes": [
+        {
+          "id": "2026-11-14-p000",
+          "scope": "class",
+          "category": "Classes",
+          "class": "mage",
+          "spec": "fire",
+          "group": null,
+          "text": "Fireball now has a 2.5 second cast time (was 3.0).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Fireball",
+              "type": "spell",
+              "icon": "spell_fire_flamebolt"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-14-p001",
+          "scope": "general",
+          "category": "Bugfixes",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a crash when opening the map while mounted.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-11-14-p002",
+          "scope": "general",
+          "category": "Races",
+          "class": null,
+          "spec": null,
+          "group": "Gnome",
+          "text": "Gnomes can now use the Engineering racial in battlegrounds.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-11-14-p003",
+          "scope": "general",
+          "category": "Races",
+          "class": null,
+          "spec": null,
+          "group": "Tauren",
+          "text": "Tauren war stomp radius corrected to 8 yards.",
+          "notes": [],
+          "subjects": []
+        }
+      ]
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "patch",
+      "title": null,
+      "sourceUrl": "https://us.forums.blizzard.com/en/wow/t/2360696/7",
+      "label": "November 13, 2026",
+      "changes": [
+        {
+          "id": "2026-11-13-p000",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "restoration",
+          "group": null,
+          "text": "Rejuvenation mana cost reduced by 5%.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Rejuvenation",
+              "type": "spell",
+              "icon": "spell_nature_rejuvenation"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-13-p001",
+          "scope": "general",
+          "category": "Bugfixes",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed vendors sometimes showing no stock.",
+          "notes": [],
+          "subjects": []
+        }
+      ]
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "hotfix",
+      "title": null,
+      "sourceUrl": "https://news.blizzard.com/en-us/article/24315281",
+      "label": "November 13, 2026",
+      "changes": [
+        {
+          "id": "2026-11-13-000",
+          "scope": "class",
+          "category": "Classes",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug with diminishing returns on creature stuns.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-11-13-001",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "restoration",
+          "group": null,
+          "text": "Wild Growth healing coefficient increased to 6.6% (was 3.3%).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Wild Growth",
+              "type": "spell",
+              "icon": "ability_druid_flourish"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-13-002",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": null,
+          "group": null,
+          "text": "Judgement of Command now counts as a melee attack.",
+          "notes": [
+            "Developers’ notes: Other judgements stay ranged."
+          ],
+          "subjects": [
+            {
+              "name": "Judgement of Command",
+              "type": "spell",
+              "icon": "ability_warrior_innerrage"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-13-003",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "The Deadmines",
+          "text": "Sneed now ejects properly when the Shredder is stunned.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-11-13-004",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Taran Icebreaker now behaves as a 2-handed Mace (was 1-handed).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Taran Icebreaker",
+              "type": "item",
+              "icon": "inv_mace_13"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-11-11",
+      "label": "November 11, 2026",
+      "changes": [
+        {
+          "id": "2026-11-11-000",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": null,
+          "group": null,
+          "text": "Judgement is now considered a Ranged Attack.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Judgement",
+              "type": "spell",
+              "icon": "spell_holy_righteousfury"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-11-001",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": "retribution",
+          "group": null,
+          "text": "Unsealed Fury no longer generates echoes from Windfury Totem attacks.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Unsealed Fury",
+              "type": "spell",
+              "icon": "spell_holy_sealofmight"
+            },
+            {
+              "name": "Windfury Totem",
+              "type": "spell",
+              "icon": "spell_nature_windfury"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-11-002",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue with the quest \"Helping Hands.\"",
+          "notes": [],
+          "subjects": []
+        }
+      ]
+    }
   ]
 }

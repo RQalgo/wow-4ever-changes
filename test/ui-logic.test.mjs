@@ -15,6 +15,13 @@ import * as L from '../assets/logic.js';
  */
 const data = JSON.parse(readFileSync(new URL('./fixtures/changes-sample.json', import.meta.url), 'utf8'));
 
+/**
+ * Find a day of the fixture by its identity (date + kind). Several tests used
+ * `data.days[0]` before schema v2; the fixture now starts with patch days, so
+ * they look the hotfix day up explicitly instead.
+ */
+const dayOf = (date, kind) => data.days.find((d) => d.date === date && L.dayKind(d) === kind);
+
 /** Small helper to build a change object with sensible defaults. */
 const mk = (o) => ({ id: 'x', scope: 'class', category: 'Classes', class: null, spec: null, group: null, text: '', notes: [], subjects: [], ...o });
 
@@ -30,7 +37,7 @@ test('relativeDay gives friendly hints', () => {
 
 /* ---------- grouping ---------- */
 test('groupChanges: all-classes first, specs nested, general by category/group', () => {
-  const day = data.days[0];
+  const day = dayOf('2026-11-13', 'hotfix');
   const g = L.groupChanges(day.changes);
   assert.equal(g.count, 5);
   assert.deepEqual(g.classSections.map((s) => s.label), ['All classes', 'Druid', 'Paladin']);
@@ -57,6 +64,8 @@ test('class filter keeps that class plus "All classes" lines', () => {
   assert.ok(ids.includes('2026-11-13-002')); // paladin
   assert.ok(ids.includes('2026-11-11-001')); // paladin retribution (every spec)
   assert.ok(!ids.includes('2026-11-13-001')); // druid
+  assert.ok(!ids.includes('2026-11-13-p000')); // druid (patch day)
+  assert.ok(ids.includes('2026-11-14-p001')); // general lines are unaffected by the class filter
 });
 
 /* ---------- filtering: spec ---------- */
@@ -106,15 +115,15 @@ test('glyphKey picks neutral glyphs per general category', () => {
 
 /* ---------- search ---------- */
 test('matchesQuery: all words, case-insensitive, over text/notes/subjects/group/category', () => {
-  const ch = data.days[0].changes[2]; // Judgement of Command + dev note
+  const ch = dayOf('2026-11-13', 'hotfix').changes[2]; // Judgement of Command + dev note
   assert.ok(L.matchesQuery(ch, 'JUDGEMENT melee'));
   assert.ok(L.matchesQuery(ch, 'stay ranged')); // in the note
   assert.ok(!L.matchesQuery(ch, 'judgement fireball'));
   assert.ok(L.matchesQuery(ch, '')); // empty matches all
-  const deadmines = data.days[0].changes[3];
+  const deadmines = dayOf('2026-11-13', 'hotfix').changes[3];
   assert.ok(L.matchesQuery(deadmines, 'deadmines')); // group
   assert.ok(L.matchesQuery(deadmines, 'dungeons sneed')); // category + text
-  const item = data.days[0].changes[4];
+  const item = dayOf('2026-11-13', 'hotfix').changes[4];
   assert.ok(L.matchesQuery(item, 'taran')); // subject name / text
 });
 
@@ -161,15 +170,15 @@ test('typing narrows: prefix matches first, then substring; items allowed', () =
 /* ---------- hash state ---------- */
 test('encodeHash omits defaults and round-trips', () => {
   assert.equal(L.encodeHash(L.defaultState()), '');
-  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', general: false };
+  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', general: false, kind: 'all' };
   const h = L.encodeHash(st);
-  assert.match(h, /^#class=paladin&spec=retribution&q=judgement\+of&general=0$/);
+  assert.match(h, /^#class=paladin&spec=retribution&q=judgement\+of&general=0$/); // kind=all is omitted
   assert.deepEqual(L.decodeHash(h), st);
 });
 
 test('decodeHash accepts the documented example and rejects junk', () => {
   assert.deepEqual(L.decodeHash('#class=paladin&spec=retribution&q=judgement&general=0'),
-    { cls: 'paladin', spec: 'retribution', q: 'judgement', general: false });
+    { cls: 'paladin', spec: 'retribution', q: 'judgement', general: false, kind: 'all' });
   assert.deepEqual(L.decodeHash('#class=notaclass&spec=holy'), L.defaultState()); // spec needs a valid class
   assert.equal(L.decodeHash('#class=mage&spec=<script>').spec, '');
   assert.deepEqual(L.decodeHash(''), L.defaultState());
@@ -179,4 +188,75 @@ test('decodeHash accepts the documented example and rejects junk', () => {
 test('sanitizeSelection guards stored values', () => {
   assert.deepEqual(L.sanitizeSelection('druid', 'feral'), { cls: 'druid', spec: 'feral' });
   assert.deepEqual(L.sanitizeSelection(5, 'x'), { cls: '', spec: '' });
+});
+
+/* ---------- day kinds (schema v2) ---------- */
+test('dayKind: missing or unknown kind means hotfix', () => {
+  const legacy = dayOf('2026-11-11', 'hotfix');
+  assert.ok(legacy && !('kind' in legacy)); // fixture proves the default: no kind field at all
+  assert.equal(L.dayKind(legacy), 'hotfix');
+  assert.equal(L.dayKind({ kind: 'patch' }), 'patch');
+  assert.equal(L.dayKind({ kind: 'weird' }), 'hotfix');
+  assert.equal(L.dayKind(null), 'hotfix');
+});
+
+test('dayKey is date + kind, so same-date patch and hotfix differ and are all unique', () => {
+  assert.equal(L.dayKey({ date: '2026-11-13', kind: 'patch' }), '2026-11-13|patch');
+  assert.equal(L.dayKey({ date: '2026-11-13' }), '2026-11-13|hotfix');
+  const keys = data.days.map(L.dayKey);
+  assert.equal(new Set(keys).size, keys.length);
+  // Two fixture days share 2026-11-13.
+  assert.equal(data.days.filter((d) => d.date === '2026-11-13').length, 2);
+});
+
+test('visibleDays keeps same-date days separate, in data order', () => {
+  const keys = L.visibleDays(data, L.defaultState()).map((v) => L.dayKey(v.day));
+  assert.deepEqual(keys, ['2026-11-14|patch', '2026-11-13|patch', '2026-11-13|hotfix', '2026-11-11|hotfix']);
+});
+
+test('kind filter: hotfix / patch / all', () => {
+  const keys = (kind) => L.visibleDays(data, { ...L.defaultState(), kind }).map((v) => L.dayKey(v.day));
+  assert.deepEqual(keys('patch'), ['2026-11-14|patch', '2026-11-13|patch']);
+  assert.deepEqual(keys('hotfix'), ['2026-11-13|hotfix', '2026-11-11|hotfix']); // legacy day counts as hotfix
+  assert.equal(keys('all').length, 4);
+  assert.equal(L.matchesKind({ kind: 'patch' }, 'hotfix'), false);
+  assert.equal(L.matchesKind({}, 'hotfix'), true);
+});
+
+test('kind filter combines with class, General toggle and search', () => {
+  const ids = (st) => L.visibleDays(data, { ...L.defaultState(), ...st }).flatMap((v) => v.changes.map((c) => c.id));
+  assert.deepEqual(ids({ kind: 'patch', cls: 'druid', general: false }), ['2026-11-13-p000']);
+  assert.deepEqual(ids({ kind: 'patch', q: 'gnome' }), ['2026-11-14-p002']);
+  assert.deepEqual(ids({ kind: 'hotfix', q: 'gnome' }), []); // empty -> UI shows the empty state
+  assert.deepEqual(ids({ kind: 'patch', general: false, cls: 'paladin' }), []);
+  // Patch-only categories survive and group like any other General category.
+  const patch = L.visibleDays(data, { ...L.defaultState(), kind: 'patch' }).find((v) => v.day.date === '2026-11-14');
+  assert.deepEqual(L.groupChanges(patch.changes).general.map((c) => c.category), ['Bugfixes', 'Races']);
+});
+
+test('per-day counts follow the visible lines', () => {
+  const v = L.visibleDays(data, { ...L.defaultState(), kind: 'patch', general: false });
+  assert.deepEqual(v.map((d) => [L.dayKey(d.day), L.groupChanges(d.changes).count]), [['2026-11-14|patch', 1], ['2026-11-13|patch', 1]]);
+});
+
+test('suggestions respect the kind filter', () => {
+  const names = (kind) => L.buildSuggestions(data, { ...L.defaultState(), kind }, '').map((s) => s.name);
+  assert.ok(names('patch').includes('Fireball'));
+  assert.ok(!names('hotfix').includes('Fireball'));
+  assert.ok(names('hotfix').includes('Wild Growth'));
+  assert.ok(!names('patch').includes('Wild Growth'));
+  assert.ok(names('all').includes('Fireball') && names('all').includes('Wild Growth'));
+});
+
+test('kind hash: encode omits all, decode ignores unknown values, round-trips', () => {
+  assert.equal(L.encodeHash({ ...L.defaultState(), kind: 'patch' }), '#kind=patch');
+  assert.equal(L.encodeHash({ ...L.defaultState(), kind: 'hotfix' }), '#kind=hotfix');
+  assert.equal(L.encodeHash({ ...L.defaultState(), kind: 'all' }), '');
+  assert.equal(L.encodeHash({ ...L.defaultState(), kind: 'bogus' }), '');
+  assert.equal(L.decodeHash('#kind=patch').kind, 'patch');
+  assert.equal(L.decodeHash('#kind=nonsense').kind, 'all');
+  assert.equal(L.decodeHash('#kind=ALL').kind, 'all');
+  assert.equal(L.decodeHash('#class=mage&kind=hotfix&general=0').kind, 'hotfix');
+  const st = { cls: 'mage', spec: 'fire', q: 'fire', general: false, kind: 'patch' };
+  assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });

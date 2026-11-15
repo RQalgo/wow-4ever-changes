@@ -12,6 +12,7 @@
  *   5. Search         : matching and highlight segmentation
  *   6. Suggestions    : skill-name suggestions for the search box
  *   7. URL hash state : encode / decode the shareable filter state
+ *   8. Day kinds      : hotfix vs patch (schema v2), day identity, kind filter
  */
 
 /* ======================= 1. Constants ======================= */
@@ -232,10 +233,10 @@ export function highlightSegments(text, terms) {
 
 /**
  * Create the default (unfiltered) UI state.
- * @returns {{cls: string, spec: string, q: string, general: boolean}}
+ * @returns {{cls: string, spec: string, q: string, general: boolean, kind: 'all'|'hotfix'|'patch'}}
  */
 export function defaultState() {
-  return { cls: '', spec: '', q: '', general: true };
+  return { cls: '', spec: '', q: '', general: true, kind: 'all' };
 }
 
 /**
@@ -278,11 +279,15 @@ export function matchesState(ch, state) {
  * Apply the state to the whole dataset and drop days with nothing left.
  * @param {{days: object[]}} data
  * @param {object} state
+ * Days keep the order of the data (the data is already sorted); two days on
+ * the same date (patch + hotfix) are separate entries.
  * @returns {{day: object, changes: object[]}[]} visible days (newest first, as in data)
  */
 export function visibleDays(data, state) {
   const out = [];
   for (const day of data.days || []) {
+    // Kind filter first: it is per day, so skip the day's lines entirely.
+    if (!matchesKind(day, state.kind)) continue;
     const changes = (day.changes || []).filter((c) => matchesState(c, state));
     if (changes.length) out.push({ day, changes });
   }
@@ -343,7 +348,7 @@ export function glyphKey(ch) {
 /**
  * Build search-box suggestions from `subjects[].name` across the data.
  *
- * - Only changes passing the class/spec filter and the General toggle count
+ * - Only changes passing the kind, class/spec filters and the General toggle count
  *   (the search text itself is ignored here, otherwise the list would shrink
  *   to the thing already typed).
  * - Ranked by how many changes mention the subject (most frequent first),
@@ -353,7 +358,7 @@ export function glyphKey(ch) {
  *   substring matches, each group keeping the frequency order.
  *
  * @param {{days: object[]}} data
- * @param {object} state current UI state (cls/spec/general used)
+ * @param {object} state current UI state (cls/spec/general/kind used)
  * @param {string} query text currently typed
  * @param {number} [limit] max suggestions
  * @returns {{name: string, icon: string, type: string, count: number}[]}
@@ -364,6 +369,7 @@ export function buildSuggestions(data, state, query, limit = 8) {
   const tally = new Map(); // lower-cased name -> suggestion
 
   for (const day of data.days || []) {
+    if (!matchesKind(day, state.kind)) continue; // hidden kind: no suggestions from it
     for (const ch of day.changes || []) {
       if (!matchesState(ch, filterState)) continue;
       const seen = new Set(); // count a subject once per change
@@ -409,9 +415,10 @@ export function sanitizeSelection(cls, spec) {
 }
 
 /**
- * Encode the state as a hash such as "#class=paladin&spec=retribution&q=judgement&general=0".
- * Default values are omitted; the default state encodes to "" (no hash).
- * @param {{cls: string, spec: string, q: string, general: boolean}} state
+ * Encode the state as a hash such as "#class=paladin&spec=retribution&q=judgement&general=0&kind=patch".
+ * Default values are omitted (kind=all is never written); the default state
+ * encodes to "" (no hash).
+ * @param {{cls: string, spec: string, q: string, general: boolean, kind?: string}} state
  * @returns {string} "" or a string starting with "#"
  */
 export function encodeHash(state) {
@@ -420,6 +427,8 @@ export function encodeHash(state) {
   if (state.cls && state.spec) p.set('spec', state.spec);
   if (state.q) p.set('q', state.q);
   if (!state.general) p.set('general', '0');
+  const kind = sanitizeKindFilter(state.kind);
+  if (kind !== 'all') p.set('kind', kind);
   const str = p.toString();
   return str ? `#${str}` : '';
 }
@@ -428,7 +437,8 @@ export function encodeHash(state) {
  * Decode a location hash back into a state. Unknown/invalid values fall back
  * to defaults, so a hand-edited URL can never break the page.
  * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
- * @returns {{cls: string, spec: string, q: string, general: boolean}}
+ * An unknown `kind` value is ignored (treated as "all").
+ * @returns {{cls: string, spec: string, q: string, general: boolean, kind: 'all'|'hotfix'|'patch'}}
  */
 export function decodeHash(hash) {
   const p = new URLSearchParams(String(hash || '').replace(/^#/, ''));
@@ -438,5 +448,53 @@ export function decodeHash(hash) {
     spec,
     q: (p.get('q') || '').slice(0, 100),
     general: p.get('general') !== '0',
+    kind: sanitizeKindFilter(p.get('kind')),
   };
+}
+
+/* ======================= 8. Day kinds (schema v2) ======================= */
+
+/** The kind filter values: everything, only hotfix days, only patch days. */
+export const KIND_FILTERS = ['all', 'hotfix', 'patch'];
+
+/**
+ * Normalise a day's kind. Schema v2 says a missing `kind` means "hotfix"
+ * (older data has none); anything unrecognised is treated the same way so a
+ * malformed file can never create a third, unstyled kind.
+ * @param {{kind?: unknown}} day
+ * @returns {'hotfix'|'patch'}
+ */
+export function dayKind(day) {
+  return day && day.kind === 'patch' ? 'patch' : 'hotfix';
+}
+
+/**
+ * Stable identity of a day: date + kind. A patch and a hotfix can share a
+ * date and are separate days, so the date alone is NOT unique. Use this for
+ * DOM ids, maps and keys.
+ * @param {{date: string, kind?: unknown}} day
+ * @returns {string} e.g. "2026-11-13|patch"
+ */
+export function dayKey(day) {
+  return `${day.date}|${dayKind(day)}`;
+}
+
+/**
+ * Validate a kind-filter value from untrusted input (URL hash). Anything
+ * other than "hotfix" / "patch" (including "all") becomes "all".
+ * @param {unknown} v
+ * @returns {'all'|'hotfix'|'patch'}
+ */
+export function sanitizeKindFilter(v) {
+  return v === 'hotfix' || v === 'patch' ? v : 'all';
+}
+
+/**
+ * Does a day pass the kind filter?
+ * @param {object} day
+ * @param {string} filter 'all' | 'hotfix' | 'patch'
+ * @returns {boolean}
+ */
+export function matchesKind(day, filter) {
+  return !filter || filter === 'all' || dayKind(day) === filter;
 }
