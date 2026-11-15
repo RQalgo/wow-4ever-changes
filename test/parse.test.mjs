@@ -411,3 +411,41 @@ describe('talent-tree rule', () => {
     ]);
   });
 });
+
+describe('loose headings (bold-only items without a nested list)', () => {
+  test('a bold-only item followed by plain siblings heads those siblings', () => {
+    const html = day('Races', `<ul>
+      <li><strong>Tauren</strong></li><li>Cultivation now has a cast time.</li><li>Plainsrunning fixed.</li>
+      <li><strong>Orc</strong></li><li>Blood Fury changed.</li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.group, c.text]), [
+      ['Tauren', 'Cultivation now has a cast time.'],
+      ['Tauren', 'Plainsrunning fixed.'],
+      ['Orc', 'Blood Fury changed.'],
+    ]);
+  });
+
+  test('a heading-only item followed by a text-less wrapper item owns its nested list', () => {
+    const html = day('Zones', '<ul><li><strong>Elwynn</strong></li><li><ul><li>Kobolds.</li></ul></li></ul>');
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.group, c.text]), [['Elwynn', 'Kobolds.']]);
+  });
+
+  test('under Classes a loose class heading sets the class', () => {
+    const html = day('Classes', '<ul><li><strong>Mage</strong></li><li>Blink fixed.</li></ul>');
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.class, c.text]), [['mage', 'Blink fixed.']]);
+  });
+
+  test('a loose heading ends at the next heading item with a nested list', () => {
+    const html = day('Items', `<ul><li><strong>A</strong></li><li>a1</li>
+      <li><strong>B</strong><ul><li>b1</li></ul></li><li>plain</li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.group, c.text]), [
+      ['A', 'a1'], ['B', 'b1'], [null, 'plain'],
+    ]);
+  });
+
+  test('bold-only items followed only by bold-only items stay changes (hotfix behaviour)', () => {
+    const html = day('Items', '<ul><li>Base.</li><li><strong>First bold.</strong></li><li><strong>Second bold.</strong></li></ul>');
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.group, c.text]), [
+      [null, 'Base.'], [null, 'First bold.'], [null, 'Second bold.'],
+    ]);
+  });
+});

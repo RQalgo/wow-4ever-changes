@@ -305,7 +305,8 @@ function makeChange(ctx, text) {
   return {
     id: '',
     scope: ctx.inClasses ? 'class' : 'general',
-    category: ctx.category,
+    // Plain items in a list with no category at all fall back to "General".
+    category: ctx.category ?? FALLBACK_CATEGORY,
     class: ctx.inClasses ? ctx.class : null,
     spec: ctx.inClasses ? ctx.spec : null,
     group: ctx.group.length ? ctx.group.join(' > ') : null,
@@ -380,10 +381,36 @@ function descend(ctx, heading) {
 }
 
 /**
+ * True when an <li>'s own content is only bold text, i.e. it reads as a
+ * heading (class, spec, group or, with no category yet, a category).
+ * @param {import('node-html-parser').Node[]} own The item's non-list children.
+ */
+function isHeadingItem(own) {
+  return isOnly(own, BOLD_TAGS);
+}
+
+/**
  * Walk one list and append the changes it contains to `out`.
  *
+ * Item kinds, in the order they are tested:
+ * 1. Heading item: bold-only text plus a nested list. Its nested lists are
+ *    walked under the heading (see `headingContext`).
+ * 2. Bold-only item WITHOUT a nested list ("loose heading"). Forum patch
+ *    notes write `<li><strong>Tauren</strong></li><li>Cultivation…</li>` or
+ *    `<li><strong>Quests</strong></li><li><ul>…</ul></li>`: the heading
+ *    applies to the following sibling items of this list until the next
+ *    bold-only item. If the next sibling is itself bold-only, or there is no
+ *    next sibling, the item is just a change (the hotfix post's behaviour:
+ *    "<li><strong>Thunderfury is back.</strong></li>").
+ * 3. Wrapper item: no own text, only nested lists; walked with the current
+ *    context (so after a loose heading, under that heading).
+ * 4. Developer note sibling: attached to the previous change of this list.
+ * 5. Ordinary change, with any nested items as its notes.
+ *
  * @param {import('node-html-parser').HTMLElement} list <ul> or <ol>
- * @param {{category:string,inClasses:boolean,class:string|null,spec:string|null,group:string[]}} ctx
+ * @param {{category:string|null,inClasses:boolean,class:string|null,spec:string|null,group:string[]}} ctx
+ *   `category: null` means "no category yet" (patch notes after a
+ *   "Change Log" heading): top-level bold items then name the category.
  * @param {object[]} out Changes of the current day, in published order.
  */
 function walkList(list, ctx, out) {
@@ -392,44 +419,82 @@ function walkList(list, ctx, out) {
   // lists and is cleared after a heading item, so a note never jumps
   // across a heading.
   let previous = null;
-  for (const li of itemsOf(list)) {
-    const { own, nested } = splitListItem(li);
+  // Context for plain items: `ctx`, or a loose heading's context (kind 2).
+  let current = ctx;
+  const items = itemsOf(list).map((li) => splitListItem(li));
+  for (let i = 0; i < items.length; i++) {
+    const { own, nested } = items[i];
     const text = textOf(own);
 
-    // A heading item: only bold text plus a nested list -> class/spec/group.
+    // 1. Heading item with its own nested list -> class/spec/group/category.
     // `previous` is reset so a note after the heading's block never jumps
     // back over it to an earlier change; it is kept as a change instead.
-    if (nested.length && isOnly(own, BOLD_TAGS)) {
-      const inner = descend(ctx, text);
+    // A loose heading in effect ends here (the next heading replaces it).
+    if (nested.length && isHeadingItem(own)) {
+      const inner = headingContext(ctx, text);
       for (const sub of nested) walkList(sub, inner, out);
+      current = ctx;
       previous = null;
       continue;
     }
 
-    // A wrapper item with no text of its own: just walk its lists.
+    // 2. Loose heading: bold-only, no nested list. It heads the following
+    // siblings only if the next sibling is not itself a heading; otherwise
+    // (or when it is the last item) it is an ordinary change, below.
+    if (!nested.length && isHeadingItem(own)) {
+      const next = items[i + 1];
+      if (next && !isHeadingItem(next.own)) {
+        current = headingContext(ctx, text);
+        previous = null;
+        continue;
+      }
+      current = ctx; // a new bold-only item always ends a loose heading
+    }
+
+    // 3. A wrapper item with no text of its own: just walk its lists.
     if (!text) {
-      for (const sub of nested) walkList(sub, ctx, out);
+      for (const sub of nested) walkList(sub, current, out);
       if (nested.length) previous = null;
       continue;
     }
 
-    // Developer note as a sibling item: attach to the previous change. With
-    // no previous change in this list, keep it as a change so the text is
-    // never silently dropped.
+    // 4. Developer note as a sibling item: attach to the previous change.
+    // With no previous change in this list, keep it as a change so the text
+    // is never silently dropped.
     if (!nested.length && previous && isDeveloperNote(own)) {
       previous.notes.push(text);
       continue;
     }
 
-    // Ordinary change. (A bold-only item without a nested list also lands
-    // here and becomes a change with that text.) If the item has its own
-    // text *and* nested lists, the nested items are its notes, e.g. a
-    // developer note nested under the change it explains.
-    const change = makeChange(ctx, text);
+    // 5. Ordinary change. If the item has its own text *and* nested lists,
+    // the nested items are its notes, e.g. a developer note nested under
+    // the change it explains.
+    const change = makeChange(current, text);
     if (nested.length) change.notes.push(...collectNoteTexts(nested));
     out.push(change);
     previous = change;
   }
+}
+
+/**
+ * Context for the items under a heading item. With no category yet
+ * (`ctx.category === null`), the heading names the category and "Classes"
+ * switches class mode on; otherwise it descends to class/spec/group.
+ * @param {object} ctx Walker context of the list holding the heading.
+ * @param {string} heading Heading text.
+ */
+function headingContext(ctx, heading) {
+  if (ctx.category === null) return categoryContext(heading);
+  return descend(ctx, heading);
+}
+
+/**
+ * Fresh walker context for the start of a category.
+ * @param {string|null} category Category heading, or null for "none yet".
+ */
+function categoryContext(category) {
+  const inClasses = category !== null && category.toLowerCase() === CLASSES_CATEGORY;
+  return { category, inClasses, class: null, spec: null, group: [] };
 }
 
 // ---------------------------------------------------------------------------
@@ -606,9 +671,10 @@ function parseDays(root) {
       continue;
     }
     if (!day) continue; // lists before the first date are not hotfixes
-    const cat = category ?? FALLBACK_CATEGORY;
-    const inClasses = cat.toLowerCase() === CLASSES_CATEGORY;
-    walkList(block.el, { category: cat, inClasses, class: null, spec: null, group: [] }, day.changes);
+    // The hotfix post names categories with paragraphs, so a list with no
+    // category is walked as "General" (bold items in it stay groups, as
+    // before), unlike patch notes where such bold items name the category.
+    walkList(block.el, categoryContext(category ?? FALLBACK_CATEGORY), day.changes);
   }
   return [...days.values()];
 }
