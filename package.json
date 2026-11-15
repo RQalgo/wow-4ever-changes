@@ -1,0 +1,12 @@
+{
+  "name": "wow-4ever-changes",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WoW: Forever hotfix and patch-note changes at a glance (unofficial fan project)",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test",
+    "serve": "node scripts/serve.mjs"
+  }
+}
