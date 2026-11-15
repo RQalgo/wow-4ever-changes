@@ -63,6 +63,9 @@ const MAX_CANDIDATES = 6;
 /** Maximum number of subjects (and candidate names) per change, text plus notes. */
 const MAX_SUBJECTS = 8;
 
+/** Per run, at most this many Wowhead lookups are spent cross-checking client-resolved names. */
+const MAX_VERIFY_LOOKUPS = 100;
+
 // ---------------------------------------------------------------------------
 // STOPLISTS  (all entries are compared lower-cased; keep them in this block)
 // ---------------------------------------------------------------------------
@@ -127,6 +130,8 @@ const GENERIC_TERMS = [
   'classic era', 'diminishing returns', 'main hand', 'off hand', 'health', 'threat',
   'block', 'dodge', 'dodging', 'stun', 'charm', 'talent', 'talents', 'new talent',
   'spell', 'power', 'coefficient',
+  // plural category nouns that start sentences in developer notes ("Abilities like ...")
+  'spells', 'abilities', 'attacks', 'effects', 'strikes', 'auras', 'totems', 'seals', 'judgements',
   // factions
   'alliance', 'horde',
   // armour and weapon types
@@ -866,13 +871,16 @@ function preferTypeFor(change) {
 /**
  * Fill `subjects` on every change of every day (see docs/SCHEMA.md, v3).
  *
- * Subjects come from the change text first, then from its notes. Steps:
+ * Subjects come from the change text first, then from its notes. Source order
+ * per name: overrides, game-data index ("client"), Wowhead ("wowhead"). Steps:
  *   1. RESOLVE: walk the changes in priority order (class lines before general
- *      lines, newest day first) and look every unknown candidate up, spending
- *      the per-run budget on never-looked-up names first;
- *   2. REFRESH: spend what is left of the budget re-looking-up stale cache
- *      entries (v2-shape spell hits) to learn their kind and class;
- *   3. ASSEMBLE: build each change's `subjects` from the cache alone.
+ *      lines, newest day first); names unknown to the client index are looked
+ *      up on Wowhead, never-looked-up ones first;
+ *   2. VERIFY: with the budget left, cross-check client-resolved names that
+ *      have no Wowhead answer yet (max 100 per run) -> subject.verified;
+ *   3. REFRESH: then re-look-up stale cache entries (v2-shape spell hits) to
+ *      learn their kind and class;
+ *   4. ASSEMBLE: build each change's `subjects` from the cache / index alone.
  * Finally the cache is written back (sorted keys, 2-space JSON). Never throws
  * because of the network.
  *
@@ -883,6 +891,10 @@ function preferTypeFor(change) {
  * @param {typeof fetch} [opts.fetchImpl]
  * @param {number} [opts.delayMs]    pause between network calls
  * @param {number} [opts.maxLookups] cap on network calls this run
+ * @param {{ lookup: Function }|null} [opts.gameIndex] game-client data index
+ *   (scripts/gamedata.mjs): `lookup(name, { classSlug, preferType })` returns
+ *   `{ name, type, kind, class, tree, icon }` or null, synchronously and without
+ *   network. Primary source; null = Wowhead only.
  * @param {Function} [opts.log]      one-line logger
  * @returns {Promise<object[]>} the same `days`
  */
@@ -892,6 +904,7 @@ export async function addSubjects(days, {
   fetchImpl = globalThis.fetch,
   delayMs = 1500,
   maxLookups = 250,
+  gameIndex = null,
   log = console.error,
 } = {}) {
   const cache = await readJsonObject(cachePath, log);
@@ -900,6 +913,7 @@ export async function addSubjects(days, {
   // A limits object that never touches the network: assembly reads the cache only.
   const offline = createLimits({ maxLookups: 0, delayMs: 0, log: () => {} });
   offline.stopped = true;
+  const mismatches = new Set(); // names already logged as client/Wowhead icon mismatches
 
   // Priority order: class lines first, then general; `days` is newest-first and
   // Array.sort is stable, so within each group newer days stay first.
@@ -909,35 +923,73 @@ export async function addSubjects(days, {
     || (a.day.date < b.day.date ? 1 : a.day.date > b.day.date ? -1 : 0));
 
   /**
-   * Resolve one change's groups into subjects using `lim` (real or offline
-   * limits). `stale` (optional Map) collects v2-shape spell entries that were
-   * used, with the context to refresh them.
+   * Resolve ONE name, in the documented source order:
+   *   1. overrides file               -> source "override"
+   *   2. the game-data index (client) -> source "client"; free, no budget. When
+   *      the Wowhead cache already holds an icon for the name, `verified` says
+   *      whether the two icons agree (the client icon is kept either way);
+   *   3. Wowhead (cache, then network) -> source "wowhead".
+   * Returns the subject fields or null ("not found / unknown for now").
    */
-  const resolveChange = async (change, lim, stale) => {
-    const classSlug = change.class ?? null;
-    const preferType = preferTypeFor(change);
+  const resolveName = async (name, ctx, lim) => {
+    const key = normalizeName(name);
+    if (Object.hasOwn(overrides, key)) {
+      const o = overrides[key];
+      return o ? { ...normalizeHit(o), tree: o.tree ?? null, source: 'override' } : null;
+    }
+    let client = null;
+    if (gameIndex) {
+      try { client = gameIndex.lookup(name, { classSlug: ctx.classSlug, preferType: ctx.preferType }); } catch { client = null; }
+    }
+    if (client) {
+      const hit = { name: client.name, type: client.type, kind: client.kind, class: client.class ?? null,
+        tree: client.tree ?? null, icon: client.icon, source: 'client' };
+      const wh = cache[key]; // the Wowhead answer, if any (never fetched here)
+      if (wh && wh.icon) {
+        hit.verified = String(wh.icon).toLowerCase() === String(client.icon).toLowerCase();
+        if (!hit.verified && !mismatches.has(key)) {
+          mismatches.add(key);
+          log(`icons: icon mismatch for "${client.name}": client ${client.icon} vs wowhead ${wh.icon} (keeping client)`);
+        }
+      }
+      return hit;
+    }
+    const wh = await lookupName(name, { fetchImpl, cache, preferType: ctx.preferType, classSlug: ctx.classSlug, overrides, limits: lim });
+    return wh ? { ...wh, tree: null, source: 'wowhead' } : null;
+  };
+
+  /**
+   * Resolve one change's groups into subjects using `lim` (real or offline
+   * limits). `collect` (optional `{ stale, verify }` Maps) gathers the
+   * follow-up work: v2-shape Wowhead spell entries to refresh, and
+   * client-resolved names without a Wowhead answer yet to cross-check.
+   */
+  const resolveChange = async (change, lim, collect) => {
+    const ctx = { classSlug: change.class ?? null, preferType: preferTypeFor(change) };
     const subjects = [];
     const taken = new Set();
-    const take = (hit) => {
+    const take = (hit, queried) => {
       const id = `${hit.type}:${normalizeName(hit.name)}`;
       if (taken.has(id) || subjects.length >= MAX_SUBJECTS) return;
       taken.add(id);
-      subjects.push({ name: hit.name, type: hit.type, kind: hit.kind, class: hit.class, icon: hit.icon });
-      const key = normalizeName(hit.name);
-      if (stale && !Object.hasOwn(overrides, key) && isStaleEntry(cache[key]) && !stale.has(key)) {
-        stale.set(key, { name: hit.name, classSlug, preferType });
-      }
+      const subject = { name: hit.name, type: hit.type, kind: hit.kind, class: hit.class, tree: hit.tree, icon: hit.icon, source: hit.source };
+      if (hit.verified !== undefined) subject.verified = hit.verified;
+      subjects.push(subject);
+      if (!collect) return;
+      const key = normalizeName(queried);
+      const job = { name: queried, ...ctx };
+      if (hit.source === 'wowhead' && isStaleEntry(cache[key]) && !collect.stale.has(key)) collect.stale.set(key, job);
+      if (hit.source === 'client' && !Object.hasOwn(cache, key) && !collect.verify.has(key)) collect.verify.set(key, job);
     };
-    const ask = (name) => lookupName(name, { fetchImpl, cache, preferType, classSlug, overrides, limits: lim });
     for (const group of changeCandidateGroups(change)) {
       if (group.whole) {
-        const whole = await ask(group.whole);
-        if (whole) { take(whole); continue; } // a real "A and B" name: parts are not needed
+        const whole = await resolveName(group.whole, ctx, lim);
+        if (whole) { take(whole, group.whole); continue; } // a real "A and B" name: parts are not needed
       }
       for (const part of group.parts) {
         for (const variant of lookupVariants(part)) {
-          const hit = await ask(variant);
-          if (hit) { take(hit); break; } // first variant that resolves wins for this candidate
+          const hit = await resolveName(variant, ctx, lim);
+          if (hit) { take(hit, variant); break; } // first variant that resolves wins for this candidate
           const key = normalizeName(variant);
           const answered = Object.hasOwn(cache, key) || Object.hasOwn(overrides, key);
           if (!answered) break; // inconclusive (error / budget): do not burn more calls on this candidate
@@ -947,20 +999,31 @@ export async function addSubjects(days, {
     return subjects;
   };
 
-  // 1. Resolve unknown names, most valuable lines first.
+  // 1. Resolve names the client index does not know (it answers the rest for
+  //    free), most valuable lines first. Never-looked-up names come first.
   for (const { change } of ordered) await resolveChange(change, limits);
   const lookedUp = limits.calls;
 
-  // 2. Refresh stale entries with whatever budget is left.
-  const stale = new Map();
-  for (const { change } of ordered) await resolveChange(change, offline, stale);
-  for (const [, ctx] of stale) {
-    if (limits.stopped || limits.calls >= limits.maxLookups) break;
-    await lookupName(ctx.name, { fetchImpl, cache, preferType: ctx.preferType, classSlug: ctx.classSlug, overrides, force: true, limits });
+  // 2. Cross-check client-resolved names with no Wowhead answer yet (at most
+  //    MAX_VERIFY_LOOKUPS per run), then 3. refresh stale entries. Both with
+  //    whatever budget is left.
+  const collect = { stale: new Map(), verify: new Map() };
+  for (const { change } of ordered) await resolveChange(change, offline, collect);
+  let verifies = 0;
+  for (const [, job] of collect.verify) {
+    if (verifies >= MAX_VERIFY_LOOKUPS || limits.stopped || limits.calls >= limits.maxLookups) break;
+    verifies += 1;
+    await lookupName(job.name, { fetchImpl, cache, preferType: job.preferType, classSlug: job.classSlug, overrides, limits });
   }
-  log(`icons: ${lookedUp} new lookups, ${limits.calls - lookedUp} stale refreshes, ${stale.size} stale entries were in use`);
+  const afterVerify = limits.calls;
+  for (const [, job] of collect.stale) {
+    if (limits.stopped || limits.calls >= limits.maxLookups) break;
+    await lookupName(job.name, { fetchImpl, cache, preferType: job.preferType, classSlug: job.classSlug, overrides, force: true, limits });
+  }
+  log(`icons: ${lookedUp} new lookups, ${afterVerify - lookedUp} verification lookups, ${limits.calls - afterVerify} stale refreshes`
+    + ` (${collect.verify.size} unverified, ${collect.stale.size} stale in use)`);
 
-  // 3. Assemble from the cache.
+  // 4. Assemble from the cache (and the client index).
   for (const { change } of refs) change.subjects = await resolveChange(change, offline);
 
   // Write the cache back with sorted keys so diffs stay minimal and stable.

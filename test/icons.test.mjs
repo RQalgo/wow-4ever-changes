@@ -326,8 +326,8 @@ describe('addSubjects', () => {
       const days = makeDays();
       const out = await addSubjects(days, { cachePath, overridesPath, fetchImpl: f, delayMs: 0, log: quiet });
       assert.equal(out, days); // mutated and returned
-      assert.deepEqual(days[0].changes[0].subjects, [{ name: 'Judgement of Command', type: 'spell', kind: 'spell', class: null, icon: 'ability_warrior_innerrage' }]);
-      assert.deepEqual(days[0].changes[1].subjects, [{ name: 'Taran Icebreaker', type: 'item', kind: 'item', class: null, icon: 'inv_mace_13' }]);
+      assert.deepEqual(days[0].changes[0].subjects, [{ name: 'Judgement of Command', type: 'spell', kind: 'spell', class: null, tree: null, icon: 'ability_warrior_innerrage', source: 'wowhead' }]);
+      assert.deepEqual(days[0].changes[1].subjects, [{ name: 'Taran Icebreaker', type: 'item', kind: 'item', class: null, tree: null, icon: 'inv_mace_13', source: 'wowhead' }]);
       assert.deepEqual(days[0].changes[2].subjects, []);
       // Misses for "Lesser Rock Elemental" and its shrunk variants were tried once each.
       const queried = f.calls.map((c) => c.q);
@@ -504,5 +504,207 @@ describe('lookupName: choosing among several exact matches', () => {
     const results = [crumb('Sap', 'tal', ['Talents', 'Rogue']), item('Sap', 'it')];
     assert.equal((await pick(results, 'Sap', { preferType: 'item' })).type, 'item');
     assert.equal((await pick(results, 'Sap', { preferType: 'spell' })).type, 'spell');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5. v3: cache migration, notes, processing order, game-data index
+// ---------------------------------------------------------------------------
+
+/** Run addSubjects in a temp dir with the given cache / overrides contents. */
+async function runIn(days, { cache = {}, overrides = {}, ...opts } = {}) {
+  const dir = await mkdtemp(join(tmpdir(), 'icons-v3-'));
+  try {
+    const cachePath = join(dir, 'cache.json');
+    const overridesPath = join(dir, 'overrides.json');
+    await writeFile(cachePath, JSON.stringify(cache));
+    await writeFile(overridesPath, JSON.stringify(overrides));
+    await addSubjects(days, { cachePath, overridesPath, delayMs: 0, log: quiet, ...opts });
+    return JSON.parse(await readFile(cachePath, 'utf8'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
+/** One-change day helper. */
+const oneDay = (change, date = '2026-11-13') => [{ date, changes: [{ id: 'x', scope: 'class', category: 'Classes', class: null, notes: [], subjects: [], ...change }] }];
+
+describe('addSubjects: notes, cache migration and ordering', () => {
+  test('subjects come from the text first, then the notes, de-duplicated', async () => {
+    const days = oneDay({
+      class: 'shaman', text: 'Windfury Totem is now activated by all melee abilities.',
+      notes: ['Developers’ notes: Abilities like Whirlwind or Mutilate do not proc Windfury Totem.'],
+    });
+    const f = stubFetch((q) => [crumb(q, `ic_${q.replace(/ /g, '')}`, ['Abilities', 'Shaman'])]);
+    await runIn(days, { fetchImpl: f });
+    assert.deepEqual(days[0].changes[0].subjects.map((s) => s.name), ['Windfury Totem', 'Whirlwind', 'Mutilate']);
+    assert.equal(f.calls.filter((c) => c.q === 'Windfury Totem').length, 1);
+  });
+
+  test('a change has at most 8 subjects', async () => {
+    const names = ['Aa', 'Bb', 'Cc', 'Dd', 'Ee', 'Ff'];
+    const days = oneDay({ text: `${names.join(', ')}.`, notes: ['Gg, Hh, Ii and Jj changed.'] });
+    await runIn(days, { fetchImpl: stubFetch((q) => [spell(q, 'i')]) });
+    assert.equal(days[0].changes[0].subjects.length, 8);
+  });
+
+  test('old-shape spell hits are used at once and refreshed when budget allows; old items need no call', async () => {
+    const days = oneDay({ class: 'paladin', text: 'Holy Shield and Ring of Fire changed. Taran Icebreaker too.' });
+    const cache = {
+      'holy shield': { name: 'Holy Shield', type: 'spell', icon: 'old_icon' },
+      'ring of fire': { name: 'Ring of Fire', type: 'item', icon: 'ring' },
+      'taran icebreaker': { name: 'Taran Icebreaker', type: 'item', icon: 'mace' },
+      'misses stay': null,
+    };
+    const f = stubFetch((q) => (q === 'Holy Shield' ? [crumb('Holy Shield', 'new_icon', ['Talents', 'Paladin'])] : []));
+    const out = await runIn(days, { cache, fetchImpl: f });
+    assert.deepEqual(f.calls.map((c) => c.q), ['Holy Shield']); // only the stale spell is re-fetched
+    assert.deepEqual(out['holy shield'], { name: 'Holy Shield', type: 'spell', kind: 'talent', class: 'paladin', icon: 'new_icon' });
+    assert.equal(out['ring of fire'].icon, 'ring'); // item entries untouched in the cache
+    assert.equal(out['misses stay'], null);
+    const subs = days[0].changes[0].subjects;
+    assert.deepEqual(subs.map((s) => [s.name, s.kind]), [['Holy Shield', 'talent'], ['Ring of Fire', 'item'], ['Taran Icebreaker', 'item']]);
+  });
+
+  test('stale entries keep working when the budget is 0 (kind spell, class null)', async () => {
+    const days = oneDay({ text: 'Sap is fixed.' });
+    const f = stubFetch(() => { throw new Error('no network expected'); });
+    const out = await runIn(days, { cache: { sap: { name: 'Sap', type: 'spell', icon: 'old' } }, fetchImpl: f, maxLookups: 0 });
+    assert.equal(f.calls.length, 0);
+    assert.deepEqual(out.sap, { name: 'Sap', type: 'spell', icon: 'old' }); // not rewritten
+    const s = days[0].changes[0].subjects[0];
+    assert.deepEqual([s.kind, s.class, s.icon], ['spell', null, 'old']);
+  });
+
+  test('a refresh that finds nothing keeps the old icon in the new shape', async () => {
+    const days = oneDay({ text: 'Sap is fixed.' });
+    const out = await runIn(days, { cache: { sap: { name: 'Sap', type: 'spell', icon: 'old' } }, fetchImpl: stubFetch(() => []) });
+    assert.deepEqual(out.sap, { name: 'Sap', type: 'spell', kind: 'spell', class: null, icon: 'old' });
+  });
+
+  test('budget goes to never-looked-up names first, class lines before general lines, then to stale refreshes', async () => {
+    const days = [
+      { date: '2026-11-13', changes: [
+        { id: 'g1', scope: 'general', category: 'Items', class: null, text: 'Gengen is fixed.', notes: [], subjects: [] },
+        { id: 'c1', scope: 'class', category: 'Classes', class: 'mage', text: 'Classnew is fixed.', notes: [], subjects: [] },
+      ] },
+      { date: '2026-11-12', changes: [
+        { id: 'c0', scope: 'class', category: 'Classes', class: 'mage', text: 'Classold is fixed.', notes: [], subjects: [] },
+        { id: 's0', scope: 'class', category: 'Classes', class: 'mage', text: 'Stalespell is fixed.', notes: [], subjects: [] },
+      ] },
+    ];
+    const cache = { stalespell: { name: 'Stalespell', type: 'spell', icon: 'o' } };
+    const f = stubFetch((q) => [spell(q, 'i')]);
+    await runIn(days, { cache, fetchImpl: f, maxLookups: 3 });
+    // newest class line, older class line, then the general line; the stale refresh gets nothing
+    assert.deepEqual(f.calls.map((c) => c.q), ['Classnew', 'Classold', 'Gengen']);
+    const f2 = stubFetch((q) => [spell(q, 'i')]);
+    await runIn(structuredClone(days), { cache, fetchImpl: f2, maxLookups: 4 });
+    assert.deepEqual(f2.calls.map((c) => c.q), ['Classnew', 'Classold', 'Gengen', 'Stalespell']);
+  });
+
+  test('"Slice and Dice": the whole name is tried first, the parts only on a miss', async () => {
+    const hitWhole = oneDay({ class: 'rogue', text: 'Slice and Dice now lasts longer.' });
+    const f = stubFetch((q) => (q === 'Slice and Dice' ? [crumb(q, 'snd', ['Abilities', 'Rogue'])] : []));
+    await runIn(hitWhole, { fetchImpl: f });
+    assert.deepEqual(hitWhole[0].changes[0].subjects.map((s) => s.name), ['Slice and Dice']);
+    assert.deepEqual(f.calls.map((c) => c.q), ['Slice and Dice']);
+
+    const parts = oneDay({ class: 'rogue', text: 'Rupture and Garrote now refresh.' });
+    const f2 = stubFetch((q) => (q === 'Rupture' || q === 'Garrote' ? [spell(q, `i_${q}`)] : []));
+    await runIn(parts, { fetchImpl: f2 });
+    assert.deepEqual(parts[0].changes[0].subjects.map((s) => s.name), ['Rupture', 'Garrote']);
+  });
+
+  test('overrides may carry kind / class / tree', async () => {
+    const days = oneDay({ text: 'Unsealed Fury no longer echoes.' });
+    await runIn(days, { fetchImpl: stubFetch(() => []), overrides: {
+      'unsealed fury': { name: 'Unsealed Fury', type: 'spell', kind: 'talent', class: 'paladin', tree: 'retribution', icon: 'ic' } } });
+    assert.deepEqual(days[0].changes[0].subjects[0],
+      { name: 'Unsealed Fury', type: 'spell', kind: 'talent', class: 'paladin', tree: 'retribution', icon: 'ic', source: 'override' });
+  });
+});
+
+/** A stub game-data index over a plain object keyed by lower-case name. */
+function stubIndex(table, calls = []) {
+  return {
+    calls,
+    lookup(name, opts) {
+      calls.push([name, opts]);
+      return table[name.toLowerCase()] ?? null;
+    },
+  };
+}
+const clientHit = (name, icon, extra = {}) => ({ name, type: 'spell', kind: 'ability', class: 'rogue', tree: null, icon, ...extra });
+
+describe('addSubjects with a game-data index', () => {
+  test('null index: everything comes from Wowhead (source "wowhead", tree null)', async () => {
+    const days = oneDay({ text: 'Sap is fixed.' });
+    await runIn(days, { fetchImpl: stubFetch((q) => [spell(q, 'w')]), gameIndex: null });
+    assert.deepEqual(days[0].changes[0].subjects[0], { name: 'Sap', type: 'spell', kind: 'spell', class: null, tree: null, icon: 'w', source: 'wowhead' });
+  });
+
+  test('source order: override, then client, then Wowhead; the client costs no network', async () => {
+    const days = oneDay({ class: 'rogue', text: 'Ambush, Gouge and Kick changed.' });
+    const index = stubIndex({ ambush: clientHit('Ambush', 'ab_client'), gouge: clientHit('Gouge', 'gouge_client') });
+    const f = stubFetch((q) => [spell(q, `${q}_wh`)]);
+    await runIn(days, { fetchImpl: f, gameIndex: index, maxLookups: 0,
+      overrides: { gouge: { name: 'Gouge', type: 'spell', icon: 'gouge_override' } } });
+    const subs = days[0].changes[0].subjects;
+    assert.deepEqual(subs.map((s) => [s.name, s.source, s.icon]),
+      [['Ambush', 'client', 'ab_client'], ['Gouge', 'override', 'gouge_override']]); // Kick: unknown, no budget
+    assert.equal(f.calls.length, 0);
+    assert.deepEqual(index.calls[0][1], { classSlug: 'rogue', preferType: 'spell' });
+  });
+
+  test('a name unknown to the client falls back to Wowhead', async () => {
+    const days = oneDay({ class: 'rogue', text: 'Ambush, Shank changed.' });
+    const index = stubIndex({ ambush: clientHit('Ambush', 'ab') });
+    await runIn(days, { fetchImpl: stubFetch((q) => [spell(q, 'wh')]), gameIndex: index, maxLookups: 1 });
+    // budget of 1: Shank (unknown to the client) is looked up, Ambush's cross-check has to wait
+    assert.deepEqual(days[0].changes[0].subjects.map((s) => [s.name, s.source, s.verified]),
+      [['Ambush', 'client', undefined], ['Shank', 'wowhead', undefined]]);
+  });
+
+  test('verified: true when icons agree (case-insensitive), false when they differ, absent without a Wowhead answer', async () => {
+    const days = oneDay({ class: 'rogue', text: 'Ambush, Gouge and Kick changed.' });
+    const index = stubIndex({ ambush: clientHit('Ambush', 'AB_Icon'), gouge: clientHit('Gouge', 'g_client'), kick: clientHit('Kick', 'k') });
+    const logs = [];
+    const cache = {
+      ambush: { name: 'Ambush', type: 'spell', kind: 'ability', class: 'rogue', icon: 'ab_icon' },
+      gouge: { name: 'Gouge', type: 'spell', kind: 'ability', class: 'rogue', icon: 'g_wowhead' },
+    };
+    await runIn(days, { cache, fetchImpl: stubFetch(() => { throw new Error('offline'); }), gameIndex: index, log: (m) => logs.push(m) });
+    const [a, g, k] = days[0].changes[0].subjects;
+    assert.equal(a.verified, true);
+    assert.equal(g.verified, false);
+    assert.equal(g.icon, 'g_client'); // the client icon is kept
+    assert.ok(!('verified' in k));
+    assert.equal(logs.filter((m) => /mismatch/.test(m)).length, 1);
+  });
+
+  test('budget order: unknown-to-client first, then at most 100 verifications, then stale refreshes', async () => {
+    const names = Array.from({ length: 105 }, (_, i) => `Cn${String.fromCharCode(97 + (i % 26))}${String.fromCharCode(97 + Math.floor(i / 26))}`);
+    const days = [{ date: '2026-11-13', changes: [
+      ...names.map((n, i) => ({ id: `c${i}`, scope: 'class', category: 'Classes', class: 'rogue', text: `${n} changed.`, notes: [], subjects: [] })),
+      { id: 'u', scope: 'class', category: 'Classes', class: 'rogue', text: 'Unknownx changed.', notes: [], subjects: [] },
+      { id: 's', scope: 'class', category: 'Classes', class: 'rogue', text: 'Stalex changed.', notes: [], subjects: [] },
+    ] }];
+    const table = Object.fromEntries(names.map((n) => [n.toLowerCase(), clientHit(n, 'c')]));
+    const f = stubFetch((q) => [spell(q, 'w')]);
+    await runIn(days, { fetchImpl: f, gameIndex: stubIndex(table), maxLookups: 1000,
+      cache: { stalex: { name: 'Stalex', type: 'spell', icon: 'o' } } });
+    const q = f.calls.map((c) => c.q);
+    assert.equal(q[0], 'Unknownx'); // unknown to the client: first
+    assert.equal(q.length, 1 + 100 + 1); // then exactly 100 verifications, then the stale refresh
+    assert.ok(q.slice(1, 101).every((n) => names.includes(n)));
+    assert.equal(q[101], 'Stalex');
+  });
+
+  test('a throwing index is treated as "not found"', async () => {
+    const days = oneDay({ text: 'Sap is fixed.' });
+    const index = { lookup() { throw new Error('boom'); } };
+    await runIn(days, { fetchImpl: stubFetch((q) => [spell(q, 'w')]), gameIndex: index });
+    assert.equal(days[0].changes[0].subjects[0].source, 'wowhead');
   });
 });
