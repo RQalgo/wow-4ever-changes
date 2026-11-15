@@ -144,3 +144,27 @@ Filter semantics used by the app:
 - Category chips: a change with no `class:` tag is shown when at least one of
   its category tags is switched on. With a class selected, class-tagged
   changes are always shown regardless of the category chips.
+
+### Version 3 addendum: two icon sources
+
+Skill and item data now comes from two sources:
+1. **client** — the game client's own data tables for the newest WoW: Forever
+   build, published as CSV by wago.tools (`scripts/gamedata.mjs`). Primary
+   source: no per-name requests, knows talents, talent trees and classes.
+2. **wowhead** — Wowhead's search suggestions (rate-limited). Fallback for names
+   the client index does not have, and a cross-check for names it does.
+
+Subjects therefore gain three optional fields:
+
+```jsonc
+{ "name": "Oath of Light", "type": "spell", "kind": "talent", "class": "paladin",
+  "tree": "holy",          // talent tree slug for talents, else null/absent
+  "icon": "spell_holy_greaterblessingoflight",
+  "source": "client",      // "client" | "wowhead" | "override"
+  "verified": true }       // true when both sources returned the same icon;
+                           // false when they disagree; absent when only one answered
+```
+
+Tags: a talent subject with a `tree` also adds `spec:<class>/<tree>`, so a
+Retribution talent mentioned in a class-wide Paladin line is found by the
+Retribution filter.

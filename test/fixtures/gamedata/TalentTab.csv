@@ -1,0 +1,9 @@
+ID,Name_lang,BackgroundFile,Description_lang,OrderIndex,Field_0,ClassMask,CategoryEnumID,SpellIconID,RoleMask
+40,Frost,MageFrost,,2,0,128,0,135846,0
+41,Fire,MageFire,,1,0,128,0,135810,0
+42,Feral Combat,DruidFeralCombat,,1,0,1024,0,132276,0
+43,Beast Mastery,HunterBeastMastery,,0,0,4,0,132164,0
+61,Assassination,RogueAssassination,,0,0,8,0,132292,0
+62,Shared,Shared,,0,0,3,0,0,0
+81,Discipline,PriestDiscipline,,0,0,16,0,135940,0
+161,Arms,WarriorArms,,0,0,1,0,132355,0

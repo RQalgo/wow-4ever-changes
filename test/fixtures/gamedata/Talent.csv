@@ -1,0 +1,8 @@
+ID,Description_lang,TierID,Flags,ColumnIndex,TabID,ClassID,SpecID,SpellID,OverridesSpellID,RequiredSpellID,CategoryMask_0,CategoryMask_1,SpellRank_0,SpellRank_1,SpellRank_2,SpellRank_3,SpellRank_4,SpellRank_5,SpellRank_6,SpellRank_7,SpellRank_8,PrereqTalent_0
+23,,2,0,3,41,0,0,0,0,0,0,0,300,301,0,0,0,0,0,0,0,0
+24,,0,0,1,161,0,0,400,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+25,,0,0,0,42,0,0,0,0,0,0,0,500,0,0,0,0,0,0,0,0,0
+26,,0,0,0,43,0,0,0,0,0,0,0,510,0,0,0,0,0,0,0,0,0
+27,,1,0,1,61,0,0,0,0,0,0,0,820,0,0,0,0,0,0,0,0,0
+28,,1,0,1,999,0,0,0,0,0,0,0,830,0,0,0,0,0,0,0,0,0
+29,,1,0,1,62,0,0,0,0,0,0,0,840,0,0,0,0,0,0,0,0,0
