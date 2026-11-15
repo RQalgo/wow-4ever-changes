@@ -221,6 +221,13 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 /* The colour dot gets a ring so white/yellow stay visible on light parchment. */
 .chip-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 45%, transparent); }
 .chip-row[hidden] { display: none; }
+/* Talent-tree block: indented under the class row with a rule in the chosen class's colour and its
+   own "Talent tree" label, so its chips never read as more classes. */
+.tree-group { margin: .3rem 0 .1rem .35rem; padding: 0 0 0 .6rem; border-left: 2px solid var(--cc, var(--border)); }
+.tree-group[hidden] { display: none; }
+.tree-group .tree-label { margin-top: .15rem; }
+/* Tree chips: outlined (transparent fill), squarer, no colour dot, a little smaller on desktop. */
+.chip-tree { min-height: 28px; padding: 0 .6rem; border-radius: 6px; background: transparent; font-size: .8125rem; }
 .btn-clear {
   min-height: 32px; display: inline-flex; align-items: center; padding: 0 .7rem; cursor: pointer;
   background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 8px; font: 600 .8125rem var(--sans);
@@ -363,6 +370,7 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   .chip-row { gap: .4rem; }
   .chip, .btn-clear, .segment { min-height: 44px; }
   .chip { padding: 0 .9rem; }
+  .chip-tree { min-height: 44px; padding: 0 .8rem; }
   .segment-row { margin: 0; }
   /* Very narrow phones: the four 44px segments wrap into a 2x2 block (a pill shape cannot wrap). */
   @media (max-width: 359px) {

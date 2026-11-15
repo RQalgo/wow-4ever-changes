@@ -541,17 +541,30 @@ function scrollPressedIntoView(row) {
 /**
  * Rebuild the talent-tree row. Only shown once a class is chosen; offers the
  * vanilla trees plus any trees that appear in the data for that class.
+ *
+ * The row must not read as more class chips (it sits right under them), so
+ * it lives in its own indented block with a visible "Talent tree" label and
+ * a rule in the class colour, and its chips look different: no colour dot,
+ * outlined, squarer and (on desktop) a little smaller. The class colour only
+ * marks the pressed tree.
  */
 function renderSpecChips() {
+  const group = $('spec-group');
   const row = $('spec-row');
-  row.hidden = !state.cls;
+  group.hidden = !state.cls;
   if (!state.cls) { row.replaceChildren(); return; }
   row.setAttribute('aria-label', `${className(state.cls)} talent tree`);
-  const color = classColor(state.cls);
-  const chips = [chip('All trees', !state.spec, () => setState({ ...state, spec: '' }), color)];
+  group.style.setProperty('--cc', classColor(state.cls) || 'var(--accent)');
+  /** A tree chip: a plain chip (no dot) with the tree look. */
+  const treeChip = (label, pressed, onClick) => {
+    const b = chip(label, pressed, onClick);
+    b.classList.add('chip-tree');
+    return b;
+  };
+  const chips = [treeChip('All trees', !state.spec, () => setState({ ...state, spec: '' }))];
   for (const spec of specsForClass(data, state.cls)) {
-    chips.push(chip(titleCase(spec), state.spec === spec,
-      () => setState({ ...state, spec: state.spec === spec ? '' : spec }), color));
+    chips.push(treeChip(titleCase(spec), state.spec === spec,
+      () => setState({ ...state, spec: state.spec === spec ? '' : spec })));
   }
   replaceChips(row, chips);
 }
@@ -891,7 +904,12 @@ function buildFilters() {
   const specGroup = el('div', 'chip-row');
   specGroup.id = 'spec-row';
   specGroup.setAttribute('role', 'group');
-  specGroup.hidden = true;
+  // The tree row and its label sit in an indented block under the class row
+  // (hidden until a class is chosen), so the hierarchy is visible.
+  const treeBlock = el('div', 'tree-group');
+  treeBlock.id = 'spec-group';
+  treeBlock.hidden = true;
+  treeBlock.append(el('p', 'filter-label tree-label', 'Talent tree'), specGroup);
   // Category chips (non-class changes): multi-select row built by renderCategoryChips().
   const catGroup = el('div', 'chip-row chip-row-cats');
   catGroup.id = 'cat-row';
@@ -920,7 +938,7 @@ function buildFilters() {
   panel.append(
     head,
     el('p', 'filter-label', 'Show'), buildKindFilter(),
-    el('p', 'filter-label', 'Class'), classGroup, specGroup,
+    el('p', 'filter-label', 'Class'), classGroup, treeBlock,
     el('p', 'filter-label', 'Categories'), catGroup,
     foot,
   );
