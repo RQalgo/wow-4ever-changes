@@ -110,3 +110,75 @@ async function loadDefaultDeps() {
 function countChanges(days) {
   return days.reduce((n, d) => n + (d.changes?.length ?? 0), 0);
 }
+
+/**
+ * Run the whole pipeline once: fetch, parse, merge with the existing data,
+ * resolve icons, and write `outPath` only if the content changed.
+ *
+ * Safety: a parse that yields no days or no changes almost certainly means
+ * the source layout changed or the fetch returned the wrong page. In that
+ * case we throw and leave the existing file untouched, rather than
+ * publishing an empty site.
+ *
+ * @param {object} [options]
+ * @param {string} [options.outPath='data/changes.json'] output file
+ * @param {object} [options.deps] injectable stages:
+ *   { fetchPost, parseHotfixHtml, addSubjects, SOURCE_URL }
+ * @param {() => Date} [options.now] clock, injectable for tests
+ * @param {(msg: string) => void} [options.log] progress logger
+ * @returns {Promise<{changed: boolean, days: number, changes: number}>}
+ * @throws {Error} when the parse is empty ("refusing to overwrite")
+ */
+export async function runUpdate({
+  outPath = 'data/changes.json',
+  deps,
+  now = () => new Date(),
+  log = console.error,
+} = {}) {
+  const { fetchPost, parseHotfixHtml, addSubjects, SOURCE_URL } =
+    deps ?? (await loadDefaultDeps());
+
+  // 1. Previous output (tolerates missing/corrupt).
+  const existing = await readExisting(outPath);
+  const previousDays = existing?.days ?? [];
+
+  // 2. Fetch and parse the source post.
+  log(`Fetching ${SOURCE_URL}`);
+  const html = await fetchPost(SOURCE_URL);
+  const parsed = parseHotfixHtml(html);
+  const freshDays = parsed?.days ?? [];
+
+  // 3. Safety check, before anything is written.
+  if (freshDays.length === 0 || countChanges(freshDays) === 0) {
+    throw new Error(
+      'Parse produced no days or no changes; refusing to overwrite ' +
+        `${outPath} (the source layout may have changed).`,
+    );
+  }
+
+  // 4. Merge with what we already had, then resolve icons for everything.
+  //    Icon lookups are cached, so re-processing old days is cheap.
+  const merged = mergeDays(previousDays, freshDays);
+  const days = await addSubjects(merged);
+
+  // 5. Assemble the document per docs/SCHEMA.md. generatedAt is whole
+  //    seconds (no milliseconds) to match the documented format.
+  const output = {
+    generatedAt: now().toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    source: { title: 'WoW: Forever Hotfixes', url: SOURCE_URL },
+    days,
+  };
+  const summary = { days: days.length, changes: countChanges(days) };
+
+  // 6. Skip the write when nothing but the timestamp differs, so the
+  //    scheduled workflow does not create empty commits.
+  if (sameContent(existing, output)) {
+    log('No content changes; leaving file untouched.');
+    return { changed: false, ...summary };
+  }
+
+  await mkdir(dirname(outPath), { recursive: true });
+  await writeFile(outPath, JSON.stringify(output, null, 2) + '\n');
+  log(`Wrote ${outPath}`);
+  return { changed: true, ...summary };
+}
