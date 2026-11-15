@@ -162,3 +162,14 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 /* The colour dot gets a ring so white/yellow stay visible on light parchment. */
 .chip-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 45%, transparent); }
 .chip-row[hidden] { display: none; }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-bottom: .3rem; }
+.toggle, .btn-clear {
+  min-height: 44px; display: inline-flex; align-items: center; gap: .5rem; padding: 0 .8rem; cursor: pointer;
+  background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 8px; font: 600 .85rem var(--sans);
+}
+.toggle:hover, .btn-clear:hover:not(:disabled) { background: var(--surface-2); }
+.btn-clear:disabled { opacity: .5; cursor: default; }
+.toggle-box { width: 34px; height: 20px; border-radius: 999px; background: var(--border); position: relative; flex: none; transition: background .15s; }
+.toggle-box::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text); transition: transform .15s; }
+.toggle[aria-checked="true"] .toggle-box { background: var(--accent); }
+.toggle[aria-checked="true"] .toggle-box::after { transform: translateX(14px); background: var(--accent-ink); }

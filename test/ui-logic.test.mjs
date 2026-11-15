@@ -72,3 +72,14 @@ test('specsForClass merges vanilla trees with trees seen in data', () => {
   assert.deepEqual(L.specsForClass(extra, 'mage'), ['arcane', 'fire', 'frost', 'chronomancy']);
   assert.deepEqual(L.specsForClass(data, ''), []);
 });
+
+/* ---------- filtering: General toggle ---------- */
+test('General toggle hides every general change but keeps class lines', () => {
+  const off = L.visibleDays(data, { ...L.defaultState(), general: false });
+  const all = off.flatMap((d) => d.changes);
+  assert.ok(all.length > 0);
+  assert.ok(all.every((c) => c.scope === 'class'));
+  // General lines are not affected by the class filter.
+  const on = L.visibleDays(data, { ...L.defaultState(), cls: 'druid' }).flatMap((d) => d.changes);
+  assert.ok(on.some((c) => c.scope === 'general'));
+});

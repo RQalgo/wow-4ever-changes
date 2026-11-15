@@ -251,7 +251,33 @@ function buildFilters() {
   specGroup.id = 'spec-row';
   specGroup.setAttribute('role', 'group');
   specGroup.hidden = true;
-  box.replaceChildren(classGroup, specGroup);
+
+  // Tools row: (search goes first), General toggle, clear button.
+  const tools = el('div', 'tools');
+  tools.id = 'tools';
+  const gen = el('button', 'toggle');
+  gen.type = 'button';
+  gen.id = 'general-toggle';
+  gen.append(el('span', 'toggle-box'), el('span', 'toggle-label', 'Show General changes'));
+  gen.addEventListener('click', () => setState({ ...state, general: !state.general }));
+  const clear = el('button', 'btn-clear');
+  clear.type = 'button';
+  clear.id = 'clear-filters';
+  clear.append(el('span', null, 'Clear filters'));
+  clear.addEventListener('click', () => setState(defaultState()));
+  tools.append(gen, clear);
+
+  box.replaceChildren(tools, classGroup, specGroup);
+}
+
+/** Sync the General toggle and the clear button with the state. */
+function renderTools() {
+  const gen = $('general-toggle');
+  gen.setAttribute('role', 'switch');
+  gen.setAttribute('aria-checked', String(state.general));
+  const d = defaultState();
+  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.general !== d.general;
+  $('clear-filters').disabled = !dirty;
 }
 
 /**
@@ -262,6 +288,7 @@ function setState(next) {
   state = next;
   renderClassChips();
   renderSpecChips();
+  renderTools();
   renderResults();
 }
 
