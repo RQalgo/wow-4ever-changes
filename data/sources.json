@@ -1,0 +1,13 @@
+[
+  {
+    "kind": "hotfix",
+    "type": "news-rolling",
+    "url": "https://news.blizzard.com/en-us/article/24315281"
+  },
+  {
+    "kind": "patch",
+    "type": "discourse-topic",
+    "url": "https://us.forums.blizzard.com/en/wow/t/2360696",
+    "title": "Beta build notes"
+  }
+]
