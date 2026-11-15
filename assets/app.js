@@ -3,7 +3,7 @@
  *
  * Responsibilities:
  *   - load ./data/changes.json and show loading / error / empty states
- *   - own the UI state (class, spec, query, showGeneral) and re-render
+ *   - own the UI state (class, spec, query, category chips, kind) and re-render
  *   - build every DOM node with createElement/textContent (data is never
  *     inserted through innerHTML)
  *
@@ -21,13 +21,17 @@ import {
   specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
   highlightSegments, buildSuggestions, encodeHash, decodeHash, sanitizeSelection,
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
+  availableCategories, toggleCategory, normalizeCats, isCategoryOn,
 } from './logic.js';
 
-/** Current UI state: class, spec, search text, General toggle, kind filter. */
+/** Current UI state: class, spec, search text, enabled categories (null = all), kind filter. */
 let state = defaultState();
 
 /** The loaded dataset (see docs/SCHEMA.md), or null before loading. */
 let data = null;
+
+/** Category chips offered for the loaded data (only tags that occur in it). */
+let categories = [];
 
 /** Shortcut for document.getElementById. */
 const $ = (id) => document.getElementById(id);
@@ -417,6 +421,37 @@ function renderSpecChips() {
   row.replaceChildren(...chips);
 }
 
+/**
+ * Rebuild the category chip row: quick "All" / "None" buttons, then one
+ * toggle chip per category that occurs in the data. Chips are multi-select
+ * (aria-pressed); the row is hidden when the data has no categories.
+ */
+function renderCategoryChips() {
+  const row = $('cat-row');
+  row.hidden = !categories.length;
+  if (!categories.length) { row.replaceChildren(); return; }
+  const allOn = !state.cats;
+  const noneOn = !!state.cats && state.cats.length === 0;
+  /** Quick action button ("All"/"None"); disabled when it would change nothing. */
+  const quick = (label, title, cats, disabled) => {
+    const b = el('button', 'chip chip-quick', label);
+    b.type = 'button';
+    b.title = title;
+    b.disabled = disabled;
+    b.addEventListener('click', () => setState({ ...state, cats }));
+    return b;
+  };
+  const chips = [
+    quick('All', 'Show every category', null, allOn),
+    quick('None', 'Hide all non-class categories', [], noneOn),
+  ];
+  for (const c of categories) {
+    chips.push(chip(c.label, isCategoryOn(state, c.slug),
+      () => setState({ ...state, cats: toggleCategory(state.cats, c.slug, categories) })));
+  }
+  row.replaceChildren(...chips);
+}
+
 /** Segment labels of the kind filter, keyed by filter value. */
 const KIND_FILTER_LABEL = { all: 'All', hotfix: 'Hotfixes', patch: 'Patches' };
 
@@ -613,17 +648,15 @@ function buildFilters() {
   specGroup.setAttribute('role', 'group');
   specGroup.hidden = true;
 
-  // Tools row: (search goes first), General toggle, clear button.
+  // Category chips (non-class changes): multi-select row built by renderCategoryChips().
+  const catGroup = el('div', 'chip-row chip-row-cats');
+  catGroup.id = 'cat-row';
+  catGroup.setAttribute('role', 'group');
+  catGroup.setAttribute('aria-label', 'Categories');
+
+  // Tools row: search and the clear button.
   const tools = el('div', 'tools');
   tools.id = 'tools';
-  const gen = el('button', 'toggle');
-  gen.type = 'button';
-  gen.id = 'general-toggle';
-  // "Show " / " changes" are hidden on narrow screens (class "opt") to keep the bar compact.
-  const genLabel = el('span', 'toggle-label');
-  genLabel.append(el('span', 'opt', 'Show '), 'General', el('span', 'opt', ' changes'));
-  gen.append(el('span', 'toggle-box'), genLabel);
-  gen.addEventListener('click', () => setState({ ...state, general: !state.general }));
   const clear = el('button', 'btn-clear');
   clear.type = 'button';
   clear.id = 'clear-filters';
@@ -631,23 +664,20 @@ function buildFilters() {
   clearLabel.append('Clear', el('span', 'opt', ' filters'));
   clear.append(clearLabel);
   clear.addEventListener('click', () => setState(defaultState()));
-  tools.append(buildSearch(), gen, clear);
+  tools.append(buildSearch(), clear);
 
   // Polite live region so screen readers hear how many changes are shown.
   const live = el('p', 'visually-hidden');
   live.id = 'live';
   live.setAttribute('role', 'status');
-  box.replaceChildren(tools, buildKindFilter(), classGroup, specGroup, live);
+  box.replaceChildren(tools, buildKindFilter(), classGroup, specGroup, catGroup, live);
   watchBarHeight(box);
 }
 
-/** Sync the General toggle and the clear button with the state. */
+/** Sync the clear button with the state (enabled only when something differs from the defaults). */
 function renderTools() {
-  const gen = $('general-toggle');
-  gen.setAttribute('role', 'switch');
-  gen.setAttribute('aria-checked', String(state.general));
   const d = defaultState();
-  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.general !== d.general || state.kind !== d.kind;
+  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.cats !== d.cats || state.kind !== d.kind;
   $('clear-filters').disabled = !dirty;
 }
 
@@ -706,12 +736,14 @@ function syncHash() {
  * @param {object} next new state
  */
 function setState(next, opts = {}) {
-  state = next;
+  // One canonical `cats` (null when every chip is on), whatever the source.
+  state = { ...next, cats: normalizeCats(next.cats, categories) };
   syncHash();
   saveSelection(state);
   if (!opts.fromInput) renderSearch();
   renderClassChips();
   renderSpecChips();
+  renderCategoryChips();
   renderKindFilter();
   renderTools();
   renderResults();
@@ -720,6 +752,7 @@ function setState(next, opts = {}) {
 /** Render everything that depends on the data. */
 function render() {
   renderHeader();
+  categories = availableCategories(data);
   buildFilters();
   state = initialState();
   setState(state);
