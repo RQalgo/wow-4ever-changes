@@ -427,3 +427,154 @@ export async function lookupName(name, {
   cache[key] = hit; // hit, or null for a definitive miss
   return hit;
 }
+
+// ---------------------------------------------------------------------------
+// ADDING SUBJECTS TO THE DAYS STRUCTURE
+// ---------------------------------------------------------------------------
+
+/**
+ * Lookup variants for one candidate, in the order they are tried:
+ *   1. the full phrase;
+ *   2. the pieces left over when the phrase is split at weak connectors
+ *      (in / for / to / and), e.g. "Sap in Warsong Gulch" -> "Sap",
+ *      "Warsong Gulch";
+ *   3. the phrase shrunk from the left one word at a time, e.g.
+ *      "Lesser Rock Elemental" -> "Rock Elemental" -> "Elemental".
+ * Variants that start with a connector, or are a single filler / generic word,
+ * are skipped. Misses are cached, so the extra variants cost one call each, once.
+ *
+ * @param {string} candidate
+ * @returns {string[]} distinct variants, full phrase first
+ */
+function lookupVariants(candidate) {
+  const tokens = candidate.split(' ');
+  const variants = [candidate];
+
+  // 2. Split at weak lower-case connectors.
+  let piece = [];
+  const pieces = [];
+  for (const t of tokens) {
+    if (WEAK_CONNECTORS.has(t)) { pieces.push(piece); piece = []; } else piece.push(t);
+  }
+  pieces.push(piece);
+  if (pieces.length > 1) for (const p of pieces) if (p.length) variants.push(p.join(' '));
+
+  // 3. Shrink from the left.
+  for (let i = 1; i < tokens.length; i++) {
+    const rest = tokens.slice(i);
+    if (CONNECTORS.has(rest[0])) continue; // "of Command" is not a name
+    variants.push(rest.join(' '));
+  }
+
+  const seen = new Set();
+  return variants.filter((v) => {
+    const key = normalizeName(v);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    const vt = v.split(' ');
+    // A single filler / generic word is never worth a network call.
+    if (vt.length === 1 && (FILLER_WORDS.has(key) || isGenericToken(vt[0]))) return false;
+    return true;
+  });
+}
+
+/**
+ * Read a JSON file holding an object. A missing file yields `{}` silently; a
+ * corrupt or non-object file yields `{}` with a log line.
+ * @param {string} path
+ * @param {Function} log
+ * @returns {Promise<Record<string, any>>}
+ */
+async function readJsonObject(path, log) {
+  let raw;
+  try {
+    raw = await readFile(path, 'utf8');
+  } catch (err) {
+    if (err.code !== 'ENOENT') log(`icons: cannot read ${path} (${err.message}); starting empty`);
+    return {};
+  }
+  try {
+    const data = JSON.parse(raw);
+    if (data && typeof data === 'object' && !Array.isArray(data)) return data;
+  } catch { /* fall through to the log line */ }
+  log(`icons: ${path} is not a JSON object; starting empty`);
+  return {};
+}
+
+/**
+ * Preferred subject type for a change: class-scope lines are about spells, item
+ * and profession-like categories are about items, anything else has no
+ * preference.
+ * @param {{ scope?: string, category?: string }} change
+ * @returns {'spell'|'item'|null}
+ */
+function preferTypeFor(change) {
+  if (change.scope === 'class') return 'spell';
+  if (/^items?$|profession|crafting|recipe/i.test(change.category ?? '')) return 'item';
+  return null;
+}
+
+/**
+ * Fill `subjects` on every change of every day (see docs/SCHEMA.md).
+ *
+ * Loads the cache and the hand-edited overrides, resolves each change's
+ * candidates sequentially (with fallback variants, see lookupVariants), and
+ * writes the cache back (sorted keys, 2-space JSON) at the end. Changes that
+ * already have subjects are simply recomputed; the cache makes that free.
+ * Never throws because of the network.
+ *
+ * @param {{ changes: object[] }[]} days  mutated in place
+ * @param {object} [opts]
+ * @param {string} [opts.cachePath]
+ * @param {string} [opts.overridesPath]
+ * @param {typeof fetch} [opts.fetchImpl]
+ * @param {number} [opts.delayMs]    pause between network calls
+ * @param {number} [opts.maxLookups] cap on new network calls this run
+ * @param {Function} [opts.log]      one-line logger
+ * @returns {Promise<object[]>} the same `days`
+ */
+export async function addSubjects(days, {
+  cachePath = 'data/icon-cache.json',
+  overridesPath = 'data/icon-overrides.json',
+  fetchImpl = globalThis.fetch,
+  delayMs = 400,
+  maxLookups = 300,
+  log = console.error,
+} = {}) {
+  const cache = await readJsonObject(cachePath, log);
+  const overrides = await readJsonObject(overridesPath, log);
+  const limits = createLimits({ maxLookups, delayMs, log });
+
+  for (const day of days) {
+    for (const change of day.changes ?? []) {
+      const classSlug = change.class ?? null;
+      const preferType = preferTypeFor(change);
+      const subjects = [];
+      const taken = new Set();
+      for (const candidate of extractCandidates(change.text, { classSlug })) {
+        for (const variant of lookupVariants(candidate)) {
+          const hit = await lookupName(variant, { fetchImpl, cache, preferType, classSlug, overrides, limits });
+          if (hit) {
+            const id = `${hit.type}:${normalizeName(hit.name)}`;
+            if (!taken.has(id)) { taken.add(id); subjects.push({ name: hit.name, type: hit.type, icon: hit.icon }); }
+            break; // first variant that resolves wins for this candidate
+          }
+          const key = normalizeName(variant);
+          const answered = Object.hasOwn(cache, key) || Object.hasOwn(overrides, key);
+          if (!answered) break; // inconclusive (error / budget): do not burn more calls on this candidate
+        }
+      }
+      change.subjects = subjects;
+    }
+  }
+
+  // Write the cache back with sorted keys so diffs stay minimal and stable.
+  const sorted = Object.fromEntries(Object.keys(cache).sort().map((k) => [k, cache[k]]));
+  try {
+    await mkdir(dirname(cachePath), { recursive: true });
+    await writeFile(cachePath, JSON.stringify(sorted, null, 2) + '\n');
+  } catch (err) {
+    log(`icons: could not write ${cachePath} (${err.message})`);
+  }
+  return days;
+}
