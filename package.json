@@ -4,9 +4,14 @@
   "private": true,
   "description": "WoW: Forever hotfix and patch-note changes at a glance (unofficial fan project)",
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "node --test",
     "serve": "npx --yes serve ."
+  },
+  "dependencies": {
+    "node-html-parser": "^7.1.0"
   }
 }
