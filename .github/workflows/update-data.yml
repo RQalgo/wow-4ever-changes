@@ -1,8 +1,10 @@
 # .github/workflows/update-data.yml
 #
-# Scheduled data update: fetches Blizzard's rolling "WoW: Forever Hotfixes"
-# post, regenerates data/changes.json via scripts/update.mjs, and commits the
-# result to main only when something actually changed.
+# Scheduled data update: fetches every source in data/sources.json (Blizzard's
+# rolling "WoW: Forever Hotfixes" post, the forum's patch-notes topic and the
+# forum's Blizzard tracker for dev posts), regenerates data/changes.json via
+# scripts/update.mjs, and commits the result to main only when something
+# actually changed.
 #
 # Design notes:
 #   - There is no deploy step. GitHub Pages is set to "deploy from branch:
