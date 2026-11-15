@@ -10,6 +10,9 @@
  * Pure logic (filtering, search, suggestions, hash encoding) lives in
  * ./logic.js so it can be unit tested without a DOM.
  *
+ * Days are identified by date + kind (see dayKey in logic.js): a patch and a
+ * hotfix can share a date.
+ *
  * Sections: helpers, data loading, rendering, boot.
  */
 
@@ -17,6 +20,7 @@ import {
   CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays,
   specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
   highlightSegments, buildSuggestions, encodeHash, decodeHash, sanitizeSelection,
+  dayKind, dayKey,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, General toggle. */
@@ -273,23 +277,53 @@ function renderGeneral(general) {
   return box;
 }
 
+/** Visible badge text per day kind. The text (not only the colour) tells them apart. */
+const KIND_LABEL = { hotfix: 'Hotfix', patch: 'Patch' };
+
 /**
- * Render one date: sticky heading (published label, relative hint, count)
- * and its sections.
+ * Build the small "Source" link for a day, or null when the day has no
+ * usable `sourceUrl`. Only http(s) URLs are accepted (the data file is not
+ * trusted blindly); the link opens in a new tab with rel="noopener".
+ * @param {object} day
+ * @returns {HTMLAnchorElement|null}
+ */
+function sourceLink(day) {
+  const url = day.sourceUrl;
+  if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return null;
+  const a = el('a', 'day-source', 'Source');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.setAttribute('aria-label', `Source for the ${KIND_LABEL[dayKind(day)].toLowerCase()} of ${day.label || day.date} (opens in a new tab)`);
+  return a;
+}
+
+/**
+ * Render one day: sticky heading (date, kind badge, optional patch title,
+ * relative hint, Source link, count) and its sections. Hotfix and patch days
+ * get a different class so patches stand out while scrolling.
  * @param {object} day a day from the data
- * @param {object[]} changes the visible changes of that day
+ * @param {object[]} changes the visible changes of that day (already filtered,
+ *   so the count below always reflects what is shown)
  * @returns {HTMLElement}
  */
 function renderDay(day, changes) {
   const view = groupChanges(changes);
-  const sec = el('section', 'day');
-  sec.id = `d-${day.date}`;
+  const kind = dayKind(day);
+  const sec = el('section', `day day-${kind}`);
+  // Date + kind: two days on the same date need different anchors.
+  sec.id = `d-${dayKey(day).replace('|', '-')}`;
   const head = el('h2', 'day-heading');
-  head.append(
-    el('span', 'day-label', day.label || day.date),
-    el('span', 'day-rel', relativeDay(day.date)),
-    el('span', 'day-count', `${view.count} ${view.count === 1 ? 'change' : 'changes'}`)
-  );
+  head.append(el('span', 'day-label', day.label || day.date));
+  head.append(el('span', `kind-badge kind-${kind}`, KIND_LABEL[kind]));
+  // The title is shown for patch days only ("Patch · Beta build notes").
+  if (kind === 'patch' && typeof day.title === 'string' && day.title.trim()) {
+    head.append(el('span', 'day-title', day.title.trim()));
+  }
+  head.append(el('span', 'day-rel', relativeDay(day.date)));
+  const src = sourceLink(day);
+  if (src) head.append(src);
+  head.append(el('span', 'day-count', `${view.count} ${view.count === 1 ? 'change' : 'changes'}`));
   sec.append(head);
   for (const c of view.classSections) sec.append(renderClassSection(c));
   if (view.general.length) sec.append(renderGeneral(view.general));
