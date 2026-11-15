@@ -290,3 +290,141 @@ export function extractCandidates(text, { classSlug } = {}) {
   }
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// LOOKUP (Wowhead search suggestions)
+// ---------------------------------------------------------------------------
+
+/**
+ * Pick the accepted result from a suggestions response.
+ *
+ * Acceptance rule: `name` equals the candidate (case-insensitive, curly and
+ * straight apostrophes equivalent), `typeName` is "Spell" or "Item", and an
+ * `icon` is present. Among accepted results:
+ *   1. results of `preferType` win when there are any, else any type;
+ *   2. when several Spell results remain and `classSlug` is known, the first one
+ *      whose `pinDescription` / `pinBreadcrumb` mentions that class wins;
+ *   3. otherwise the first.
+ *
+ * @param {object[]} results  the `results` array from the endpoint
+ * @param {string} name       candidate name
+ * @param {{ preferType?: 'spell'|'item'|null, classSlug?: string|null }} [opts]
+ * @returns {{ name: string, type: 'spell'|'item', icon: string } | null}
+ */
+function pickResult(results, name, { preferType, classSlug } = {}) {
+  const want = normalizeName(name);
+  const exact = results
+    .filter((r) => r && typeof r === 'object'
+      && (r.typeName === 'Spell' || r.typeName === 'Item')
+      && typeof r.icon === 'string' && r.icon !== ''
+      && typeof r.name === 'string' && normalizeName(r.name) === want)
+    .map((r) => ({ raw: r, type: r.typeName === 'Spell' ? 'spell' : 'item' }));
+  if (exact.length === 0) return null;
+
+  const preferred = preferType ? exact.filter((e) => e.type === preferType) : [];
+  const pool = preferred.length ? preferred : exact;
+
+  let chosen = pool[0];
+  const spells = pool.filter((e) => e.type === 'spell');
+  if (classSlug && spells.length > 1) {
+    // pinDescription / pinBreadcrumb may be strings or structures; stringify both.
+    const wantClass = String(classSlug).toLowerCase();
+    const byClass = spells.find((e) =>
+      JSON.stringify([e.raw.pinDescription, e.raw.pinBreadcrumb]).toLowerCase().includes(wantClass));
+    if (byClass) chosen = byClass;
+    else if (chosen.type !== 'spell') chosen = spells[0];
+  }
+  return { name: chosen.raw.name, type: chosen.type, icon: chosen.raw.icon };
+}
+
+/**
+ * Shared per-run network budget and circuit breaker, so that many lookupName
+ * calls (one run of addSubjects) honour the same limits.
+ *
+ * @param {{ maxLookups?: number, delayMs?: number, log?: Function }} [opts]
+ * @returns {{ maxLookups: number, delayMs: number, log: Function, calls: number,
+ *   failures: number, stopped: boolean, warnedCap: boolean }}
+ */
+export function createLimits({ maxLookups = 300, delayMs = 400, log = console.error } = {}) {
+  return { maxLookups, delayMs, log, calls: 0, failures: 0, stopped: false, warnedCap: false };
+}
+
+/** Promise-based sleep; resolves immediately for non-positive durations. */
+const sleep = (ms) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve());
+
+/**
+ * Perform one suggestions request. Throws on network error, timeout, non-2xx
+ * status, invalid JSON, or a body without a `results` array.
+ * @param {string} name
+ * @param {typeof fetch} fetchImpl
+ * @returns {Promise<object[]>}
+ */
+async function fetchSuggestions(name, fetchImpl) {
+  const res = await fetchImpl(SUGGEST_URL + encodeURIComponent(name), {
+    headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS), // 15 s hard timeout
+  });
+  if (!res || !res.ok) throw new Error(`HTTP ${res ? res.status : 'no response'}`);
+  const body = await res.json();
+  if (!body || !Array.isArray(body.results)) throw new Error('unexpected response shape');
+  return body.results;
+}
+
+/**
+ * Resolve one name to `{ name, type, icon }` or `null`.
+ *
+ * Order of consultation: overrides, then the in-memory cache, then the network.
+ * Definitive answers (hit or miss) are written to `cache` under the normalised
+ * name. Errors, an exhausted `maxLookups` budget and an open circuit breaker all
+ * return `null` WITHOUT touching the cache ("unknown for now").
+ * Never throws because of the network.
+ *
+ * @param {string} name
+ * @param {object} [opts]
+ * @param {typeof fetch} [opts.fetchImpl]  defaults to global fetch
+ * @param {Record<string, object|null>} [opts.cache]  mutated in place
+ * @param {'spell'|'item'|null} [opts.preferType]
+ * @param {string|null} [opts.classSlug]   used to disambiguate several spells
+ * @param {Record<string, object|null>} [opts.overrides]  hand-edited, win over all
+ * @param {ReturnType<typeof createLimits>} [opts.limits]  shared budget; a fresh
+ *   unlimited-delay one is created per call when omitted
+ * @returns {Promise<{ name: string, type: 'spell'|'item', icon: string } | null>}
+ */
+export async function lookupName(name, {
+  fetchImpl = globalThis.fetch, cache = {}, preferType, classSlug, overrides = {},
+  limits = createLimits({ delayMs: 0 }),
+} = {}) {
+  const key = normalizeName(name);
+  if (Object.hasOwn(overrides, key)) return overrides[key];
+  if (Object.hasOwn(cache, key)) return cache[key];
+
+  // Budget / breaker checks: leave the name uncached so a later run retries.
+  if (limits.stopped) return null;
+  if (limits.calls >= limits.maxLookups) {
+    if (!limits.warnedCap) {
+      limits.log(`icons: lookup budget of ${limits.maxLookups} reached; the rest waits for the next run`);
+      limits.warnedCap = true;
+    }
+    return null;
+  }
+
+  if (limits.calls > 0) await sleep(limits.delayMs); // be polite between calls
+  limits.calls += 1;
+  let results;
+  try {
+    results = await fetchSuggestions(name, fetchImpl);
+  } catch (err) {
+    limits.failures += 1;
+    limits.log(`icons: lookup of "${name}" failed (${err.message}); not cached`);
+    if (limits.failures >= MAX_CONSECUTIVE_FAILURES) {
+      limits.stopped = true;
+      limits.log(`icons: ${MAX_CONSECUTIVE_FAILURES} consecutive failures; no more network calls this run`);
+    }
+    return null;
+  }
+  limits.failures = 0;
+
+  const hit = pickResult(results, name, { preferType, classSlug });
+  cache[key] = hit; // hit, or null for a definitive miss
+  return hit;
+}
