@@ -437,6 +437,28 @@ function isHeadingItem(own) {
  *   "Change Log" heading): top-level bold items then name the category.
  * @param {object[]} out Changes of the current day, in published order.
  */
+/**
+ * True when plain text reads like a sub-heading rather than a change: at most
+ * four words and 40 characters, starting with a capital, with no digits,
+ * quotes or sentence punctuation. Real change lines are sentences ("Fixed …
+ * .") or carry numbers, so they never match; zone, class, tree and race
+ * names ("Dun Morogh", "Fire", "Night Elf", "Excavation Site: Wetlands") do.
+ * Found in the live forum notes, where such headings are not bold.
+ *
+ * @param {string} text Cleaned own text of a list item.
+ * @returns {boolean}
+ */
+export function looksLikeHeadingText(text) {
+  if (!text || text.length > 40) return false;
+  if (!/^[A-Z]/.test(text)) return false;
+  if (/[0-9.!?,;"“”%]/.test(text)) return false;
+  // "Quest X reworked:" introduces its sub-items; it is a change with notes.
+  if (text.endsWith(':')) return false;
+  // A developer note is never a heading, however short.
+  if (DEV_NOTE_RE.test(text)) return false;
+  return text.split(/\s+/).length <= 4;
+}
+
 function walkList(list, ctx, out) {
   // The last change emitted directly by *this* list; a developer note in a
   // sibling <li> attaches to it. It is not shared with nested or parent
@@ -446,6 +468,10 @@ function walkList(list, ctx, out) {
   // Context for plain items: `ctx`, or a loose heading's context (kind 2).
   let current = ctx;
   const items = itemsOf(list).map((li) => splitListItem(li));
+  // A heading item is bold-only (isHeadingItem) or a short plain-text title
+  // such as "Fire" or "Ashenvale" (looksLikeHeadingText); the forum build
+  // notes use both forms for sub-headings.
+  const isHead = (nodes) => isHeadingItem(nodes) || looksLikeHeadingText(textOf(nodes));
   for (let i = 0; i < items.length; i++) {
     const { own, nested } = items[i];
     const text = textOf(own);
@@ -454,7 +480,7 @@ function walkList(list, ctx, out) {
     // `previous` is reset so a note after the heading's block never jumps
     // back over it to an earlier change; it is kept as a change instead.
     // A loose heading in effect ends here (the next heading replaces it).
-    if (nested.length && isHeadingItem(own)) {
+    if (nested.length && isHead(own)) {
       const inner = headingContext(ctx, text);
       for (const sub of nested) walkList(sub, inner, out);
       current = ctx;
@@ -465,9 +491,9 @@ function walkList(list, ctx, out) {
     // 2. Loose heading: bold-only, no nested list. It heads the following
     // siblings only if the next sibling is not itself a heading; otherwise
     // (or when it is the last item) it is an ordinary change, below.
-    if (!nested.length && isHeadingItem(own)) {
+    if (!nested.length && isHead(own)) {
       const next = items[i + 1];
-      if (next && !isHeadingItem(next.own)) {
+      if (next && !isHead(next.own)) {
         current = headingContext(ctx, text);
         previous = null;
         continue;
