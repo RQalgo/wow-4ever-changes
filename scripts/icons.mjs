@@ -344,7 +344,7 @@ function pickResult(results, name, { preferType, classSlug } = {}) {
  * @returns {{ maxLookups: number, delayMs: number, log: Function, calls: number,
  *   failures: number, stopped: boolean, warnedCap: boolean }}
  */
-export function createLimits({ maxLookups = 300, delayMs = 400, log = console.error } = {}) {
+export function createLimits({ maxLookups = 150, delayMs = 1200, log = console.error } = {}) {
   return { maxLookups, delayMs, log, calls: 0, failures: 0, stopped: false, warnedCap: false };
 }
 
@@ -540,12 +540,16 @@ function preferTypeFor(change) {
  * @param {Function} [opts.log]      one-line logger
  * @returns {Promise<object[]>} the same `days`
  */
+// Defaults are deliberately gentle: in the first real run Wowhead answered
+// ~270 lookups at 400 ms spacing and then started returning HTTP 403 (rate
+// limiting). 150 lookups per run at 1.2 s spacing stays well below that; the
+// cache means later runs only look up names that are new or still unknown.
 export async function addSubjects(days, {
   cachePath = 'data/icon-cache.json',
   overridesPath = 'data/icon-overrides.json',
   fetchImpl = globalThis.fetch,
-  delayMs = 400,
-  maxLookups = 300,
+  delayMs = 1200,
+  maxLookups = 150,
   log = console.error,
 } = {}) {
   const cache = await readJsonObject(cachePath, log);
