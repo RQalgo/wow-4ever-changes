@@ -13,6 +13,8 @@
  * Sections: helpers, data loading, rendering, boot.
  */
 
+import { groupChanges, relativeDay, className, classColor } from './logic.js';
+
 /** The loaded dataset (see docs/SCHEMA.md), or null before loading. */
 let data = null;
 
@@ -78,10 +80,99 @@ function renderHeader() {
   if (url && /^https?:\/\//i.test(url)) $('source-link').href = url;
 }
 
+/**
+ * Render one change line (text only for now; icons, notes and highlighting
+ * are layered on in later steps).
+ * @param {object} ch a change from the data
+ * @returns {HTMLElement} <li>
+ */
+function renderLine(ch) {
+  const li = el('li', 'line');
+  const body = el('div', 'line-body');
+  body.append(el('p', 'line-text', ch.text));
+  for (const note of ch.notes || []) body.append(el('p', 'line-note', note));
+  li.append(body);
+  return li;
+}
+
+/**
+ * Render a <ul> of lines.
+ * @param {object[]} changes
+ * @returns {HTMLElement}
+ */
+function renderLines(changes) {
+  const ul = el('ul', 'lines');
+  for (const ch of changes) ul.append(renderLine(ch));
+  return ul;
+}
+
+/**
+ * Render a class section ("Paladin" with direct lines and per-spec
+ * sub-headings such as "Paladin > Retribution").
+ * @param {{class: string|null, label: string, direct: object[], specs: object[]}} sec
+ * @returns {HTMLElement}
+ */
+function renderClassSection(sec) {
+  const box = el('section', 'group group-class');
+  // The class colour is exposed as a CSS variable and used only as an accent.
+  box.style.setProperty('--cc', classColor(sec.class) || 'var(--accent)');
+  box.append(el('h3', 'group-title', sec.label));
+  if (sec.direct.length) box.append(renderLines(sec.direct));
+  for (const sp of sec.specs) {
+    const sub = el('div', 'subgroup');
+    sub.append(el('h4', 'subgroup-title', `${sec.label} › ${sp.label}`), renderLines(sp.changes));
+    box.append(sub);
+  }
+  return box;
+}
+
+/**
+ * Render the General section: category headings, then optional group
+ * headings (e.g. a dungeon name) with their lines.
+ * @param {{category: string, groups: object[]}[]} general
+ * @returns {HTMLElement}
+ */
+function renderGeneral(general) {
+  const box = el('section', 'group group-general');
+  box.append(el('h3', 'group-title', 'General'));
+  for (const cat of general) {
+    const sub = el('div', 'subgroup');
+    sub.append(el('h4', 'subgroup-title', cat.category));
+    for (const g of cat.groups) {
+      if (g.group) sub.append(el('h5', 'group-label', g.group));
+      sub.append(renderLines(g.changes));
+    }
+    box.append(sub);
+  }
+  return box;
+}
+
+/**
+ * Render one date: sticky heading (published label, relative hint, count)
+ * and its sections.
+ * @param {object} day a day from the data
+ * @returns {HTMLElement}
+ */
+function renderDay(day) {
+  const view = groupChanges(day.changes);
+  const sec = el('section', 'day');
+  sec.id = `d-${day.date}`;
+  const head = el('h2', 'day-heading');
+  head.append(
+    el('span', 'day-label', day.label || day.date),
+    el('span', 'day-rel', relativeDay(day.date)),
+    el('span', 'day-count', `${view.count} ${view.count === 1 ? 'change' : 'changes'}`)
+  );
+  sec.append(head);
+  for (const c of view.classSections) sec.append(renderClassSection(c));
+  if (view.general.length) sec.append(renderGeneral(view.general));
+  return sec;
+}
+
 /** Render everything that depends on the data. */
 function render() {
   renderHeader();
-  $('results').replaceChildren(el('p', 'status', `${data.days.length} days loaded.`));
+  $('results').replaceChildren(...data.days.map(renderDay));
 }
 
 /** Load the data, handle failure with a retry button, then render. */
