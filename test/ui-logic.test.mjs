@@ -152,3 +152,26 @@ test('typing narrows: prefix matches first, then substring; items allowed', () =
   assert.deepEqual(sub, ['Judgement of Command']); // substring match
   assert.equal(L.buildSuggestions(data, L.defaultState(), 'icebreaker')[0].type, 'item');
 });
+
+/* ---------- hash state ---------- */
+test('encodeHash omits defaults and round-trips', () => {
+  assert.equal(L.encodeHash(L.defaultState()), '');
+  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', general: false };
+  const h = L.encodeHash(st);
+  assert.match(h, /^#class=paladin&spec=retribution&q=judgement\+of&general=0$/);
+  assert.deepEqual(L.decodeHash(h), st);
+});
+
+test('decodeHash accepts the documented example and rejects junk', () => {
+  assert.deepEqual(L.decodeHash('#class=paladin&spec=retribution&q=judgement&general=0'),
+    { cls: 'paladin', spec: 'retribution', q: 'judgement', general: false });
+  assert.deepEqual(L.decodeHash('#class=notaclass&spec=holy'), L.defaultState()); // spec needs a valid class
+  assert.equal(L.decodeHash('#class=mage&spec=<script>').spec, '');
+  assert.deepEqual(L.decodeHash(''), L.defaultState());
+  assert.equal(L.decodeHash('#q=%E0%A4%A').q.length >= 0, true); // malformed escapes do not throw
+});
+
+test('sanitizeSelection guards stored values', () => {
+  assert.deepEqual(L.sanitizeSelection('druid', 'feral-combat'), { cls: 'druid', spec: 'feral-combat' });
+  assert.deepEqual(L.sanitizeSelection(5, 'x'), { cls: '', spec: '' });
+});

@@ -391,3 +391,52 @@ export function buildSuggestions(data, state, query, limit = 8) {
   }
   return list.slice(0, limit);
 }
+
+/* ======================= 7. URL hash state ======================= */
+
+/**
+ * Validate a class/spec pair coming from untrusted input (URL hash or
+ * localStorage). Unknown classes are dropped; a spec needs a class and must
+ * look like a slug.
+ * @param {unknown} cls
+ * @param {unknown} spec
+ * @returns {{cls: string, spec: string}}
+ */
+export function sanitizeSelection(cls, spec) {
+  const c = typeof cls === 'string' && CLASSES.some((k) => k.slug === cls) ? cls : '';
+  const sp = c && typeof spec === 'string' && /^[a-z0-9-]{1,40}$/.test(spec) ? spec : '';
+  return { cls: c, spec: sp };
+}
+
+/**
+ * Encode the state as a hash such as "#class=paladin&spec=retribution&q=judgement&general=0".
+ * Default values are omitted; the default state encodes to "" (no hash).
+ * @param {{cls: string, spec: string, q: string, general: boolean}} state
+ * @returns {string} "" or a string starting with "#"
+ */
+export function encodeHash(state) {
+  const p = new URLSearchParams();
+  if (state.cls) p.set('class', state.cls);
+  if (state.cls && state.spec) p.set('spec', state.spec);
+  if (state.q) p.set('q', state.q);
+  if (!state.general) p.set('general', '0');
+  const str = p.toString();
+  return str ? `#${str}` : '';
+}
+
+/**
+ * Decode a location hash back into a state. Unknown/invalid values fall back
+ * to defaults, so a hand-edited URL can never break the page.
+ * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
+ * @returns {{cls: string, spec: string, q: string, general: boolean}}
+ */
+export function decodeHash(hash) {
+  const p = new URLSearchParams(String(hash || '').replace(/^#/, ''));
+  const { cls, spec } = sanitizeSelection(p.get('class'), p.get('spec'));
+  return {
+    cls,
+    spec,
+    q: (p.get('q') || '').slice(0, 100),
+    general: p.get('general') !== '0',
+  };
+}
