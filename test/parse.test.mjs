@@ -569,3 +569,71 @@ test('plain-text sub-headings with a nested list become tree or group, not chang
     ['Quests', null, null, 'Stormwind', '“The Attack!” is no longer an escort quest.'],
   ]);
 });
+
+// --- Found while reviewing the live site (2026-11-15) -------------------------
+
+describe('a sentence is never a heading', async () => {
+  const { parsePatchPost, isSentenceLike } = await import('../scripts/parse.mjs');
+  const BETA = 'Gamepad Support has entered a functional Beta state.';
+  const SUB1 = 'In World of Warcraft: Forever, all major gameplay and core user interface experiences are supported.';
+  const SUB2 = 'Gamepad settings can be customized through Edit Mode and the Options menu.';
+
+  test('isSentenceLike: punctuation, word count, "<category> <lower-case word>"', () => {
+    for (const t of [BETA, 'Thunderfury is back!', 'Is this a heading?', '“Done.”', 'One two three four five six seven']) {
+      assert.equal(isSentenceLike(t), true, t);
+    }
+    for (const t of ['Gamepad Support', 'The Drowned City', 'New to this build - Known Issues', 'Excavation Site: Wetlands', '']) {
+      assert.equal(isSentenceLike(t), false, t);
+    }
+    assert.equal(isSentenceLike('Gamepad Support is now Beta', 'Gamepad Support'), true);
+    assert.equal(isSentenceLike('Gamepad Support Changes', 'Gamepad Support'), false);
+    assert.equal(isSentenceLike('Gamepad Support', 'Gamepad Support'), false);
+  });
+
+  test('bold sentence with a nested list under its own category (Nov 2 patch notes) is one change with notes', () => {
+    // The shape of the live post: the category is a top-level bold item after
+    // "Change Log", the bold sentence sits under it with its own nested list.
+    const html = '<h2>Change Log</h2><ul><li><strong>Gamepad Support</strong><ul>'
+      + `<li><strong>${BETA}</strong><ul><li>${SUB1}</li><li>${SUB2}</li></ul></li>`
+      + '</ul></li></ul>';
+    const d = parsePatchPost(html, { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.category, c.group, c.text, c.notes]), [
+      ['Gamepad Support', null, BETA, [SUB1, SUB2]],
+    ]);
+  });
+
+  test('the same sentence as a paragraph category + loose bold item is a change; its siblings stay changes', () => {
+    const html = '<p><strong>Gamepad Support</strong></p><ul>'
+      + `<li><strong>${BETA}</strong></li><li>${SUB1}</li><li>${SUB2}</li></ul>`;
+    const d = parsePatchPost(html, { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.group, c.text]), [[null, BETA], [null, SUB1], [null, SUB2]]);
+  });
+
+  test('a loose bold sentence no longer swallows unrelated siblings (Oct 8 patch notes)', () => {
+    const html = '<p><strong>Changes and Updates</strong></p><ul>'
+      + '<li><strong>Now available for testing: the new City of Dalaran dungeon.</strong></li>'
+      + '<li>Players will once again be able to swap multiple weapons.</li></ul>';
+    const d = parsePatchPost(html, { date: '2026-10-08' });
+    assert.deepEqual(d.changes.map((c) => c.group), [null, null]);
+  });
+
+  test('a sub-heading that repeats the category adds no group level', () => {
+    const html = '<p><strong>Gamepad Support</strong></p><ul><li><strong>Gamepad Support</strong><ul>'
+      + '<li><strong>Menus</strong><ul><li>Faster.</li></ul></li><li>Plain.</li></ul></li></ul>';
+    const d = parsePatchPost(html, { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.group, c.text]), [['Menus', 'Faster.'], [null, 'Plain.']]);
+  });
+
+  test('a capitalised heading that starts with the category name stays a group', () => {
+    const html = '<p><strong>Gamepad Support</strong></p><ul><li><strong>Gamepad Support Menus</strong><ul><li>Faster.</li></ul></li></ul>';
+    const d = parsePatchPost(html, { date: '2026-11-02' });
+    assert.deepEqual(d.changes.map((c) => [c.group, c.text]), [['Gamepad Support Menus', 'Faster.']]);
+  });
+
+  test('hotfix post: a bold sentence with nested items is a change, not a group', () => {
+    const html = day('Dungeons', '<ul><li><strong>The Deadmines is now available at level 15.</strong><ul><li>Loot updated.</li></ul></li></ul>');
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.group, c.text, c.notes]), [
+      [null, 'The Deadmines is now available at level 15.', ['Loot updated.']],
+    ]);
+  });
+});

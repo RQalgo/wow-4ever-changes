@@ -439,6 +439,11 @@ function isHeadingItem(own) {
  * 4. Developer note sibling: attached to the previous change of this list.
  * 5. Ordinary change, with any nested items as its notes.
  *
+ * An item whose own text is a sentence (isSentenceLike: ends with . ! ?,
+ * more than MAX_HEADING_WORDS words, or "<category> <lower-case word>…") is
+ * never kind 1 or 2, whatever its formatting; and a sub-heading equal to the
+ * category name adds no group level (headingContext).
+ *
  * @param {import('node-html-parser').HTMLElement} list <ul> or <ol>
  * @param {{category:string|null,inClasses:boolean,class:string|null,spec:string|null,group:string[]}} ctx
  *   `category: null` means "no category yet" (patch notes after a
@@ -467,6 +472,54 @@ export function looksLikeHeadingText(text) {
   return text.split(/\s+/).length <= 4;
 }
 
+/** An item whose own text has more words than this is a sentence, not a heading. */
+export const MAX_HEADING_WORDS = 6;
+
+/**
+ * Number of words in a text; tokens without a letter or digit (a lone "-" or
+ * "–" between words) are not counted, so "New to this build - Known Issues"
+ * has six words.
+ *
+ * @param {string} text
+ * @returns {number}
+ */
+function wordCount(text) {
+  return cleanText(text).split(' ').filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+}
+
+/**
+ * True when an item's own text reads as a sentence and therefore can never be
+ * a heading (class, spec, group or category), however it is formatted. Seen
+ * in the live patch notes of 2026-11-02, where the bold item "Gamepad Support
+ * has entered a functional Beta state." under the category "Gamepad Support"
+ * became a group, so the site showed "Gamepad Support › Gamepad Support has
+ * entered …" above its sub-items. Rules:
+ *  - it ends with sentence punctuation (. ! ?), optionally followed by a
+ *    closing quote or bracket;
+ *  - it has more than MAX_HEADING_WORDS words;
+ *  - it starts with the current category's name followed by a lower-case word
+ *    ("Gamepad Support is now in Beta"): the category name is the subject of
+ *    a sentence. "Gamepad Support Changes" (capitalised rest) is still a
+ *    heading.
+ *
+ * @param {string} text Cleaned own text of a list item.
+ * @param {string|null} [category=null] Category the item is published under.
+ * @returns {boolean}
+ */
+export function isSentenceLike(text, category = null) {
+  const t = cleanText(text);
+  if (!t) return false;
+  // "." / "!" / "?" at the end, possibly inside a closing quote or bracket.
+  if (/[.!?]["'”’)\]]*$/.test(t)) return true;
+  if (wordCount(t) > MAX_HEADING_WORDS) return true;
+  const cat = cleanText(category);
+  if (cat && t.length > cat.length && t.toLowerCase().startsWith(`${cat.toLowerCase()} `)) {
+    // The first word after the category name starts with a lower-case letter.
+    if (/^\p{Ll}/u.test(t.slice(cat.length + 1))) return true;
+  }
+  return false;
+}
+
 function walkList(list, ctx, out) {
   // The last change emitted directly by *this* list; a developer note in a
   // sibling <li> attaches to it. It is not shared with nested or parent
@@ -478,8 +531,14 @@ function walkList(list, ctx, out) {
   const items = itemsOf(list).map((li) => splitListItem(li));
   // A heading item is bold-only (isHeadingItem) or a short plain-text title
   // such as "Fire" or "Ashenvale" (looksLikeHeadingText); the forum build
-  // notes use both forms for sub-headings.
-  const isHead = (nodes) => isHeadingItem(nodes) || looksLikeHeadingText(textOf(nodes));
+  // notes use both forms for sub-headings. A sentence is never a heading,
+  // even when it is bold (isSentenceLike): it is a change, and its nested
+  // items become its notes (kind 5 below).
+  const isHead = (nodes) => {
+    const t = textOf(nodes);
+    if (isSentenceLike(t, ctx.category)) return false;
+    return isHeadingItem(nodes) || looksLikeHeadingText(t);
+  };
   for (let i = 0; i < items.length; i++) {
     const { own, nested } = items[i];
     const text = textOf(own);
@@ -543,6 +602,9 @@ function walkList(list, ctx, out) {
  */
 function headingContext(ctx, heading) {
   if (ctx.category === null) return categoryContext(heading);
+  // A sub-heading that only repeats the category ("Gamepad Support" under
+  // Gamepad Support) adds no information: no group level is created for it.
+  if (cleanText(heading).toLowerCase() === cleanText(ctx.category).toLowerCase()) return ctx;
   return descend(ctx, heading);
 }
 
