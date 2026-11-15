@@ -513,3 +513,35 @@ test('subjectTitle: talent kind, optional tree, quiet unverified hint', () => {
   assert.equal(L.subjectTitle({ name: 'Oath of Light', kind: 'talent', tree: 'holy', verified: false }), 'Oath of Light (Holy talent) – unverified icon');
   assert.equal(L.iconSlots(mk({ subjects: [{ name: 'Oath', kind: 'talent', tree: 'holy', icon: 'a' }] })).slots[0].title, 'Oath (Holy talent)');
 });
+
+/* ---------- mobile filter panel helpers ---------- */
+test('activeFilterCount counts class, tree, kind and categories (not the search text)', () => {
+  assert.equal(L.activeFilterCount(L.defaultState()), 0);
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), q: 'fire' }), 0);
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), cls: 'mage' }), 1);
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), cls: 'mage', spec: 'fire' }), 2);
+  assert.equal(L.activeFilterCount({ cls: 'mage', spec: 'fire', q: '', kind: 'patch', cats: [] }), 4);
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), kind: 'bogus' }), 0);
+});
+
+test('filterSummary: empty when unfiltered, otherwise a compact one-liner', () => {
+  assert.equal(L.filterSummary(L.defaultState()), '');
+  assert.equal(L.filterSummary({ ...L.defaultState(), q: 'x' }), '');
+  assert.equal(L.filterSummary({ cls: 'paladin', spec: 'retribution', q: '', kind: 'patch', cats: ['items', 'quests', 'pvp'] }),
+    'Paladin › Retribution · Patches · 3 categories');
+  assert.equal(L.filterSummary({ ...L.defaultState(), cls: 'druid' }), 'Druid');
+  assert.equal(L.filterSummary({ ...L.defaultState(), kind: 'hotfix', cats: ['items'] }), 'Hotfixes · Items');
+  assert.equal(L.filterSummary({ ...L.defaultState(), cats: [] }), 'No categories');
+  assert.equal(L.filterSummary({ ...L.defaultState(), cls: 'hunter', spec: 'beast-mastery' }), 'Hunter › Beast Mastery');
+});
+
+test('panel flag: filters=open is read and written, and ignored by decodeHash', () => {
+  assert.equal(L.hasPanelFlag('#filters=open'), true);
+  assert.equal(L.hasPanelFlag('#class=mage&filters=open'), true);
+  assert.equal(L.hasPanelFlag('#class=mage'), false);
+  assert.equal(L.hasPanelFlag(''), false);
+  assert.equal(L.withPanelFlag('', true), '#filters=open');
+  assert.equal(L.withPanelFlag('#class=mage', true), '#class=mage&filters=open');
+  assert.equal(L.withPanelFlag('#class=mage', false), '#class=mage');
+  assert.deepEqual(L.decodeHash('#class=mage&filters=open'), { ...L.defaultState(), cls: 'mage' });
+});

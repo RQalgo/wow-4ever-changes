@@ -15,6 +15,7 @@
  *   7. URL hash state : encode / decode the shareable filter state
  *   8. Day kinds      : hotfix vs patch (schema v2), day identity, kind filter
  *   9. Line decoration: extra tag chips and the icon cluster of one line
+ *  10. Filter panel   : active-filter count/summary and the #filters=open flag (mobile)
  *
  * Filtering never reads `scope`/`class`/`category` directly any more: every
  * filter goes through effectiveTags(), which returns the schema v3 `tags` when
@@ -833,4 +834,70 @@ export function iconSlots(ch, max = MAX_ICONS) {
     name: s.name, icon: s.icon, talent: s.kind === 'talent', title: subjectTitle(s),
   }));
   return { slots, more: subs.slice(max) };
+}
+
+/* ======================= 10. Filter panel (mobile) ======================= */
+
+/**
+ * How many filters differ from the defaults: class, tree, kind and
+ * categories each count once. The search text is not counted (it is visible
+ * in the search box itself). Used for the badge on the mobile filter button.
+ * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null}} state
+ * @returns {number}
+ */
+export function activeFilterCount(state) {
+  let n = 0;
+  if (state.cls) n += 1;
+  if (state.cls && state.spec) n += 1;
+  if (sanitizeKindFilter(state.kind) !== 'all') n += 1;
+  if (state.cats) n += 1;
+  return n;
+}
+
+/**
+ * One-line summary of the active filters for the closed mobile bar, e.g.
+ * "Paladin › Retribution · Patches · 3 categories". Empty string when
+ * nothing is filtered. A single enabled category is named; several are
+ * counted; none says "No categories".
+ * @param {object} state
+ * @param {{slug: string, label: string}[]} [available] category chips of the loaded data
+ * @returns {string}
+ */
+export function filterSummary(state, available = CATEGORIES) {
+  const parts = [];
+  if (state.cls) {
+    parts.push(state.spec ? `${className(state.cls)} › ${titleCase(state.spec)}` : className(state.cls));
+  }
+  const kind = sanitizeKindFilter(state.kind);
+  if (kind !== 'all') parts.push(kind === 'patch' ? 'Patches' : 'Hotfixes');
+  if (state.cats) {
+    if (!state.cats.length) parts.push('No categories');
+    else if (state.cats.length === 1) {
+      const def = available.find((c) => c.slug === state.cats[0]);
+      parts.push(def ? def.label : titleCase(state.cats[0]));
+    } else parts.push(`${state.cats.length} categories`);
+  }
+  return parts.join(' · ');
+}
+
+/**
+ * Does the hash ask for the filter panel to be open (`filters=open`)? The
+ * flag is UI state, not a filter: decodeHash ignores it. It lets a link or a
+ * screenshot script open the mobile panel directly.
+ * @param {string} hash
+ * @returns {boolean}
+ */
+export function hasPanelFlag(hash) {
+  return new URLSearchParams(String(hash || '').replace(/^#/, '')).get('filters') === 'open';
+}
+
+/**
+ * Add or remove the `filters=open` flag on an encoded filter hash.
+ * @param {string} hash "" or "#a=b&..." as made by encodeHash
+ * @param {boolean} open
+ * @returns {string} "" or a string starting with "#"
+ */
+export function withPanelFlag(hash, open) {
+  if (!open) return hash;
+  return hash ? `${hash}&filters=open` : '#filters=open';
 }
