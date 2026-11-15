@@ -48,7 +48,10 @@ export const tableUrl = (table, version) =>
   `https://wago.tools/db2/${table}/csv?build=${encodeURIComponent(version)}`;
 
 /** Per-request timeout (covers reading the body too) and pause between tables. */
-const REQUEST_TIMEOUT_MS = 60_000;
+// Review change: 5 minutes. The timeout also covers reading the body, and the
+// largest tables (SpellMisc, ItemSparse) are tens of MB; 60 s could abort a
+// slow but healthy download and silently leave the site without client data.
+const REQUEST_TIMEOUT_MS = 300_000;
 const TABLE_PAUSE_MS = 1000;
 
 /** SkillLine.CategoryID value that marks class skill lines ("Frost", "Holy"...). */
@@ -409,7 +412,7 @@ export function pickLatestBuild(buildsJson, product = 'wowf') {
 // ---------------------------------------------------------------------------
 
 /**
- * One HTTP GET with the honest User-Agent and a 60 s timeout (the timeout also
+ * One HTTP GET with the honest User-Agent and a 5 min timeout (the timeout also
  * covers reading the body). Throws on network errors and non-2xx statuses.
  * @param {typeof fetch} fetchImpl
  * @param {string} url
