@@ -548,12 +548,9 @@ function renderCategoryChips() {
   replaceChips(row, chips);
 }
 
-/** Segment labels of the kind filter, keyed by filter value. */
-const KIND_FILTER_LABEL = { all: 'All', hotfix: 'Hotfixes', patch: 'Patches' };
-
 /**
- * Build the three-way kind control "All / Hotfixes / Patches" as a radio
- * group: role=radiogroup with role=radio buttons, aria-checked, roving
+ * Build the four-way kind control "All / Hotfixes / Patches / Dev Posts"
+ * (labels from kindFilterLabel) as a radio group: role=radiogroup with role=radio buttons, aria-checked, roving
  * tabindex (only the selected segment is in the tab order) and arrow-key
  * navigation, like a native radio group. Created once; renderKindFilter()
  * keeps it in sync with the state.
@@ -563,9 +560,9 @@ function buildKindFilter() {
   const group = el('div', 'segmented');
   group.id = 'kind-row';
   group.setAttribute('role', 'radiogroup');
-  group.setAttribute('aria-label', 'Show hotfixes or patch notes');
+  group.setAttribute('aria-label', 'Show hotfixes, patch notes or dev posts');
   for (const value of KIND_FILTERS) {
-    const b = el('button', 'segment', KIND_FILTER_LABEL[value]);
+    const b = el('button', 'segment', kindFilterLabel(value));
     b.type = 'button';
     b.dataset.kind = value;
     b.setAttribute('role', 'radio');

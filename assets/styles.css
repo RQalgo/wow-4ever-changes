@@ -223,13 +223,18 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .btn-clear:hover:not(:disabled) { background: var(--surface-2); }
 .btn-clear:disabled { opacity: .5; cursor: default; }
 
-/* Kind filter: segmented radio group. Reuses the chip colours. */
-.segmented { display: flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: var(--surface); }
-.segment {
-  flex: 1 1 0; min-height: 32px; padding: 0 .5rem; cursor: pointer; background: transparent; color: var(--text);
-  border: 0; border-left: 1px solid var(--border); font: 600 .875rem var(--sans);
+/* Kind filter: segmented radio group of four. A grid whose 1px gaps show the border colour draws
+   the dividers, so the same markup works as one row or wrapped into a 2x2 block (see below). */
+.segmented {
+  /* auto tracks: each segment is as wide as its label, and the spare width is shared out evenly
+     ("All" stays narrow, so "Dev Posts" fits the 280px sidebar). */
+  display: grid; grid-template-columns: repeat(4, auto); gap: 1px; overflow: hidden;
+  background: var(--border); border: 1px solid var(--border); border-radius: 999px;
 }
-.segment:first-child { border-left: 0; }
+.segment {
+  min-width: 0; min-height: 32px; padding: 0 .3rem; cursor: pointer; background: var(--surface); color: var(--text);
+  border: 0; font: 600 .8125rem var(--sans); white-space: nowrap;
+}
 .segment:hover { background: var(--surface-2); }
 .segment[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); }
 .segment:focus-visible { outline-offset: -3px; }
@@ -354,6 +359,10 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   .chip, .btn-clear, .segment { min-height: 44px; }
   .chip { padding: 0 .9rem; }
   .segment-row { margin: 0; }
+  /* Very narrow phones: the four 44px segments wrap into a 2x2 block (a pill shape cannot wrap). */
+  @media (max-width: 359px) {
+    .segmented { grid-template-columns: repeat(2, minmax(0, 1fr)); border-radius: 10px; }
+  }
   /* "Show N changes" stays visible while the panel scrolls. */
   .panel-foot { display: block; position: sticky; bottom: 0; margin: .8rem -1rem 0; padding: .6rem 1rem calc(.7rem + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--border); }
   .done-btn { width: 100%; margin: 0; }
