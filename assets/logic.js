@@ -21,6 +21,9 @@
  * Filtering never reads `scope`/`class`/`category` directly any more: every
  * filter goes through effectiveTags(), which returns the schema v3 `tags` when
  * a change has them and derives equivalent tags from the old fields otherwise.
+ * One deliberate exception: the "No classes" choice hides lines by the
+ * section they were published in (isClassChange reads `scope`, exactly like
+ * groupChanges), not by their tags; see docs/SCHEMA.md.
  * That keeps the app working with both the current data (no tags yet) and the
  * v3 data that a scheduled job will publish later.
  */
