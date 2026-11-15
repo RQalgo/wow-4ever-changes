@@ -9,5 +9,12 @@
     "type": "discourse-topic",
     "url": "https://us.forums.blizzard.com/en/wow/t/2360696",
     "title": "Beta build notes"
+  },
+  {
+    "kind": "dev",
+    "type": "discourse-tracker",
+    "url": "https://us.forums.blizzard.com/en/wow/groups/blizzard-tracker/posts.json",
+    "categoryId": 347,
+    "title": "Dev Posts"
   }
 ]

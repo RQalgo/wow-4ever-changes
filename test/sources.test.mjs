@@ -32,7 +32,11 @@ async function withFile(content, fn) {
 describe('loadSources', () => {
   test('the repository\'s data/sources.json is valid', async () => {
     const list = await loadSources(new URL('../data/sources.json', import.meta.url).pathname);
-    assert.deepEqual(list.map((s) => [s.kind, s.type]), [['hotfix', 'news-rolling'], ['patch', 'discourse-topic']]);
+    assert.deepEqual(list.map((s) => [s.kind, s.type]), [['hotfix', 'news-rolling'], ['patch', 'discourse-topic'], ['dev', 'discourse-tracker']]);
+    assert.deepEqual(list[2], {
+      kind: 'dev', type: 'discourse-tracker', url: 'https://us.forums.blizzard.com/en/wow/groups/blizzard-tracker/posts.json',
+      categoryId: 347, title: 'Dev Posts',
+    });
   });
 
   test('reads a valid list', async () => {
