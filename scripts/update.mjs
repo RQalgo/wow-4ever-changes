@@ -13,6 +13,8 @@
 //
 // The output format is the contract in docs/SCHEMA.md.
 
+import { isDeepStrictEqual } from 'node:util';
+
 /**
  * Merge a fresh parse of the rolling source post into the previously stored
  * days. The source may eventually drop old dates, but the site should keep
@@ -37,4 +39,21 @@ export function mergeDays(previousDays, freshDays) {
   return [...byDate.values()].sort((a, b) =>
     a.date < b.date ? 1 : a.date > b.date ? -1 : 0,
   );
+}
+
+/**
+ * Compare two changes.json objects ignoring `generatedAt`, which changes on
+ * every run and would otherwise cause a needless commit each time.
+ * Deep comparison is key-order independent.
+ *
+ * @param {object|null|undefined} a
+ * @param {object|null|undefined} b
+ * @returns {boolean} true when the content is equal
+ */
+export function sameContent(a, b) {
+  if (!a || !b) return false;
+  // Strip generatedAt from shallow copies; never mutate the inputs.
+  const { generatedAt: _a, ...restA } = a;
+  const { generatedAt: _b, ...restB } = b;
+  return isDeepStrictEqual(restA, restB);
 }
