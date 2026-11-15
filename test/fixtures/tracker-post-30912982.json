@@ -1,0 +1,6 @@
+{
+ "id": 30912982,
+ "cooked": "<p>Yesterday, we updated dungeon play so that experience granted by an enemy in an instance is nullified if a high level player is in the group and enemy is trivial to that player. For some dungeons, the new restriction missed the mark because of the overall level range of the enemies in the dungeon.</p>\n<p>We have now adjusted this so that the level check uses the dungeon’s intended level range. This affects The Deadmines and Blackfathom Deeps the most.</p>\n<p>Thank you for the feedback!</p>",
+ "post_number": 1,
+ "topic_id": 0
+}

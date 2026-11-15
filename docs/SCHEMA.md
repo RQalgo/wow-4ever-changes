@@ -187,3 +187,63 @@ Subjects therefore gain three optional fields:
 Tags: a talent subject with a `tree` also adds `spec:<class>/<tree>`, so a
 Retribution talent mentioned in a class-wide Paladin line is found by the
 Retribution filter.
+
+## Version 4: dev posts (Blizzard staff forum posts)
+
+A third kind of day, `kind: "dev"`, holds posts by Blizzard staff from the
+forum's **Blizzard tracker** (`https://us.forums.blizzard.com/en/wow/g/blizzard-tracker/activity/posts`)
+that are in the category **World of Warcraft: Forever General Discussion**
+(`category_id` 347). Source entry in `data/sources.json`:
+
+```jsonc
+{ "kind": "dev", "type": "discourse-tracker",
+  "url": "https://us.forums.blizzard.com/en/wow/groups/blizzard-tracker/posts.json",
+  "categoryId": 347,
+  "title": "Dev Posts" }
+```
+
+Facts about the endpoint (checked 2026-11-15):
+- `GET …/groups/blizzard-tracker/posts.json` → `{ posts: [ … ] }`, 20 per page, newest
+  first; older pages via `?before_post_id=<id of the last post on the page>`.
+  Each post: `id, created_at, topic_id, topic_title, topic_slug, url, category_id,
+  post_number, posts_count, post_type, username, name, user_title,
+  primary_group_name, excerpt, truncated`. The excerpt is cut (~300 chars).
+- Full body: `GET https://us.forums.blizzard.com/en/wow/posts/<id>.json` → `{ cooked, … }`.
+- 62 posts in category 347 between 2026-09-18 and 2026-11-15: announcements
+  (post_number 1) and staff replies inside player threads (post_number > 1).
+
+Dev-post days and changes:
+
+```jsonc
+{ "date": "2026-11-14",        // US Pacific calendar date of created_at
+  "kind": "dev", "title": null, "sourceUrl": null, "label": "November 14, 2026",
+  "changes": [
+    { "id": "2026-11-14-d001",
+      "scope": "general", "category": "Dev Posts", "class": null, "spec": null, "group": null,
+      "text": "Player-Level Dungeon XP Adjustment - November 14",   // topic title
+      "notes": ["Yesterday, we updated dungeon play so that …"],    // summary, see below
+      "url": "https://us.forums.blizzard.com/en/wow/t/player-level-dungeon-xp-adjustment-november-14/2416343/1",
+      "author": "Kaivax", "authorTitle": "Community Manager",
+      "postNumber": 1,             // 1 = the announcement itself; >1 = a staff reply in a thread
+      "subjects": [ … ], "tags": [ … ] } ] }
+```
+
+Rules:
+- One change per tracker post. For a reply (`postNumber > 1`) the text is
+  `Reply in “<topic title>”`.
+- `notes` holds a SHORT summary in Blizzard's words: the first one or two
+  paragraphs of the post body, at most 400 characters in total, cut at a word
+  boundary with "…" — never the whole post (long posts are read at `url`).
+  Quotes of other users (`<aside class="quote">`) and images are dropped.
+- Subjects and tags are computed from the title + the plain text of the whole
+  post body (not just the summary), with the normal rules: classes, trees,
+  talents, category tags (dungeons, pvp, quests, …). A dev-post change is
+  never a "class change" (it is not published under Classes), so "No classes"
+  does not hide it; it follows the category chips like other general lines.
+- Ids: `<date>-dNNN`. Day order on the same date: patch, then hotfix, then dev.
+- Stored dev-post days are kept when posts fall off the tracker's pages (same
+  merge rule as other sources); a post already stored (same `url`) is not
+  re-fetched.
+
+UI: badge "Dev Post", kind filter gains a fourth option "Dev Posts"
+(hash `kind=dev`); each dev-post line links to its `url` and shows the author.

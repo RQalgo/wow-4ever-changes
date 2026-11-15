@@ -1,0 +1,58 @@
+{
+ "posts": [
+  {
+   "id": 30912982,
+   "created_at": "2026-11-15T01:18:23.191Z",
+   "topic_id": 2416343,
+   "topic_title": "Player-Level Dungeon XP Adjustment - November 14",
+   "topic_slug": "player-level-dungeon-xp-adjustment-november-14",
+   "url": "/t/player-level-dungeon-xp-adjustment-november-14/2416343/1",
+   "category_id": 347,
+   "post_number": 1,
+   "posts_count": 40,
+   "post_type": 1,
+   "username": "Kaivax",
+   "name": "Kaivax",
+   "user_title": "Community Manager",
+   "primary_group_name": "community-manager",
+   "excerpt": "Yesterday, we updated dungeon play so that experience granted by an enemy in an &hellip;",
+   "truncated": true
+  },
+  {
+   "id": 30899768,
+   "created_at": "2026-11-14T01:54:07.244Z",
+   "topic_id": 2403040,
+   "topic_title": "WoW: Forever Hotfixes - November 13, 2026",
+   "topic_slug": "wow-forever-hotfixes-november-13-2026",
+   "url": "/t/wow-forever-hotfixes-november-13-2026/2403040/10",
+   "category_id": 352,
+   "post_number": 10,
+   "posts_count": 12,
+   "post_type": 1,
+   "username": "Kaivax",
+   "name": "Kaivax",
+   "user_title": "Community Manager",
+   "primary_group_name": "community-manager",
+   "excerpt": "November 13, 2026 Classes &hellip;",
+   "truncated": true
+  },
+  {
+   "id": 30850001,
+   "created_at": "2026-11-10T22:05:00.000Z",
+   "topic_id": 2408781,
+   "topic_title": "PvP Faction Balance Updates - November 10",
+   "topic_slug": "pvp-faction-balance-updates-november-10",
+   "url": "/t/pvp-faction-balance-updates-november-10/2408781/174",
+   "category_id": 347,
+   "post_number": 174,
+   "posts_count": 200,
+   "post_type": 1,
+   "username": "Kaivax",
+   "name": "Kaivax",
+   "user_title": "Community Manager",
+   "primary_group_name": "community-manager",
+   "excerpt": "To clarify, the restriction applies only &hellip;",
+   "truncated": true
+  }
+ ]
+}

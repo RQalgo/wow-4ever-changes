@@ -1,0 +1,40 @@
+{
+ "posts": [
+  {
+   "id": 30700001,
+   "created_at": "2026-10-07T17:00:00.000Z",
+   "topic_id": 2375389,
+   "topic_title": "World of Warcraft: Forever Class Deep Dives — Mage and Shaman",
+   "topic_slug": "world-of-warcraft-forever-class-deep-dives-mage-and-shaman",
+   "url": "/t/world-of-warcraft-forever-class-deep-dives-mage-and-shaman/2375389/1",
+   "category_id": 347,
+   "post_number": 1,
+   "posts_count": 60,
+   "post_type": 1,
+   "username": "BlizzardEntertainment",
+   "name": "BlizzardEntertainment",
+   "user_title": "",
+   "primary_group_name": "blizzard-entertainment",
+   "excerpt": "Mages and Shamans get a fresh look &hellip;",
+   "truncated": true
+  },
+  {
+   "id": 30650001,
+   "created_at": "2026-10-01T23:10:00.000Z",
+   "topic_id": 2368000,
+   "topic_title": "Raid Encounter Design in Season 3",
+   "topic_slug": "raid-encounter-design-in-season-3",
+   "url": "/t/raid-encounter-design-in-season-3/2368000/1",
+   "category_id": 40,
+   "post_number": 1,
+   "posts_count": 5,
+   "post_type": 1,
+   "username": "Limestone-1964469",
+   "name": "Limestone",
+   "user_title": "Game Designer",
+   "primary_group_name": "blizzard-entertainment",
+   "excerpt": "Retail raid post, other category &hellip;",
+   "truncated": true
+  }
+ ]
+}
