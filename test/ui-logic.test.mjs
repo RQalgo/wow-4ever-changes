@@ -698,3 +698,13 @@ test('sanitizeStoredSelection restores a class or the hiding, nothing else', () 
   assert.equal(L.sanitizeStoredSelection(null), null);
   assert.equal(L.sanitizeStoredSelection('paladin'), null);
 });
+
+test('No classes counts as one active filter and is named in the summary', () => {
+  assert.equal(L.activeFilterCount(hidden()), 1);
+  assert.equal(L.activeFilterCount(hidden({ kind: 'patch', cats: [] })), 3);
+  assert.equal(L.activeFilterCount(hidden({ spec: 'holy' })), 1); // a stray tree never counts without a class
+  assert.equal(L.filterSummary(hidden()), 'No class changes');
+  assert.equal(L.filterSummary(hidden({ kind: 'patch' })), 'No class changes · Patches');
+  assert.equal(L.filterSummary(hidden({ cats: [] })), 'No class changes · No categories');
+  assert.equal(L.filterSummary(hidden({ cats: ['items'] }), L.availableCategories(data)), 'No class changes · Items');
+});

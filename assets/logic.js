@@ -973,15 +973,16 @@ export function iconSlots(ch, max = MAX_ICONS) {
 /* ======================= 10. Filter panel (mobile) ======================= */
 
 /**
- * How many filters differ from the defaults: class, tree, kind and
- * categories each count once. The search text is not counted (it is visible
- * in the search box itself). Used for the badge on the mobile filter button.
- * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null}} state
+ * How many filters differ from the defaults: class (or "No classes"), tree,
+ * kind and categories each count once. The search text is not counted (it
+ * is visible in the search box itself). Used for the badge on the mobile
+ * filter button.
+ * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null, hideClasses?: boolean}} state
  * @returns {number}
  */
 export function activeFilterCount(state) {
   let n = 0;
-  if (state.cls) n += 1;
+  if (classChoice(state) !== 'all') n += 1;
   if (state.cls && state.spec) n += 1;
   if (sanitizeKindFilter(state.kind) !== 'all') n += 1;
   if (state.cats) n += 1;
@@ -990,16 +991,18 @@ export function activeFilterCount(state) {
 
 /**
  * One-line summary of the active filters for the closed mobile bar, e.g.
- * "Paladin › Retribution · Patches · 3 categories". Empty string when
- * nothing is filtered. A single enabled category is named; several are
- * counted; none says "No categories".
+ * "Paladin › Retribution · Patches · 3 categories" or "No class changes ·
+ * Patches". Empty string when nothing is filtered. A single enabled category
+ * is named; several are counted; none says "No categories".
  * @param {object} state
  * @param {{slug: string, label: string}[]} [available] category chips of the loaded data
  * @returns {string}
  */
 export function filterSummary(state, available = CATEGORIES) {
   const parts = [];
-  if (state.cls) {
+  const choice = classChoice(state);
+  if (choice === 'none') parts.push('No class changes');
+  else if (choice !== 'all') {
     parts.push(state.spec ? `${className(state.cls)} › ${titleCase(state.spec)}` : className(state.cls));
   }
   const kind = sanitizeKindFilter(state.kind);
