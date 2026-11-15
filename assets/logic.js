@@ -164,3 +164,64 @@ export function groupChanges(changes) {
 
   return { classSections, general, count: changes.length };
 }
+
+/* ======================= 4. Filtering ======================= */
+
+/**
+ * Create the default (unfiltered) UI state.
+ * @returns {{cls: string, spec: string, q: string, general: boolean}}
+ */
+export function defaultState() {
+  return { cls: '', spec: '', q: '', general: true };
+}
+
+/**
+ * Class/talent-tree filter for one *class-scope* change.
+ *  - no class chosen: everything passes
+ *  - lines with class null ("All classes") always pass
+ *  - class chosen: only that class passes (every spec)
+ *  - spec also chosen: that spec's lines, plus the class's lines with
+ *    spec null (they apply to the spec as well)
+ * @param {object} ch class-scope change
+ * @param {{cls: string, spec: string}} state
+ * @returns {boolean}
+ */
+export function matchesClassFilter(ch, state) {
+  if (!state.cls) return true;
+  if (!ch.class) return true;
+  if (ch.class !== state.cls) return false;
+  if (!state.spec) return true;
+  return !ch.spec || ch.spec === state.spec;
+}
+
+/**
+ * Full filter for one change: General toggle, class/spec and (when present)
+ * the search text. General changes ignore the class filter but obey the
+ * General toggle; class-scope changes ignore the toggle.
+ * @param {object} ch
+ * @param {object} state
+ * @returns {boolean}
+ */
+export function matchesState(ch, state) {
+  if (ch.scope === 'general') {
+    if (!state.general) return false;
+  } else if (!matchesClassFilter(ch, state)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Apply the state to the whole dataset and drop days with nothing left.
+ * @param {{days: object[]}} data
+ * @param {object} state
+ * @returns {{day: object, changes: object[]}[]} visible days (newest first, as in data)
+ */
+export function visibleDays(data, state) {
+  const out = [];
+  for (const day of data.days || []) {
+    const changes = (day.changes || []).filter((c) => matchesState(c, state));
+    if (changes.length) out.push({ day, changes });
+  }
+  return out;
+}

@@ -42,3 +42,14 @@ test('groupChanges puts ungrouped general lines before grouped ones', () => {
   ]);
   assert.deepEqual(g.general[0].groups.map((x) => x.group), [null, 'A']);
 });
+
+/* ---------- filtering: class ---------- */
+test('class filter keeps that class plus "All classes" lines', () => {
+  const st = { ...L.defaultState(), cls: 'paladin' };
+  const v = L.visibleDays(data, st);
+  const ids = v.flatMap((d) => d.changes.map((c) => c.id));
+  assert.ok(ids.includes('2026-11-13-000')); // all classes
+  assert.ok(ids.includes('2026-11-13-002')); // paladin
+  assert.ok(ids.includes('2026-11-11-001')); // paladin retribution (every spec)
+  assert.ok(!ids.includes('2026-11-13-001')); // druid
+});
