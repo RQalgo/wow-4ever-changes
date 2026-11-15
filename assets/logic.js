@@ -804,19 +804,33 @@ export function extraTagsForLine(ch) {
 export const MAX_ICONS = 4;
 
 /**
+ * Tooltip / alt text of one icon tile. The kind is spelled out so a talent is
+ * not marked by the corner pip alone: "Oath of Light (talent)", or
+ * "Oath of Light (Holy talent)" when the subject names its talent tree.
+ * Only an explicit `verified: false` (the two icon sources disagree) adds a
+ * quiet "unverified icon" hint; a missing flag adds nothing.
+ * @param {object} sub subject
+ * @returns {string}
+ */
+export function subjectTitle(sub) {
+  let t = sub.name;
+  if (sub.kind === 'talent') t += ` (${sub.tree ? `${titleCase(sub.tree)} ` : ''}talent)`;
+  if (sub.verified === false) t += ' – unverified icon';
+  return t;
+}
+
+/**
  * Split a line's subjects into the icon cluster and the overflow.
  * `slots` holds up to `max` subjects (in subject order) with the text for the
- * tile's title/alt: talents get " (talent)" so the kind is not conveyed by
- * the corner mark alone. `more` holds the subjects beyond `max`.
+ * tile's title/alt (see subjectTitle). `more` holds the subjects beyond `max`.
  * @param {object} ch change
  * @param {number} [max]
  * @returns {{slots: {name: string, icon: string|undefined, talent: boolean, title: string}[], more: object[]}}
  */
 export function iconSlots(ch, max = MAX_ICONS) {
   const subs = (ch.subjects || []).filter((s) => s && s.name);
-  const slots = subs.slice(0, max).map((s) => {
-    const talent = s.kind === 'talent';
-    return { name: s.name, icon: s.icon, talent, title: talent ? `${s.name} (talent)` : s.name };
-  });
+  const slots = subs.slice(0, max).map((s) => ({
+    name: s.name, icon: s.icon, talent: s.kind === 'talent', title: subjectTitle(s),
+  }));
   return { slots, more: subs.slice(max) };
 }

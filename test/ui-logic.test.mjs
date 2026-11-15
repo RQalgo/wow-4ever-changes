@@ -501,3 +501,15 @@ test('iconSlots caps at 4 icons, marks talents in the title, keeps the rest as o
   assert.deepEqual(L.iconSlots(mk({})), { slots: [], more: [] });
   assert.equal(L.iconSlots(byId('2026-11-15-003'), 2).more.length, 3);
 });
+
+test('subjectTitle: talent kind, optional tree, quiet unverified hint', () => {
+  assert.equal(L.subjectTitle({ name: 'Fireball', kind: 'ability' }), 'Fireball');
+  assert.equal(L.subjectTitle({ name: 'Fireball' }), 'Fireball'); // old data: no kind
+  assert.equal(L.subjectTitle({ name: 'Oath of Light', kind: 'talent' }), 'Oath of Light (talent)');
+  assert.equal(L.subjectTitle({ name: 'Oath of Light', kind: 'talent', tree: 'holy' }), 'Oath of Light (Holy talent)');
+  assert.equal(L.subjectTitle({ name: 'Aimed Shot', kind: 'talent', tree: 'beast-mastery' }), 'Aimed Shot (Beast Mastery talent)');
+  assert.equal(L.subjectTitle({ name: 'X', verified: true }), 'X'); // verified: nothing extra
+  assert.equal(L.subjectTitle({ name: 'X', verified: false }), 'X – unverified icon');
+  assert.equal(L.subjectTitle({ name: 'Oath of Light', kind: 'talent', tree: 'holy', verified: false }), 'Oath of Light (Holy talent) – unverified icon');
+  assert.equal(L.iconSlots(mk({ subjects: [{ name: 'Oath', kind: 'talent', tree: 'holy', icon: 'a' }] })).slots[0].title, 'Oath (Holy talent)');
+});
