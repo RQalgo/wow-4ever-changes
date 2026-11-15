@@ -124,6 +124,8 @@ const GLYPHS = {
   scroll: 'M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z M12 8v5 M12 16v.5',
   arch: 'M4 21V11a8 8 0 0 1 16 0v10 M9 21v-7a3 3 0 0 1 6 0v7 M3 21h18',
   hex: 'M12 2.5 20 7v10l-8 4.5L4 17V7Z M12 8v8 M8 10v4 M16 10v4',
+  // Dev posts: a rounded speech bubble with a tail at the bottom left and two lines of "text".
+  bubble: 'M6 4h12a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-7l-5 4v-4H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z M7.5 9h9 M7.5 12.5h6',
 };
 
 /**
@@ -245,14 +247,37 @@ function renderTagChip(tag) {
 }
 
 /**
+ * Build the title of a dev-post line: the topic title as a link to the post
+ * (new tab, rel="noopener") when devPostInfo accepts its URL (http(s) only),
+ * otherwise plain text. Search matches are highlighted inside the link too.
+ * @param {object} ch dev-post change
+ * @returns {Node}
+ */
+function devTitle(ch) {
+  const { href } = devPostInfo(ch);
+  if (!href) return highlighted(ch.text);
+  const a = el('a', 'line-link');
+  a.href = href;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  // The new-tab hint is spoken, not shown.
+  a.append(highlighted(ch.text), el('span', 'visually-hidden', ' (opens in a new tab)'));
+  return a;
+}
+
+/**
  * Render one change line: icon cluster, text, extra tag chips (other classes,
  * Talent, other categories), overflow subject chips and notes. The line is
  * drawn once, in its published section; the chips say what else it touches.
+ * A dev-post line (`dev` true) shows its topic title as a link to the post
+ * and, under it, a muted author line ("Kaivax · Community Manager · reply");
+ * its notes are the post's short summary.
  * @param {object} ch a change from the data
+ * @param {boolean} [dev] the line belongs to a dev-post day
  * @returns {HTMLElement} <li>
  */
-function renderLine(ch) {
-  const li = el('li', 'line');
+function renderLine(ch, dev = false) {
+  const li = el('li', dev ? 'line line-dev' : 'line');
   const body = el('div', 'line-body');
   const text = el('p', 'line-text');
   // Class-scope lines can carry a sub-heading (e.g. "Cooldown Manager" under
@@ -264,8 +289,16 @@ function renderLine(ch) {
     label.append(highlighted(displayGroup(ch.group)));
     text.append(label, ' ');
   }
-  text.append(highlighted(ch.text));
+  text.append(dev ? devTitle(ch) : highlighted(ch.text));
   body.append(text);
+  if (dev) {
+    const { meta } = devPostInfo(ch);
+    if (meta) {
+      const m = el('p', 'line-meta');
+      m.append(highlighted(meta)); // the author is searchable, so it is highlighted too
+      body.append(m);
+    }
+  }
   const tags = extraTagsForLine(ch).map(renderTagChip);
   // Subjects beyond the icon cluster stay as search chips.
   const more = iconSlots(ch).more.map((sub) => {
@@ -293,11 +326,12 @@ function renderLine(ch) {
 /**
  * Render a <ul> of lines.
  * @param {object[]} changes
+ * @param {boolean} [dev] lines of a dev-post day (see renderLine)
  * @returns {HTMLElement}
  */
-function renderLines(changes) {
+function renderLines(changes, dev = false) {
   const ul = el('ul', 'lines');
-  for (const ch of changes) ul.append(renderLine(ch));
+  for (const ch of changes) ul.append(renderLine(ch, dev));
   return ul;
 }
 
@@ -324,17 +358,22 @@ function renderHeading(title, highlight) {
 }
 
 /**
- * Render one card: a class (or "All classes") or one general category, with
- * one or more sibling headings, each followed by its lines.
+ * Render one card: a class (or "All classes"), one general category, or the
+ * single "Dev Posts" card of a dev-post day, with one or more sibling
+ * headings, each followed by its lines.
  * @param {{kind: string, class: string|null, headings: object[]}} card from flattenSections
  * @returns {HTMLElement}
  */
 function renderCard(card) {
   const box = el('section', `card card-${card.kind}`);
-  // The class colour is exposed as a CSS variable and used only as an accent.
-  box.style.setProperty('--cc', card.kind === 'class' ? (classColor(card.class) || 'var(--accent)') : 'var(--muted)');
+  // The class colour is exposed as a CSS variable and used only as an accent;
+  // the dev card takes the dev-post azure, general cards stay neutral.
+  const accent = { class: classColor(card.class) || 'var(--accent)', dev: 'var(--dev-edge)' }[card.kind] || 'var(--muted)';
+  box.style.setProperty('--cc', accent);
+  const dev = card.kind === 'dev';
   for (const h of card.headings) {
-    box.append(renderHeading(h.title, card.kind === 'general'), renderLines(h.changes));
+    // "Dev Posts" is a fixed title, so only general headings take part in highlighting.
+    box.append(renderHeading(h.title, card.kind === 'general'), renderLines(h.changes, dev));
   }
   return box;
 }

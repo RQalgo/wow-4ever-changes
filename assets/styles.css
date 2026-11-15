@@ -171,6 +171,11 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .lines > .line:first-child { border-top: 0; }
 .line-body { min-width: 0; flex: 1; }
 .line-text { margin: 0; overflow-wrap: anywhere; font-size: .9375rem; line-height: 1.4; }
+/* Dev-post line: the topic title links to the post (text colour, azure underline: it is a title
+   first), then a muted author line. The summary uses the normal .line-note look. */
+.line-link { color: var(--text); text-decoration-color: var(--dev-edge); text-decoration-thickness: 1px; }
+.line-link:hover { color: var(--accent); text-decoration-color: currentColor; }
+.line-meta { margin: .05rem 0 0; color: var(--muted); font: 500 .8125rem/1.35 var(--sans); }
 /* Inline sub-heading label for class lines that belong to a named group. */
 .line-group { font-weight: 700; font-size: .8em; letter-spacing: .04em; text-transform: uppercase; opacity: .75; margin-right: .15em; }
 .line-note {
