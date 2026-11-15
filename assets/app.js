@@ -20,11 +20,11 @@
 import {
   CLASSES, flattenSections, relativeDay, classColor, defaultState, visibleDays,
   specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
-  highlightSegments, buildSuggestions, iconSlots, extraTagsForLine, encodeHash, decodeHash, sanitizeSelection,
+  highlightSegments, buildSuggestions, iconSlots, extraTagsForLine, encodeHash, decodeHash,
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
   availableCategories, toggleCategory, normalizeCats, isCategoryOn,
   activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
-  classChoice, withClassChoice, normalizeClassState, emptyMessage,
+  classChoice, withClassChoice, normalizeClassState, sanitizeStoredSelection, emptyMessage,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, enabled categories (null = all), kind filter, hideClasses ("No classes"). */
@@ -913,31 +913,32 @@ function renderTools() {
   $('clear-filters').disabled = !dirty;
 }
 
-/** localStorage key for the remembered class/spec. */
+/** localStorage key for the remembered class choice (class/spec or "No classes"). */
 const STORAGE_KEY = 'wow4ever.filter';
 
 /**
- * Remember the class/spec for the next visit. localStorage can throw
- * (private mode, blocked storage), so every access is wrapped.
- * @param {{cls: string, spec: string}} st
+ * Remember the class choice for the next visit: the class and tree, or the
+ * "No classes" choice (like a class, it is part of the class row). Other
+ * filters are not remembered. localStorage can throw (private mode, blocked
+ * storage), so every access is wrapped.
+ * @param {{cls: string, spec: string, hideClasses: boolean}} st
  */
 function saveSelection(st) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cls: st.cls, spec: st.spec }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cls: st.cls, spec: st.spec, hideClasses: st.hideClasses }));
   } catch (_) { /* storage unavailable: ignore */ }
 }
 
 /**
- * Read the remembered class/spec (validated), or null.
- * @returns {{cls: string, spec: string}|null}
+ * Read the remembered class choice (validated by sanitizeStoredSelection),
+ * or null. Values written by older versions ({cls, spec}) still work.
+ * @returns {{cls: string, spec: string, hideClasses: boolean}|null}
  */
 function loadSelection() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const v = JSON.parse(raw);
-    const sel = sanitizeSelection(v && v.cls, v && v.spec);
-    return sel.cls ? sel : null;
+    return sanitizeStoredSelection(JSON.parse(raw));
   } catch (_) {
     return null;
   }
@@ -945,7 +946,7 @@ function loadSelection() {
 
 /**
  * Decide the initial state: the URL hash wins; with an empty hash restore
- * the last class/spec from localStorage.
+ * the last class choice (class/spec or "No classes") from localStorage.
  * @returns {object} state
  */
 function initialState() {
