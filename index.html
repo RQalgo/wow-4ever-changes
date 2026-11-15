@@ -1,0 +1,54 @@
+<!doctype html>
+<!--
+  index.html - single page shell of "WoW: Forever - Changes at a Glance".
+
+  Structure:
+    header   : title, "last updated" and a link to the official source
+    .layout  : <aside id="filters"> (search, class/spec pickers, toggles)
+               <main id="results"> (date groups rendered by assets/app.js)
+    footer   : disclaimer
+
+  All dynamic content is built by assets/app.js with DOM APIs (never innerHTML
+  with data). No frameworks, no build step, no external fonts or scripts.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WoW: Forever — Changes at a Glance</title>
+  <meta name="description" content="Unofficial fan project: World of Warcraft: Forever hotfixes grouped by date, filterable by class and talent tree.">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#results">Skip to changes</a>
+
+  <header class="site-header">
+    <h1>WoW: Forever <span class="dash">—</span> Changes at a Glance</h1>
+    <p class="site-meta">
+      <span id="updated">Loading…</span>
+      <span class="sep" aria-hidden="true">·</span>
+      <a id="source-link" href="https://news.blizzard.com/en-us/article/24315281" rel="noopener">Official source</a>
+    </p>
+  </header>
+
+  <div class="layout">
+    <aside id="filters" class="filters" aria-label="Filters"></aside>
+    <main id="results" class="results" tabindex="-1">
+      <p class="status">Loading changes…</p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>
+      Unofficial, non-commercial fan project. Not affiliated with or endorsed by
+      Blizzard Entertainment. World of Warcraft is a trademark of Blizzard
+      Entertainment, Inc. Change text is taken from Blizzard's official hotfix
+      posts; icons are loaded from Wowhead. This site uses no analytics.
+    </p>
+  </footer>
+
+  <script type="module" src="assets/app.js"></script>
+</body>
+</html>

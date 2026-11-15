@@ -1,0 +1,6 @@
+<!-- Original favicon: a simple amber diamond with a dark inner diamond. Not derived from any Blizzard artwork. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="7" fill="#1e1a17"/>
+  <path d="M16 3.5 28.5 16 16 28.5 3.5 16Z" fill="#e0952f"/>
+  <path d="M16 10 22 16 16 22 10 16Z" fill="#1e1a17"/>
+</svg>
