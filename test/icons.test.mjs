@@ -73,6 +73,9 @@ describe('extractCandidates', () => {
     // A real "Word:" name keeps its colon part; stoplisted nouns are never names.
     ['Power Word: Shield and Shadow Word: Pain were adjusted.', ['Power Word: Shield', 'Shadow Word: Pain']],
     ['Row 5 Base Mana Attack Power Combo Points and Diminishing Returns.', []],
+    // junk found by the dry check over data/changes.json
+    ['However, you can edit the Target Frame in Edit Mode. They can use the Gamepad, Lua and Vanilla WoW rules.', []],
+    ['Improved Lighting ‘Bloom Intensity’ in options. The Fire-based and Frost-based Wrath-era talents.', ['Improved Lighting', 'Bloom Intensity']],
   ];
   for (const [line, expected] of cases) {
     test(line.slice(0, 60), () => assert.deepEqual(extractCandidates(line), expected));
@@ -113,6 +116,10 @@ describe('extractCandidates', () => {
       [{ whole: null, parts: ['Cure Disease', 'Abolish Disease'] }]);
     // "of the" never splits
     assert.deepEqual(extractCandidateGroups('Heart of the Wild is fine.'), [{ whole: null, parts: ['Heart of the Wild'] }]);
+  });
+
+  test('"The Quick and the Dead" survives its generic parts as a whole-phrase try', () => {
+    assert.deepEqual(extractCandidateGroups('The Quick and the Dead now works.'), [{ whole: 'The Quick and the Dead', parts: [] }]);
   });
 
   test('a plural category noun after one capital word is not a name; a longer run is kept', () => {

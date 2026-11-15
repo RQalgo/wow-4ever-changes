@@ -113,6 +113,10 @@ const FILLER_WORDS = new Set([
   // ("Reckoning: Replaced ...", "Additionally, ..."). Added with the v3 rules.
   'replaced', 'replaces', 'gives', 'reduces', 'additionally', 'addressed', 'completing',
   'deployed', 'does', 'beyond', 'renamed', 'moved', 'new',
+  // Pronouns / connectives / gerunds capitalised at a sentence start (found by
+  // the local dry check over data/changes.json).
+  'they', 'you', 'we', "we're", "we've", 'previously', 'me', 'however', 'until', 'can', 'will', 'should', 'additional',
+  'defeating', 'switching', 'although', 'because', 'since', 'so', 'but', 'then', 'what', 'how',
 ]);
 
 /**
@@ -154,6 +158,12 @@ const GENERIC_TERMS = [
   'classic era', 'diminishing returns', 'main hand', 'off hand', 'health', 'threat',
   'block', 'dodge', 'dodging', 'stun', 'charm', 'talent', 'talents', 'new talent',
   'spell', 'power', 'coefficient',
+  // UI / system vocabulary and one-word junk found by the dry check
+  'wow', 'forever', 'gamepad', 'gamepad action bar', 'edit mode', 'options', 'lua', 'raid',
+  'honor', 'vanilla', 'pet', 'pets', 'healing', 'quick', 'dead', 'personal resource display',
+  'nameplate', 'nameplates', 'quest log', 'quest types', 'quest tracker', 'specific macros',
+  'macros', 'quest', 'text', 'character', 'character info', 'target frame', 'number', 'weapon',
+  'equipment manager', 'critical strike', 'critical strikes', 'world of warcraft',
   // plural category nouns that start sentences in developer notes ("Abilities like ...")
   'spells', 'abilities', 'attacks', 'effects', 'strikes', 'auras', 'totems', 'seals', 'judgements',
   // factions
@@ -253,7 +263,7 @@ function isGenericToken(token) {
 const ALLOWED_GENERIC_NAMES = new Set([
   'holy shield', 'mana shield', 'shield block', 'arcane power', 'frost armor',
   'ice armor', 'fire shield', 'fire resistance', 'frost resistance',
-  'shadow resistance', 'nature resistance', 'holy power',
+  'shadow resistance', 'nature resistance', 'holy power', 'the quick and the dead', 'quick and the dead',
 ]);
 
 /**
@@ -387,8 +397,9 @@ function cleanTokens(tokens) {
     g = g.slice(0, -1);
   }
   if (!g.length) return null;
-  g[g.length - 1] = g[g.length - 1].replace(/['’]s$/i, '').replace(/:$/, '');
+  g[g.length - 1] = g[g.length - 1].replace(/['’]s$/i, '').replace(/:$/, '').replace(/['’]$/, ''); // "Intensity’" from a closing quote
   if (!g[g.length - 1]) return null;
+  if (g.some((t) => /-(?:based|era)$/i.test(t))) return null; // "Fire-based and Frost-based": prose, not a name
   return isGenericPhrase(g) ? null : g;
 }
 
@@ -417,7 +428,7 @@ function groupsFromRun(run) {
       // "Slice and Dice", "Shadow and Flame": one word per side may be ONE real
       // name, so keep the whole as a first try (even if a side is generic).
       let whole = null;
-      if (sides.length === 2 && sides.every((sd) => sd.length === 1) && !isGenericPhrase(sub)) {
+      if (sides.length === 2 && sides.every((sd) => sd.filter((t) => !CONNECTORS.has(t.toLowerCase())).length === 1) && !isGenericPhrase(sub)) {
         whole = sub.join(' ').replace(/:$/, '');
       }
       if (!parts.length && !whole) continue;
