@@ -32,10 +32,13 @@
   --bar-h: 0px;             /* set by app.js: height of the sticky filter bar on mobile */
   --radius: 10px;
 
-  /* Day-kind badges (text + fill; colour is never the only cue, the badge also says Hotfix/Patch). */
+  /* Day-kind badges (text + fill; colour is never the only cue, the badge also says Hotfix / Patch / Dev Post). */
   --hotfix-bg: #123c3a; --hotfix-fg: #a6efe6; --hotfix-edge: #2fa79b;
   --patch-bg: #3a2a6e; --patch-fg: #e6dcff; --patch-edge: #9c82f0;
   --patch-tint: #2a2146;    /* heading tint of a patch day */
+  /* Dev posts (Blizzard staff forum posts): "blue post" azure, clearly bluer than the hotfix teal. */
+  --dev-bg: #0f2f57; --dev-fg: #cfe4ff; --dev-edge: #4a9bff;
+  --dev-tint: #14233a;      /* heading tint of a dev-post day */
 
   /* Standard class colours (accents only). */
   --c-druid: #FF7C0A; --c-hunter: #AAD372; --c-mage: #3FC7EB;
@@ -59,6 +62,8 @@
     --hotfix-bg: #d3eeea; --hotfix-fg: #0a4640; --hotfix-edge: #2b8f85;
     --patch-bg: #e4dbfa; --patch-fg: #35197e; --patch-edge: #6a4bc4;
     --patch-tint: #ebe4fa;
+    --dev-bg: #d4e5fb; --dev-fg: #0b3770; --dev-edge: #2f6fca;
+    --dev-tint: #e1ebf9;
   }
 }
 
@@ -128,6 +133,7 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   background: var(--hotfix-bg); color: var(--hotfix-fg);
 }
 .kind-patch { background: var(--patch-bg); color: var(--patch-fg); border-color: var(--patch-edge); }
+.kind-dev { background: var(--dev-bg); color: var(--dev-fg); border-color: var(--dev-edge); }
 .day-title { font: 600 .9rem var(--sans); overflow-wrap: anywhere; min-width: 0; }
 .day-title::before { content: "\00B7\00A0"; color: var(--muted); }
 .day-source { font: 600 .8rem var(--sans); }
@@ -137,6 +143,13 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .day-patch > .day-heading {
   background: color-mix(in srgb, var(--patch-tint) 96%, transparent);
   border-bottom-color: var(--patch-edge); margin-left: calc(-1rem + 4px);
+}
+/* Dev-post days: like patch days, but a DOTTED azure rule and an azure-tinted heading, so the two
+   block treatments differ by shape as well as colour. Same negative-margin trick as .day-patch. */
+.day-dev { border-left: 4px dotted var(--dev-edge); margin-left: -1rem; padding-left: calc(1rem - 4px); }
+.day-dev > .day-heading {
+  background: color-mix(in srgb, var(--dev-tint) 96%, transparent);
+  border-bottom-color: var(--dev-edge); margin-left: calc(-1rem + 4px);
 }
 .day-rel { font: 500 .85rem var(--sans); color: var(--muted); }
 .day-count {
@@ -362,8 +375,8 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   .results { padding: .5rem 0 0; }
   .day-heading { top: 0; margin: 0 0 .6rem; padding: .6rem .75rem; border-radius: 8px 8px 0 0; }
   /* Desktop has no results padding: the rule stays inside the column and the heading starts right after it. */
-  .day-patch { margin-left: 0; padding-left: .6rem; }
-  .day-patch > .day-heading { margin-left: -.6rem; }
+  .day-patch, .day-dev { margin-left: 0; padding-left: .6rem; }
+  .day-patch > .day-heading, .day-dev > .day-heading { margin-left: -.6rem; }
   html { scroll-padding-top: 4rem; }
   .site-footer { padding: 1rem 1.5rem; }
 }

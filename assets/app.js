@@ -25,7 +25,7 @@ import {
   availableCategories, toggleCategory, normalizeCats, isCategoryOn,
   activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
   classChoice, withClassChoice, normalizeClassState, sanitizeStoredSelection, emptyMessage,
-  displayGroup,
+  displayGroup, kindBadgeLabel, kindFilterLabel, devPostInfo,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, enabled categories (null = all), kind filter, hideClasses ("No classes"). */
@@ -339,9 +339,6 @@ function renderCard(card) {
   return box;
 }
 
-/** Visible badge text per day kind. The text (not only the colour) tells them apart. */
-const KIND_LABEL = { hotfix: 'Hotfix', patch: 'Patch' };
-
 /**
  * Build the small "Source" link for a day, or null when the day has no
  * usable `sourceUrl`. Only http(s) URLs are accepted (the data file is not
@@ -356,22 +353,25 @@ function sourceLink(day) {
   a.href = url;
   a.target = '_blank';
   a.rel = 'noopener';
-  a.setAttribute('aria-label', `Source for the ${KIND_LABEL[dayKind(day)].toLowerCase()} of ${day.label || day.date} (opens in a new tab)`);
+  a.setAttribute('aria-label', `Source for the ${kindBadgeLabel(day).toLowerCase()} of ${day.label || day.date} (opens in a new tab)`);
   return a;
 }
 
 /**
  * Render one day: sticky heading (date, kind badge, optional patch title,
- * relative hint, Source link, count) and its sections. Hotfix and patch days
- * get a different class so patches stand out while scrolling.
+ * relative hint, Source link, count) and its sections. Each kind gets its own
+ * class (day-hotfix / day-patch / day-dev) so patch and dev-post days stand
+ * out while scrolling. The badge text comes from kindBadgeLabel ("Hotfix",
+ * "Patch", "Dev Post" or, with several posts shown, "Dev Posts").
  * @param {object} day a day from the data
  * @param {object[]} changes the visible changes of that day (already filtered,
  *   so the count below always reflects what is shown)
  * @returns {HTMLElement}
  */
 function renderDay(day, changes) {
-  const view = flattenSections(changes);
   const kind = dayKind(day);
+  // The kind decides the cards: a dev day is one "Dev Posts" card.
+  const view = flattenSections(changes, kind);
   const sec = el('section', `day day-${kind}`);
   // Date + kind: two days on the same date need different anchors.
   sec.id = `d-${dayKey(day).replace('|', '-')}`;
@@ -380,7 +380,7 @@ function renderDay(day, changes) {
   // Badge and title live in one group so they wrap together on narrow screens
   // ("Patch · Beta build notes" never breaks right after the badge).
   const kindGroup = el('span', 'day-kind');
-  kindGroup.append(el('span', `kind-badge kind-${kind}`, KIND_LABEL[kind]));
+  kindGroup.append(el('span', `kind-badge kind-${kind}`, kindBadgeLabel(day, view.count)));
   // The title is shown for patch days only.
   if (kind === 'patch' && typeof day.title === 'string' && day.title.trim()) {
     kindGroup.append(el('span', 'day-title', day.title.trim()));
