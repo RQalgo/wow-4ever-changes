@@ -182,3 +182,26 @@ export async function runUpdate({
   log(`Wrote ${outPath}`);
   return { changed: true, ...summary };
 }
+
+/**
+ * CLI entry point: `node scripts/update.mjs`. Prints a one-line summary and
+ * sets a non-zero exit code on failure so CI marks the run as failed.
+ *
+ * @returns {Promise<void>}
+ */
+async function main() {
+  try {
+    const r = await runUpdate();
+    console.log(
+      `${r.changed ? 'updated' : 'unchanged'}: ${r.days} days, ${r.changes} changes`,
+    );
+  } catch (err) {
+    console.error(`update failed: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+// Run only when executed directly, not when imported (e.g. by tests).
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  await main();
+}
