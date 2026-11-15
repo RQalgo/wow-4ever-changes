@@ -79,6 +79,10 @@ const FILLER_WORDS = new Set([
   'increased', 'decreased', 'reduced', 'improved', 'removed', 'added', 'reverted',
   'restored', 'enabled', 'disabled', 'made', 'reworked', 'tuned', 'using',
   'players', 'player', 'enemies', 'creatures', 'mobs', 'monsters', 'bosses', 'note',
+  // Patch-note verbs / adverbs that start a sentence or follow a "Name:" prefix
+  // ("Reckoning: Replaced ...", "Additionally, ..."). Added with the v3 rules.
+  'replaced', 'replaces', 'gives', 'reduces', 'additionally', 'addressed', 'completing',
+  'deployed', 'does', 'beyond', 'renamed', 'moved', 'new',
 ]);
 
 /**
@@ -112,6 +116,14 @@ const GENERIC_TERMS = [
   // attack types and schools
   'melee', 'ranged', 'ranged attack', 'melee attack', 'arcane', 'nature', 'holy',
   'fire', 'frost', 'shadow', 'physical',
+  // v3 stoplist: row / stat / resource / status vocabulary that patch notes
+  // capitalise but that is never a skill. Multi-word entries are whole phrases.
+  'row', 'base', 'base mana', 'spell damage', 'attack power', 'ranged attack power',
+  'attack speed', 'combo point', 'combo points', 'rage', 'energy', 'cooldown', 'duration',
+  'damage', 'experience', 'icon', 'active', 'primary', 'master', 'beta', 'vanilla wow',
+  'classic era', 'diminishing returns', 'main hand', 'off hand', 'health', 'threat',
+  'block', 'dodge', 'dodging', 'stun', 'charm', 'talent', 'talents', 'new talent',
+  'spell', 'power', 'coefficient',
   // factions
   'alliance', 'horde',
   // armour and weapon types
