@@ -107,13 +107,14 @@ it locally with `node scripts/gamedata.mjs "Mortal Strike"`.
   `data/name-aliases.json`, e.g. `{ "unsealed fury": "Unsealed Wrath" }` (key:
   lower-cased name as written; value: the name to look up). The subject keeps
   the written name and records `"alias"`.
-- **Another forum category as dev posts:** add a second `discourse-tracker`
-  entry to `data/sources.json` with the same `url` and `kind: "dev"`, and the
-  category's `categoryId` (the number in the category's forum URL, e.g.
-  `…/c/world-of-warcraft-forever/general-discussion/347`, or `category_id`
-  of one of its posts in the tracker feed). Its lines get category "Dev
-  Posts" like the first one. Note that each entry reads the tracker pages
-  itself.
+- **Another forum category as dev posts:** in the `discourse-tracker` entry
+  of `data/sources.json`, turn `categoryId` into a list and add the new
+  category's id, e.g. `"categoryId": [347, 352]`. The id is the
+  `category_id` of one of that category's posts in the tracker feed
+  (`…/groups/blizzard-tracker/posts.json`). Its posts then appear as Dev
+  Posts too. Use one entry with a list rather than a second entry: both would
+  produce `kind: "dev"` days for the same dates, and days are keyed by date +
+  kind, so one would replace the other.
 - **Re-tag stored dev posts after a tag-rule change:** their full text is not
   stored, so they keep the tags they got when first fetched. Delete their
   `kind: "dev"` days from `data/changes.json`; the next run fetches the posts

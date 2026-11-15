@@ -232,6 +232,9 @@ describe('discourse-tracker (fixtures: tracker-page1/2.json, tracker-post-*.json
     assert.deepEqual(validate([DEV]), [DEV]);
     assert.throws(() => validate([{ ...DEV, categoryId: '347' }]), /"categoryId" must be a positive integer/);
     assert.throws(() => validate([{ ...DEV, categoryId: undefined }]), /"categoryId"/);
+    assert.throws(() => validate([{ ...DEV, categoryId: [] }]), /"categoryId"/);
+    assert.throws(() => validate([{ ...DEV, categoryId: [347, 0] }]), /"categoryId"/);
+    assert.deepEqual(validate([{ ...DEV, categoryId: [347, 40] }])[0].categoryId, [347, 40]);
   });
 
   test('two pages via before_post_id, category 347 only (352 and 40 dropped), bodies for every new post', async () => {
@@ -272,6 +275,13 @@ describe('discourse-tracker (fixtures: tracker-page1/2.json, tracker-post-*.json
     assert.ok(deep._fullText.includes('Maelstrom Weapon'), 'the full body, not just the summary');
     assert.ok(!deep.notes.join(' ').includes('Maelstrom Weapon'));
     for (const c of days.flatMap((d) => d.changes)) assert.ok(c.notes.join('').length <= 400);
+  });
+
+  test('categoryId as an array keeps several categories from one feed', async () => {
+    const days = await fetchSourceDays({ ...DEV, categoryId: [347, 40] }, { fetchJson: stub().fetchJson, delayMs: 0, log: () => {} });
+    const texts = days.flatMap((d) => d.changes.map((c) => c.text));
+    assert.equal(texts.length, 4);
+    assert.ok(texts.includes('Raid Encounter Design in Season 3'));
   });
 
   test('stop rule: a page whose oldest post is older than the cutoff ends the paging; older posts dropped', async () => {

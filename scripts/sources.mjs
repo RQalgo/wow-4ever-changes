@@ -40,10 +40,11 @@ export const SOURCE_TYPES = new Set(['news-rolling', 'discourse-topic', 'discour
  *
  * @param {unknown} list Parsed JSON.
  * @param {string} [where='sources'] Name used in error messages (file path).
- * A "discourse-tracker" entry also needs `categoryId`, a positive integer
- * (the forum category whose posts are kept).
+ * A "discourse-tracker" entry also needs `categoryId`: the forum category
+ * whose posts are kept, a positive integer, or a non-empty array of them to
+ * keep several categories (one feed, read once).
  *
- * @returns {Array<{kind:string,type:string,url:string,title?:string|null,categoryId?:number}>} `list`, validated.
+ * @returns {Array<{kind:string,type:string,url:string,title?:string|null,categoryId?:number|number[]}>} `list`, validated.
  * @throws {Error} when the list or an entry is malformed.
  */
 export function validateSources(list, where = 'sources') {
@@ -61,8 +62,11 @@ export function validateSources(list, where = 'sources') {
     if (s.title !== undefined && s.title !== null && typeof s.title !== 'string') {
       throw new Error(`${at}: "title" must be a string or null`);
     }
-    if (s.type === 'discourse-tracker' && !(Number.isInteger(s.categoryId) && s.categoryId > 0)) {
-      throw new Error(`${at}: "categoryId" must be a positive integer for a discourse-tracker source (got ${JSON.stringify(s.categoryId)})`);
+    if (s.type === 'discourse-tracker') {
+      const ids = Array.isArray(s.categoryId) ? s.categoryId : [s.categoryId];
+      if (!ids.length || !ids.every((id) => Number.isInteger(id) && id > 0)) {
+        throw new Error(`${at}: "categoryId" must be a positive integer or an array of them for a discourse-tracker source (got ${JSON.stringify(s.categoryId)})`);
+      }
     }
   });
   return list;
@@ -291,7 +295,8 @@ export function devPostChange(post, parsed, base) {
  *      - `maxPages` pages were read (safety cap; logged).
  *    The first page failing fails the source (its stored days are kept by
  *    the merge); a later page failing just ends the paging (logged).
- * 2. FILTER. Keep posts with `category_id === source.categoryId`, a regular
+ * 2. FILTER. Keep posts whose `category_id` is `source.categoryId` (or one
+ *    of them, when it is an array), a regular
  *    post type (1, or missing), a readable date on or after the cutoff; drop
  *    duplicates (same id on two pages).
  * 3. CHANGES. A post whose link (`url`) is already stored in a dev day is
@@ -304,7 +309,7 @@ export function devPostChange(post, parsed, base) {
  *    get the next free numbers of their day in feed order oldest -> newest,
  *    so ids never change once given.
  *
- * @param {{kind:string,url:string,categoryId:number}} source
+ * @param {{kind:string,url:string,categoryId:number|number[]}} source
  * @param {object} opts
  * @param {Function} opts.fetchJson (url) => Promise<unknown>
  * @param {Function} opts.parseDevPost (html, {title}) => {notes, fullText}
@@ -371,11 +376,13 @@ export async function fetchTrackerDays(source, opts) {
   // Stop rule 3: the safety cap (a feed that never gets older than the cutoff).
   if (stop === 'cap') log(`tracker: stopped after the safety cap of ${maxPages} pages (cutoff ${cutoff} not reached)`);
 
-  // 2. Filter: the one category, regular posts, inside the window, no repeats.
+  // 2. Filter: the category (or categories), regular posts, inside the
+  //    window, no repeats.
+  const categories = new Set(Array.isArray(source.categoryId) ? source.categoryId : [source.categoryId]);
   const seen = new Set();
   const posts = [];
   for (const post of feed) {
-    if (post?.category_id !== source.categoryId) continue;
+    if (!categories.has(post?.category_id)) continue;
     if (post.post_type !== undefined && post.post_type !== 1) continue; // small actions, whispers
     const date = postDate(post);
     if (!date || date < cutoff || typeof post.url !== 'string' || seen.has(post.id)) continue;
@@ -441,7 +448,7 @@ export async function fetchTrackerDays(source, opts) {
     day.changes.push(change);
     day.urls.add(url);
   }
-  log(`tracker: ${pages} page(s), ${posts.length} post(s) in category ${source.categoryId} since ${cutoff}: `
+  log(`tracker: ${pages} page(s), ${posts.length} post(s) in category ${[...categories].join('/')} since ${cutoff}: `
     + `${fetched} new, ${reused} already stored, ${fallbacks} from the excerpt`);
 
   const idNumber = (c) => Number(/-d(\d+)$/.exec(c.id ?? '')?.[1] ?? 0);
