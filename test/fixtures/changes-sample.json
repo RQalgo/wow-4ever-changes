@@ -6,6 +6,213 @@
   },
   "days": [
     {
+      "date": "2026-11-15",
+      "kind": "hotfix",
+      "title": null,
+      "sourceUrl": "https://news.blizzard.com/en-us/article/24315281",
+      "label": "November 15, 2026",
+      "changes": [
+        {
+          "id": "2026-11-15-000",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": null,
+          "group": null,
+          "text": "Windfury Totem is now correctly activated by all melee abilities.",
+          "notes": [
+            "Developers’ notes: Whirlwind or Mutilate strikes now trigger it."
+          ],
+          "subjects": [
+            {
+              "name": "Windfury Totem",
+              "type": "spell",
+              "kind": "ability",
+              "class": "shaman",
+              "icon": "spell_nature_windfury"
+            },
+            {
+              "name": "Whirlwind",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "icon": "ability_whirlwind"
+            },
+            {
+              "name": "Mutilate",
+              "type": "spell",
+              "kind": "talent",
+              "class": "rogue",
+              "icon": "ability_rogue_shadowstrikes"
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "class:warrior",
+            "class:rogue",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-15-001",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Stormcaller’s Hauberk set bonus now also benefits Shaman healing spells.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Stormcaller’s Hauberk",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "icon": "inv_chest_mail_04"
+            }
+          ],
+          "tags": [
+            "items",
+            "class:shaman"
+          ]
+        },
+        {
+          "id": "2026-11-15-002",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": "retribution",
+          "group": null,
+          "text": "Oath of Light now also improves Seal of Fury.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Oath of Light",
+              "type": "spell",
+              "kind": "talent",
+              "class": "paladin",
+              "icon": "spell_holy_auraoflight",
+              "tree": "holy",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Seal of Fury",
+              "type": "spell",
+              "kind": "ability",
+              "class": "paladin",
+              "icon": "ability_warrior_innerrage",
+              "alias": "Seal of Wrath",
+              "verified": false,
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "class:paladin",
+            "spec:paladin/retribution",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-15-003",
+          "scope": "class",
+          "category": "Classes",
+          "class": "mage",
+          "spec": "frost",
+          "group": null,
+          "text": "Frost Nova, Cone of Cold, Frostbolt, Ice Barrier and Blizzard no longer share a lockout.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Frost Nova",
+              "type": "spell",
+              "kind": "ability",
+              "class": "mage",
+              "icon": "spell_frost_frostnova"
+            },
+            {
+              "name": "Cone of Cold",
+              "type": "spell",
+              "kind": "ability",
+              "class": "mage",
+              "icon": "spell_frost_glacier"
+            },
+            {
+              "name": "Frostbolt",
+              "type": "spell",
+              "kind": "ability",
+              "class": "mage",
+              "icon": "spell_frost_frostbolt02"
+            },
+            {
+              "name": "Ice Barrier",
+              "type": "spell",
+              "kind": "talent",
+              "class": "mage",
+              "icon": "spell_ice_lament"
+            },
+            {
+              "name": "Blizzard",
+              "type": "spell",
+              "kind": "ability",
+              "class": "mage",
+              "icon": "spell_frost_icestorm"
+            }
+          ],
+          "tags": [
+            "class:mage",
+            "spec:mage/frost",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-15-004",
+          "scope": "general",
+          "category": "Quests and World",
+          "class": null,
+          "spec": null,
+          "group": "Elwynn Forest",
+          "text": "The quest Princess Must Die! can be completed again after abandoning it.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests",
+            "world"
+          ]
+        },
+        {
+          "id": "2026-11-15-005",
+          "scope": "general",
+          "category": "Known Issues - New to this build",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Some fishing nodes may not respawn until the zone is reset.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "known-issue"
+          ]
+        },
+        {
+          "id": "2026-11-15-006",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "restoration",
+          "group": null,
+          "text": "The Druid class quest Trial of the Sea Lion now awards the correct reward.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:druid",
+            "spec:druid/restoration",
+            "quests"
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-11-14",
       "kind": "patch",
       "title": "Beta build notes",

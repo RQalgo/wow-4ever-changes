@@ -7,8 +7,8 @@
  *      dots, tiles), never as text colour, so contrast holds in both themes.
  *   2. Base / typography
  *   3. Header, footer
- *   4. Layout (mobile first; sidebar from 900px)
- *   5. Filters (search, chips, toggles, suggestions)
+ *   4. Layout (sidebar from 900px; below that a slim bar + filter sheet)
+ *   5. Filters (search bar, filter panel, chips, suggestions)
  *   6. Results (date headings, class/general sections, lines, icons)
  *   7. States (loading, error, empty) and motion preferences
  */
@@ -92,7 +92,7 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 
 /* ---------- 4. Layout ---------- */
 .layout { max-width: 1200px; margin: 0 auto; }
-.results { padding: .5rem 1rem 0; min-width: 0; }
+.results { padding: .4rem 1rem 0; min-width: 0; }
 .results:focus { outline: none; }
 
 /* ---------- 7. States ---------- */
@@ -111,15 +111,15 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .btn:hover { filter: brightness(1.08); }
 
 /* ---------- 6. Results ---------- */
-.day { margin: 0 0 1.5rem; }
+.day { margin: 0 0 .9rem; }
 /* Sticky date heading: offset by the mobile filter bar height (--bar-h). */
 .day-heading {
-  position: sticky; top: var(--bar-h); z-index: 5; margin: 0 -1rem .6rem; padding: .55rem 1rem;
+  position: sticky; top: var(--bar-h); z-index: 5; margin: 0 -1rem .4rem; padding: .3rem 1rem;
   display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .75rem;
   background: color-mix(in srgb, var(--bg) 94%, transparent);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--accent);
-  font: 700 1.15rem/1.3 var(--serif);
+  font: 700 1.05rem/1.3 var(--serif);
 }
 /* Kind badge: squarish and outlined so it never reads as the pill-shaped change count. */
 .day-kind { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .15rem .4rem; min-width: 0; }
@@ -143,109 +143,158 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   margin-left: auto; font: 600 .75rem var(--sans); color: var(--accent-ink);
   background: var(--accent); border-radius: 999px; padding: .1rem .6rem;
 }
-.group {
-  margin: 0 0 .9rem; padding: .7rem .9rem .5rem; background: var(--surface);
-  border: 1px solid var(--border); border-left: 5px solid var(--cc, var(--accent));
+.card {
+  margin: 0 0 .4rem; padding: .35rem .7rem .15rem; background: var(--surface);
+  border: 1px solid var(--border); border-left: 4px solid var(--cc, var(--accent));
   border-radius: var(--radius); box-shadow: var(--shadow);
 }
-.group-general { --cc: var(--muted); }
-.group-title { margin: 0 0 .4rem; font: 700 1.05rem var(--serif); letter-spacing: .02em; }
-.subgroup { margin-top: .6rem; }
-.subgroup-title {
-  margin: 0 0 .3rem; font: 700 .8rem var(--sans); letter-spacing: .06em; text-transform: uppercase;
-  color: var(--muted);
-}
-.group-label { margin: .5rem 0 .25rem; font: 600 .9rem var(--serif); color: var(--accent); }
+/* One heading line carries the whole path ("Druid › Restoration", "Dungeons › The Deadmines"). */
+.card-title { margin: 0 0 .1rem; font: 700 .98rem/1.3 var(--serif); letter-spacing: .02em; }
+.card-title:not(:first-child) { margin-top: .4rem; padding-top: .35rem; border-top: 1px dashed var(--border); }
+.crumb-sub { font-weight: 600; }
+.crumb-sep { color: var(--muted); font-family: var(--sans); }
 .lines { list-style: none; margin: 0; padding: 0; }
-.line { display: flex; gap: .7rem; padding: .5rem 0; border-top: 1px solid var(--border); }
+.line { display: flex; gap: .6rem; padding: .22rem 0; border-top: 1px solid var(--border); }
 .lines > .line:first-child { border-top: 0; }
 .line-body { min-width: 0; flex: 1; }
-.line-text { margin: 0; overflow-wrap: anywhere; }
+.line-text { margin: 0; overflow-wrap: anywhere; font-size: .9375rem; line-height: 1.4; }
 /* Inline sub-heading label for class lines that belong to a named group. */
 .line-group { font-weight: 700; font-size: .8em; letter-spacing: .04em; text-transform: uppercase; opacity: .75; margin-right: .15em; }
 .line-note {
-  margin: .3rem 0 0 .2rem; padding-left: .7rem; border-left: 3px solid var(--border);
-  color: var(--muted); font-size: .9rem; font-style: italic;
+  margin: .15rem 0 0 .1rem; padding-left: .6rem; border-left: 3px solid var(--border);
+  color: var(--muted); font-size: .875rem; line-height: 1.35; font-style: italic;
 }
 
 /* ---------- 5. Filters ---------- */
+/* One filter panel serves both layouts: on wide screens it is the always-open
+   sidebar content, on narrow screens (max-width: 899px) it becomes a bottom
+   sheet opened from the filter button (see the media query near the end). */
 .filters {
-  position: sticky; top: 0; z-index: 20; padding: .5rem 1rem;
-  background: color-mix(in srgb, var(--bg) 96%, transparent); backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 20; padding: .4rem 1rem;
+  background: color-mix(in srgb, var(--bg) 97%, transparent);
   border-bottom: 1px solid var(--border);
+  /* No backdrop-filter here: it would make the fixed bottom sheet position itself against the bar. */
 }
-/* Chips scroll horizontally on mobile. */
-.chip-row { display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: thin; padding: .15rem 0; }
+.filters-bar { display: flex; align-items: center; gap: .5rem; }
+.filters-bar .search { flex: 1 1 0; }
+.filter-btn, .filter-summary, .filter-backdrop, .panel-foot { display: none; }   /* narrow screens only */
+
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.panel-title { margin: 0; font: 700 1rem var(--serif); }
+.panel-title:focus { outline: none; }
+.filter-label { margin: .45rem 0 .15rem; font: 700 .7rem var(--sans); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+
+/* Chip rows wrap (no horizontal scrolling any more). Desktop chips are dense, 32px. */
+.chip-row { display: flex; flex-wrap: wrap; gap: .3rem; padding: .1rem 0; }
 .chip {
-  flex: none; display: inline-flex; align-items: center; gap: .45rem; min-height: 44px; padding: 0 .9rem;
+  flex: none; display: inline-flex; align-items: center; gap: .4rem; min-height: 32px; padding: 0 .7rem;
   background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 999px;
-  font: 600 .9rem var(--sans); cursor: pointer;
+  font: 600 .875rem var(--sans); cursor: pointer;
 }
-.chip:hover { background: var(--surface-2); }
+.chip:hover:not(:disabled) { background: var(--surface-2); }
+.chip:disabled { opacity: .5; cursor: default; }
 .chip[aria-pressed="true"] {
   background: color-mix(in srgb, var(--cc, var(--accent)) 24%, var(--surface));
   border-color: var(--cc, var(--accent)); box-shadow: inset 0 0 0 1px var(--cc, var(--accent));
 }
+/* "All" / "None" quick buttons in the category row: square-ish, dashed, so they read as actions not toggles. */
+.chip-quick { border-style: dashed; border-radius: 8px; }
 /* The colour dot gets a ring so white/yellow stay visible on light parchment. */
-.chip-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 45%, transparent); }
+.chip-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 45%, transparent); }
 .chip-row[hidden] { display: none; }
-.tools { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-bottom: .3rem; }
-.toggle, .btn-clear {
-  min-height: 44px; display: inline-flex; align-items: center; gap: .5rem; padding: 0 .8rem; cursor: pointer;
-  background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 8px; font: 600 .85rem var(--sans);
+.btn-clear {
+  min-height: 32px; display: inline-flex; align-items: center; padding: 0 .7rem; cursor: pointer;
+  background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 8px; font: 600 .8125rem var(--sans);
 }
-.toggle:hover, .btn-clear:hover:not(:disabled) { background: var(--surface-2); }
+.btn-clear:hover:not(:disabled) { background: var(--surface-2); }
 .btn-clear:disabled { opacity: .5; cursor: default; }
-.toggle-box { width: 34px; height: 20px; border-radius: 999px; background: var(--border); position: relative; flex: none; transition: background .15s; }
-.toggle-box::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text); transition: transform .15s; }
-.toggle[aria-checked="true"] .toggle-box { background: var(--accent); }
-.toggle[aria-checked="true"] .toggle-box::after { transform: translateX(14px); background: var(--accent-ink); }
 
-/* Kind filter: segmented radio group, full width on phones. Reuses the chip colours. */
-.segmented { display: flex; margin: 0 0 .3rem; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: var(--surface); }
+/* Kind filter: segmented radio group. Reuses the chip colours. */
+.segmented { display: flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: var(--surface); }
 .segment {
-  flex: 1 1 0; min-height: 44px; padding: 0 .5rem; cursor: pointer; background: transparent; color: var(--text);
-  border: 0; border-left: 1px solid var(--border); font: 600 .9rem var(--sans);
+  flex: 1 1 0; min-height: 32px; padding: 0 .5rem; cursor: pointer; background: transparent; color: var(--text);
+  border: 0; border-left: 1px solid var(--border); font: 600 .875rem var(--sans);
 }
 .segment:first-child { border-left: 0; }
 .segment:hover { background: var(--surface-2); }
 .segment[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); }
 .segment:focus-visible { outline-offset: -3px; }
 
-/* Icon box: fixed 36px so images loading or failing never move the layout. */
-.icon {
-  flex: none; width: 36px; height: 36px; border-radius: 6px; overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--cc, var(--muted)) 70%, var(--border));
-  background: var(--surface-2); display: grid; place-items: center; margin-top: 2px;
+/* Filter button (narrow screens): sliders icon, count badge for active filters. */
+.filter-btn {
+  position: relative; flex: none; width: 44px; height: 44px; place-items: center; cursor: pointer;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 8px;
 }
-.icon img { display: block; width: 36px; height: 36px; object-fit: cover; }
-/* Fallback tile: tinted with the class colour; glyph stays in the text colour for contrast. */
-.icon-fallback { color: var(--text); background: color-mix(in srgb, var(--muted) 18%, var(--surface-2)); }
-.icon-fallback.icon-class { background: color-mix(in srgb, var(--cc) 30%, var(--surface-2)); border-color: var(--cc); }
+.filter-btn[aria-expanded="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.filter-btn svg { display: block; }
+.badge {
+  position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px;
+  background: var(--accent); color: var(--accent-ink); border: 2px solid var(--bg); font: 700 .7rem/16px var(--sans); text-align: center;
+}
+.badge[hidden] { display: none; }
+/* One-line summary of the active filters under the bar; tapping it opens the sheet. */
+.filter-summary {
+  position: relative; width: 100%; margin-top: .3rem; min-height: 32px; padding: 0 .6rem; text-align: left; cursor: pointer;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--text);
+  border: 1px solid var(--accent); border-radius: 8px; font: 600 .8125rem var(--sans);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.filter-summary::after { content: ""; position: absolute; inset: -6px 0; }   /* 44px touch target */
+.filter-summary[hidden] { display: none; }
 
-/* Search box. On phones the dropdown spans the whole bar (the wrapper is static so
-   the sticky .filters is the containing block); desktop re-anchors it to the input. */
-.search { position: static; flex: 1 1 200px; min-width: 0; }
+/* Icon cluster: fixed 44px-wide box so line text aligns and loading images never shift anything.
+   1 icon = one 32px tile; 2 icons = a row of 21px tiles; 3-4 icons = a 2x2 grid of 21px tiles. */
+.icons { flex: none; width: 44px; display: grid; gap: 2px; align-content: start; justify-content: start; }
+.icons-1 { grid-template-columns: 32px; }
+.icons-2, .icons-3, .icons-4 { grid-template-columns: repeat(2, 21px); }
+.tile {
+  position: relative; width: 21px; height: 21px; border-radius: 4px; overflow: visible;
+  border: 1px solid color-mix(in srgb, var(--cc, var(--muted)) 70%, var(--border));
+  background: var(--surface-2); display: grid; place-items: center;
+}
+.icons-1 .tile { width: 32px; height: 32px; border-radius: 6px; }
+/* box-sizing is border-box, so the image fills the tile inside its 1px border. */
+.tile img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
+/* Fallback tile: tinted with the class colour; glyph stays in the text colour for contrast. */
+.tile-fallback { color: var(--text); background: color-mix(in srgb, var(--muted) 18%, var(--surface-2)); }
+.tile-fallback.tile-class { background: color-mix(in srgb, var(--cc) 30%, var(--surface-2)); border-color: var(--cc); }
+/* Talent mark: a small diamond pip on the top-right corner (a shape, not only a colour;
+   the title also says "talent"). It sits half outside the tile, on top of the image. */
+.tile-talent::after {
+  content: ""; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; transform: rotate(45deg);
+  background: var(--accent); border: 1.5px solid var(--surface); box-shadow: 0 0 0 1px var(--text);
+}
+.icons-1 .tile-talent::after { width: 10px; height: 10px; top: -5px; right: -5px; }
+
+/* Search box. The dropdown is anchored to the input; on narrow screens it spans the
+   whole bar instead (see the media query), where the sticky .filters is the containing block. */
+.search { position: relative; flex: 1 1 200px; min-width: 0; }
 .search-input {
-  width: 100%; min-height: 44px; padding: 0 .9rem; background: var(--surface); color: var(--text);
+  width: 100%; min-height: 36px; padding: 0 .8rem; background: var(--surface); color: var(--text);
   border: 1px solid var(--border); border-radius: 8px; font: 1rem var(--sans);
 }
 .search-input::placeholder { color: var(--muted); }
 .search-input:focus-visible { outline-offset: 0; border-color: var(--focus); }
 
 /* Extra skill chips under a line */
-.subject-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem; }
+.subject-chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .2rem; }
 .subject-chip {
-  min-height: 28px; padding: 0 .65rem; background: var(--surface-2); color: var(--text); cursor: pointer;
-  border: 1px solid var(--border); border-radius: 999px; font: 500 .8rem var(--sans); position: relative;
+  min-height: 22px; padding: 0 .55rem; background: var(--surface-2); color: var(--text); cursor: pointer;
+  border: 1px solid var(--border); border-radius: 999px; font: 500 .75rem var(--sans); position: relative;
 }
+/* Extra tag chips (other classes / Talent / categories) share the subject-chip look. */
+.tag-class { display: inline-flex; align-items: center; gap: .35rem; }
+.tag-class .chip-dot { width: 9px; height: 9px; }
+.tag-talent { display: inline-flex; align-items: center; gap: .35rem; cursor: default; }
+.tag-talent::after { display: none; }
+.talent-pip { width: 7px; height: 7px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 0 1px var(--text); }
 /* Invisible padding grows the touch target to ~44px without enlarging the chip. */
 .subject-chip::after { content: ""; position: absolute; inset: -8px -2px; }
 .subject-chip:hover { border-color: var(--accent); }
 
 /* Suggestion dropdown (combobox listbox) */
 .suggest {
-  position: absolute; left: 1rem; right: 1rem; z-index: 30; margin-top: 4px; padding: .25rem; list-style: none;
+  position: absolute; left: 0; right: 0; z-index: 30; margin-top: 4px; padding: .25rem; list-style: none;
   max-height: min(55vh, 22rem); overflow-y: auto; overscroll-behavior: contain;
   background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35);
 }
@@ -263,32 +312,52 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .suggest-item[aria-selected="true"] mark { background: var(--accent-ink); color: var(--accent); }
 
 /* ---------- Responsive ---------- */
-/* Mobile (default): compact sticky bar. Long labels collapse via .opt. */
-.opt { display: none; }
-.tools .search { flex: 1 1 0; }
-.chip-row { -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
-.chip-row .chip { scroll-snap-align: start; }
-.filters { padding-top: .4rem; padding-bottom: .4rem; }
 .site-header h1 { font-size: 1.2rem; }
 
-@media (min-width: 560px) { .opt { display: inline; } }
-
-/* Desktop: filters become a sticky left sidebar; headings stick to the top. */
-@media (min-width: 900px) {
-  .site-header { padding: 1.5rem 1.5rem .75rem; }
-  .site-header h1 { font-size: 1.75rem; }
-  .layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 1.5rem; padding: 0 1.5rem; align-items: start; }
-  .filters {
-    top: 1rem; margin-top: .5rem; padding: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto;
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); backdrop-filter: none;
-    display: flex; flex-direction: column; gap: .6rem;
+/* Narrow screens: slim sticky bar (search + filter button) and a bottom sheet
+   holding every filter control. Touch targets are 44px here. */
+@media (max-width: 899px) {
+  .filters-bar .search { flex: 1 1 0; }
+  .search { position: static; }          /* dropdown spans the bar */
+  .suggest { left: 1rem; right: 1rem; }
+  .suggest-item { min-height: 44px; }
+  .search-input { min-height: 44px; }
+  .filter-btn { display: grid; }
+  .filter-summary { display: block; }
+  .filter-backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, .55); }
+  .filters.panel-open .filter-backdrop { display: block; }
+  .filter-panel {
+    display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
+    max-height: 88vh; max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
+    padding: .8rem 1rem 0; background: var(--surface); color: var(--text);
+    border-top: 2px solid var(--accent); border-radius: 16px 16px 0 0; box-shadow: 0 -8px 28px rgba(0, 0, 0, .4);
   }
-  .tools { flex-direction: column; align-items: stretch; margin: 0; }
-  .tools .search { flex: none; position: relative; }
-  .suggest { left: 0; right: 0; }
-  .toggle, .btn-clear { justify-content: flex-start; }
-  .chip-row { flex-wrap: wrap; overflow: visible; }
-  .chip { min-height: 44px; }
+  .filters.panel-open .filter-panel { display: block; animation: sheet-up .2s ease-out; }
+  .panel-head { padding-bottom: .2rem; }
+  .panel-title { font-size: 1.15rem; }
+  .filter-label { margin-top: .8rem; }
+  .chip-row { gap: .4rem; }
+  .chip, .btn-clear, .segment { min-height: 44px; }
+  .chip { padding: 0 .9rem; }
+  .segment-row { margin: 0; }
+  /* "Show N changes" stays visible while the panel scrolls. */
+  .panel-foot { display: block; position: sticky; bottom: 0; margin: .8rem -1rem 0; padding: .6rem 1rem calc(.7rem + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--border); }
+  .done-btn { width: 100%; margin: 0; }
+  /* Background must not scroll behind the open sheet. */
+  html.sheet-open, html.sheet-open body { overflow: hidden; }
+}
+@keyframes sheet-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Desktop: filters become a sticky left sidebar (dense, 32px controls); headings stick to the top. */
+@media (min-width: 900px) {
+  .site-header { padding: 1rem 1.5rem .5rem; }
+  .site-header h1 { font-size: 1.5rem; }
+  .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 1.25rem; padding: 0 1.5rem; align-items: start; }
+  .filters {
+    top: 1rem; margin-top: .5rem; padding: .75rem; max-height: calc(100vh - 2rem); overflow-y: auto;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    display: flex; flex-direction: column; gap: .4rem;
+  }
   .results { padding: .5rem 0 0; }
   .day-heading { top: 0; margin: 0 0 .6rem; padding: .6rem .75rem; border-radius: 8px 8px 0 0; }
   /* Desktop has no results padding: the rule stays inside the column and the heading starts right after it. */
@@ -297,7 +366,13 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   html { scroll-padding-top: 4rem; }
   .site-footer { padding: 1rem 1.5rem; }
 }
-@media (min-width: 900px) and (prefers-color-scheme: dark) { .filters { background: var(--surface); } }
+
+/* Wide screens: cards flow into two columns inside a day. */
+@media (min-width: 1100px) {
+  .layout, .site-header, .site-footer { max-width: 1480px; }
+  .cards { column-count: 2; column-gap: .75rem; }
+  .card { break-inside: avoid; }
+}
 
 /* ---------- Motion ---------- */
 @media (prefers-reduced-motion: reduce) {

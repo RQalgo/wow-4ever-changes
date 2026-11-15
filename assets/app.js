@@ -3,7 +3,7 @@
  *
  * Responsibilities:
  *   - load ./data/changes.json and show loading / error / empty states
- *   - own the UI state (class, spec, query, showGeneral) and re-render
+ *   - own the UI state (class, spec, query, category chips, kind) and re-render
  *   - build every DOM node with createElement/textContent (data is never
  *     inserted through innerHTML)
  *
@@ -17,17 +17,22 @@
  */
 
 import {
-  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays,
+  CLASSES, flattenSections, relativeDay, classColor, defaultState, visibleDays,
   specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
-  highlightSegments, buildSuggestions, encodeHash, decodeHash, sanitizeSelection,
+  highlightSegments, buildSuggestions, iconSlots, extraTagsForLine, encodeHash, decodeHash, sanitizeSelection,
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
+  availableCategories, toggleCategory, normalizeCats, isCategoryOn,
+  activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
 } from './logic.js';
 
-/** Current UI state: class, spec, search text, General toggle, kind filter. */
+/** Current UI state: class, spec, search text, enabled categories (null = all), kind filter. */
 let state = defaultState();
 
 /** The loaded dataset (see docs/SCHEMA.md), or null before loading. */
 let data = null;
+
+/** Category chips offered for the loaded data (only tags that occur in it). */
+let categories = [];
 
 /** Shortcut for document.getElementById. */
 const $ = (id) => document.getElementById(id);
@@ -121,14 +126,15 @@ const GLYPHS = {
 /**
  * Build the inline SVG fallback glyph for a change.
  * @param {object} ch change (scope/category decide the glyph)
+ * @param {number} [size] pixel size of the glyph
  * @returns {SVGElement}
  */
-function glyphSvg(ch) {
+function glyphSvg(ch, size = 22) {
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('width', '22');
-  svg.setAttribute('height', '22');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('fill', 'none');
   svg.setAttribute('stroke', 'currentColor');
@@ -142,43 +148,102 @@ function glyphSvg(ch) {
 }
 
 /**
- * Build the fixed 36px icon box for a line. The box always has the same
- * size, so the image loading (or failing) never shifts the layout. Uses the
- * first subject's Wowhead icon; falls back to a coloured glyph tile when
- * there is no subject, the name is unusable, or the image fails to load.
+ * Build one icon tile of the cluster. The tile has a fixed CSS size (set by
+ * the cluster class), so an image loading or failing never shifts the layout.
+ * A subject with a usable icon shows its Wowhead image (lazy); anything else,
+ * including an image that fails to load, becomes the glyph tile. Talents get
+ * the `tile-talent` class (a corner pip) and "(talent)" in the title, so the
+ * kind never relies on the mark or colour alone.
+ * @param {object} ch the change (decides glyph and fallback colour)
+ * @param {{name: string, icon?: string, talent: boolean, title: string}|null} slot subject slot, or null for the "no subjects" tile
+ * @param {object|null} subject raw subject (for its class colour)
+ * @param {number} glyphPx glyph size used by the fallback
+ * @returns {HTMLElement}
+ */
+function renderTile(ch, slot, subject, glyphPx) {
+  const tile = el('div', 'tile');
+  tile.style.setProperty('--cc', classColor((subject && subject.class) || ch.class) || 'var(--muted)');
+  if (slot) {
+    tile.title = slot.title;
+    if (slot.talent) { tile.classList.add('tile-talent'); tile.dataset.kind = 'talent'; }
+  }
+  const url = slot ? iconUrl(slot.icon) : null;
+
+  /** Swap whatever is in the tile for the glyph. */
+  const useFallback = () => {
+    tile.classList.add('tile-fallback');
+    tile.classList.toggle('tile-class', ch.scope !== 'general' && !!ch.class);
+    // Keep the pip (a ::after) but replace the image with the glyph.
+    tile.replaceChildren(glyphSvg(ch, glyphPx));
+  };
+
+  if (!url) { useFallback(); return tile; }
+  const img = new Image(32, 32);
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.alt = slot.title;
+  img.addEventListener('error', useFallback, { once: true });
+  img.src = url;
+  tile.append(img);
+  return tile;
+}
+
+/**
+ * Build the icon cluster of a line: up to MAX_ICONS subject icons in subject
+ * order. One icon is a single 32px tile; 2-4 icons are small tiles in a
+ * 2-wide grid (a row for two, 2x2 for three or four). The cluster box has a
+ * fixed width, so text lines up from line to line. A line without subjects
+ * gets one fallback tile (class or category glyph).
  * @param {object} ch change
  * @returns {HTMLElement}
  */
-function renderIcon(ch) {
-  const box = el('div', 'icon');
-  box.style.setProperty('--cc', classColor(ch.class) || 'var(--muted)');
-  const subject = (ch.subjects || [])[0];
-  const url = subject ? iconUrl(subject.icon) : null;
-
-  /** Swap whatever is in the box for the glyph tile. */
-  const useFallback = () => {
-    box.classList.add('icon-fallback');
-    box.classList.toggle('icon-class', ch.scope !== 'general' && !!ch.class);
-    box.replaceChildren(glyphSvg(ch));
-  };
-
-  if (!url) {
-    useFallback();
+function renderIcons(ch) {
+  const { slots } = iconSlots(ch);
+  const subjects = (ch.subjects || []).filter((x) => x && x.name);
+  const box = el('div', `icons icons-${Math.max(1, slots.length)}`);
+  if (!slots.length) {
+    box.append(renderTile(ch, null, null, 20));
     return box;
   }
-  const img = new Image(36, 36);
-  img.loading = 'lazy';
-  img.decoding = 'async';
-  img.alt = subject.name || '';
-  img.addEventListener('error', useFallback, { once: true });
-  img.src = url;
-  box.append(img);
+  const glyphPx = slots.length === 1 ? 20 : 13;
+  slots.forEach((slot, i) => box.append(renderTile(ch, slot, subjects[i], glyphPx)));
   return box;
 }
 
 /**
- * Render one change line: icon, text and notes (highlighting and extra
- * subject chips are layered on in the search step).
+ * Build one "extra tag" chip under a line. Class chips (class colour dot +
+ * name) set the class filter, category chips show only that category; the
+ * Talent chip is informational. Real <button>s, so they are keyboard
+ * accessible.
+ * @param {object} tag from extraTagsForLine
+ * @returns {HTMLElement}
+ */
+function renderTagChip(tag) {
+  if (tag.type === 'talent') {
+    const t = el('span', 'subject-chip tag-chip tag-talent');
+    t.append(el('span', 'talent-pip'), 'Talent');
+    t.title = 'Involves a talent';
+    return t;
+  }
+  const b = el('button', 'subject-chip tag-chip ' + (tag.type === 'class' ? 'tag-class' : 'tag-cat'));
+  b.type = 'button';
+  if (tag.type === 'class') {
+    b.style.setProperty('--cc', tag.color || 'var(--muted)');
+    b.append(el('span', 'chip-dot'), tag.label);
+    b.title = `Show only ${tag.label} changes`;
+    b.addEventListener('click', () => setState({ ...state, cls: tag.slug, spec: '' }));
+  } else {
+    b.textContent = tag.label;
+    b.title = `Show only ${tag.label}`;
+    b.addEventListener('click', () => setState({ ...state, cats: [tag.slug] }));
+  }
+  return b;
+}
+
+/**
+ * Render one change line: icon cluster, text, extra tag chips (other classes,
+ * Talent, other categories), overflow subject chips and notes. The line is
+ * drawn once, in its published section; the chips say what else it touches.
  * @param {object} ch a change from the data
  * @returns {HTMLElement} <li>
  */
@@ -196,18 +261,19 @@ function renderLine(ch) {
   }
   text.append(highlighted(ch.text));
   body.append(text);
-  // Extra subjects (beyond the one used for the icon) become search chips.
-  const extra = (ch.subjects || []).slice(1);
-  if (extra.length) {
+  const tags = extraTagsForLine(ch).map(renderTagChip);
+  // Subjects beyond the icon cluster stay as search chips.
+  const more = iconSlots(ch).more.map((sub) => {
+    const b = el('button', 'subject-chip');
+    b.type = 'button';
+    b.title = `Search for ${sub.name}`;
+    b.append(highlighted(sub.name));
+    b.addEventListener('click', () => { setState({ ...state, q: sub.name }); });
+    return b;
+  });
+  if (tags.length || more.length) {
     const chips = el('div', 'subject-chips');
-    for (const sub of extra) {
-      const b = el('button', 'subject-chip');
-      b.type = 'button';
-      b.title = `Search for ${sub.name}`;
-      b.append(highlighted(sub.name));
-      b.addEventListener('click', () => { setState({ ...state, q: sub.name }); });
-      chips.append(b);
-    }
+    chips.append(...tags, ...more);
     body.append(chips);
   }
   for (const note of ch.notes || []) {
@@ -215,7 +281,7 @@ function renderLine(ch) {
     n.append(highlighted(note));
     body.append(n);
   }
-  li.append(renderIcon(ch), body);
+  li.append(renderIcons(ch), body);
   return li;
 }
 
@@ -231,48 +297,39 @@ function renderLines(changes) {
 }
 
 /**
- * Render a class section ("Paladin" with direct lines and per-spec
- * sub-headings such as "Paladin > Retribution").
- * @param {{class: string|null, label: string, direct: object[], specs: object[]}} sec
- * @returns {HTMLElement}
+ * Build a card heading from its title parts: "Druid › Restoration" or
+ * "Dungeons › The Deadmines". The first part is the strong one, later parts
+ * (tree / group) are lighter, so one line carries the whole path and nothing
+ * above it repeats the class or category name. General headings take part in
+ * search highlighting (category and group are searchable); class headings
+ * are plain.
+ * @param {string[]} title parts
+ * @param {boolean} highlight wrap search matches in <mark>
+ * @returns {HTMLElement} <h3>
  */
-function renderClassSection(sec) {
-  const box = el('section', 'group group-class');
-  // The class colour is exposed as a CSS variable and used only as an accent.
-  box.style.setProperty('--cc', classColor(sec.class) || 'var(--accent)');
-  box.append(el('h3', 'group-title', sec.label));
-  if (sec.direct.length) box.append(renderLines(sec.direct));
-  for (const sp of sec.specs) {
-    const sub = el('div', 'subgroup');
-    sub.append(el('h4', 'subgroup-title', `${sec.label} › ${sp.label}`), renderLines(sp.changes));
-    box.append(sub);
-  }
-  return box;
+function renderHeading(title, highlight) {
+  const h = el('h3', 'card-title');
+  title.forEach((part, i) => {
+    if (i) h.append(el('span', 'crumb-sep', ' › '));
+    const span = el('span', i ? 'crumb-sub' : 'crumb-main');
+    if (highlight) span.append(highlighted(part)); else span.textContent = part;
+    h.append(span);
+  });
+  return h;
 }
 
 /**
- * Render the General section: category headings, then optional group
- * headings (e.g. a dungeon name) with their lines.
- * @param {{category: string, groups: object[]}[]} general
+ * Render one card: a class (or "All classes") or one general category, with
+ * one or more sibling headings, each followed by its lines.
+ * @param {{kind: string, class: string|null, headings: object[]}} card from flattenSections
  * @returns {HTMLElement}
  */
-function renderGeneral(general) {
-  const box = el('section', 'group group-general');
-  box.append(el('h3', 'group-title', 'General'));
-  for (const cat of general) {
-    const sub = el('div', 'subgroup');
-    const catTitle = el('h4', 'subgroup-title');
-    catTitle.append(highlighted(cat.category));
-    sub.append(catTitle);
-    for (const g of cat.groups) {
-      if (g.group) {
-        const gl = el('h5', 'group-label');
-        gl.append(highlighted(g.group));
-        sub.append(gl);
-      }
-      sub.append(renderLines(g.changes));
-    }
-    box.append(sub);
+function renderCard(card) {
+  const box = el('section', `card card-${card.kind}`);
+  // The class colour is exposed as a CSS variable and used only as an accent.
+  box.style.setProperty('--cc', card.kind === 'class' ? (classColor(card.class) || 'var(--accent)') : 'var(--muted)');
+  for (const h of card.headings) {
+    box.append(renderHeading(h.title, card.kind === 'general'), renderLines(h.changes));
   }
   return box;
 }
@@ -308,7 +365,7 @@ function sourceLink(day) {
  * @returns {HTMLElement}
  */
 function renderDay(day, changes) {
-  const view = groupChanges(changes);
+  const view = flattenSections(changes);
   const kind = dayKind(day);
   const sec = el('section', `day day-${kind}`);
   // Date + kind: two days on the same date need different anchors.
@@ -329,8 +386,10 @@ function renderDay(day, changes) {
   if (src) head.append(src);
   head.append(el('span', 'day-count', `${view.count} ${view.count === 1 ? 'change' : 'changes'}`));
   sec.append(head);
-  for (const c of view.classSections) sec.append(renderClassSection(c));
-  if (view.general.length) sec.append(renderGeneral(view.general));
+  // Cards sit in a wrapper so wide screens can flow them into columns (see .cards in styles.css).
+  const cards = el('div', 'cards');
+  for (const card of view.cards) cards.append(renderCard(card));
+  sec.append(cards);
   return sec;
 }
 
@@ -343,6 +402,8 @@ function renderResults() {
   const days = visibleDays(data, state);
   const total = days.reduce((n, d) => n + d.changes.length, 0);
   $('live').textContent = `${total} ${total === 1 ? 'change' : 'changes'} shown`;
+  shownCount = total;
+  renderFilterBar();
   if (!days.length) {
     // Name the kind filter when it is active: it is the easiest one to forget.
     const kindNote = state.kind === 'all' ? ''
@@ -413,6 +474,37 @@ function renderSpecChips() {
   for (const spec of specsForClass(data, state.cls)) {
     chips.push(chip(titleCase(spec), state.spec === spec,
       () => setState({ ...state, spec: state.spec === spec ? '' : spec }), color));
+  }
+  row.replaceChildren(...chips);
+}
+
+/**
+ * Rebuild the category chip row: quick "All" / "None" buttons, then one
+ * toggle chip per category that occurs in the data. Chips are multi-select
+ * (aria-pressed); the row is hidden when the data has no categories.
+ */
+function renderCategoryChips() {
+  const row = $('cat-row');
+  row.hidden = !categories.length;
+  if (!categories.length) { row.replaceChildren(); return; }
+  const allOn = !state.cats;
+  const noneOn = !!state.cats && state.cats.length === 0;
+  /** Quick action button ("All"/"None"); disabled when it would change nothing. */
+  const quick = (label, title, cats, disabled) => {
+    const b = el('button', 'chip chip-quick', label);
+    b.type = 'button';
+    b.title = title;
+    b.disabled = disabled;
+    b.addEventListener('click', () => setState({ ...state, cats }));
+    return b;
+  };
+  const chips = [
+    quick('All', 'Show every category', null, allOn),
+    quick('None', 'Hide all non-class categories', [], noneOn),
+  ];
+  for (const c of categories) {
+    chips.push(chip(c.label, isCategoryOn(state, c.slug),
+      () => setState({ ...state, cats: toggleCategory(state.cats, c.slug, categories) })));
   }
   row.replaceChildren(...chips);
 }
@@ -544,7 +636,7 @@ function buildSearch() {
         ic.append(img);
       }
       const name = el('span', 'suggest-name');
-      for (const seg of highlightSegments(sug.name, inputTerms)) {
+      for (const seg of highlightSegments(sug.label, inputTerms)) {
         name.append(seg.match ? el('mark', null, seg.text) : document.createTextNode(seg.text));
       }
       li.append(ic, name, el('span', 'suggest-count', `\u00D7${sug.count}`));
@@ -601,9 +693,122 @@ function watchBarHeight(box) {
   else window.addEventListener('resize', set);
 }
 
-/** Build the (static) filter panel structure once. */
+/**
+ * Build the original inline "sliders" icon for the filter button (three
+ * lines with knobs). Decorative: the button carries the accessible name.
+ * @returns {SVGElement}
+ */
+function filterIconSvg() {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  for (const [k, v] of Object.entries({
+    viewBox: '0 0 24 24', width: '22', height: '22', 'aria-hidden': 'true', fill: 'none',
+    stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round',
+  })) svg.setAttribute(k, v);
+  const path = document.createElementNS(NS, 'path');
+  // Three rails with a gap where each knob sits.
+  path.setAttribute('d', 'M4 6h8 M18 6h2 M4 12h2 M12 12h8 M4 18h10 M20 18h0');
+  svg.append(path);
+  for (const [cx, cy] of [[15, 6], [9, 12], [17, 18]]) {
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', cx);
+    c.setAttribute('cy', cy);
+    c.setAttribute('r', '2.2');
+    svg.append(c);
+  }
+  return svg;
+}
+
+/** Narrow-screen query: below this width the filters live in a bottom sheet. */
+const sheetQuery = window.matchMedia('(max-width: 899px)');
+
+/** Is the filter sheet currently open? (Only ever true on narrow screens.) */
+let panelOpen = false;
+
+/**
+ * Open or close the filter sheet. While open: the panel is a modal dialog,
+ * the page behind cannot scroll, focus moves into the panel; closing returns
+ * focus to the filter button. On wide screens the panel is the sidebar and
+ * this does nothing.
+ * @param {boolean} open
+ * @param {boolean} [moveFocus] move focus in/out (false when reacting to the URL or a resize)
+ */
+function setPanelOpen(open, moveFocus = true) {
+  const want = open && sheetQuery.matches;
+  if (want === panelOpen) return;
+  panelOpen = want;
+  const panel = $('filter-panel');
+  $('filters').classList.toggle('panel-open', want);
+  document.documentElement.classList.toggle('sheet-open', want);
+  $('filters-btn').setAttribute('aria-expanded', String(want));
+  // Dialog semantics only apply while it really behaves like a dialog.
+  if (want) {
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-labelledby', 'panel-title');
+    if (moveFocus) $('panel-title').focus();
+  } else {
+    panel.removeAttribute('role');
+    panel.removeAttribute('aria-modal');
+    panel.removeAttribute('aria-labelledby');
+    if (moveFocus) $('filters-btn').focus();
+  }
+  syncHash();
+}
+
+/**
+ * Keep Tab inside the open sheet (a simple focus trap): from the last
+ * control it wraps to the first and the other way round.
+ * @param {KeyboardEvent} e keydown
+ */
+function trapFocus(e) {
+  if (!panelOpen || e.key !== 'Tab') return;
+  const items = [...$('filter-panel').querySelectorAll('button:not(:disabled), [tabindex="0"]')]
+    .filter((n) => !n.closest('[hidden]'));
+  if (!items.length) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  const active = document.activeElement;
+  if (e.shiftKey && (active === first || active === $('panel-title') || !$('filter-panel').contains(active))) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && (active === last || !$('filter-panel').contains(active))) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+/**
+ * Build the (static) filter structure once:
+ *   .filters-bar   search + filter button (narrow screens)
+ *   .filter-summary one-line summary of the active filters (narrow screens)
+ *   .filter-panel  kind, class, tree and category controls, Clear, Done
+ * On wide screens the panel is simply part of the sidebar.
+ */
 function buildFilters() {
   const box = $('filters');
+
+  // --- bar: search and the filter button
+  const btn = el('button', 'filter-btn');
+  btn.type = 'button';
+  btn.id = 'filters-btn';
+  btn.setAttribute('aria-label', 'Filters');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-controls', 'filter-panel');
+  btn.append(filterIconSvg(), el('span', 'badge'));
+  btn.lastChild.id = 'filters-badge';
+  btn.addEventListener('click', () => setPanelOpen(!panelOpen));
+  const bar = el('div', 'filters-bar');
+  bar.append(buildSearch(), btn);
+
+  const summary = el('button', 'filter-summary');
+  summary.type = 'button';
+  summary.id = 'filter-summary';
+  summary.hidden = true;
+  summary.title = 'Change filters';
+  summary.addEventListener('click', () => setPanelOpen(true));
+
+  // --- panel
   const classGroup = el('div', 'chip-row');
   classGroup.id = 'class-row';
   classGroup.setAttribute('role', 'group');
@@ -612,42 +817,82 @@ function buildFilters() {
   specGroup.id = 'spec-row';
   specGroup.setAttribute('role', 'group');
   specGroup.hidden = true;
+  // Category chips (non-class changes): multi-select row built by renderCategoryChips().
+  const catGroup = el('div', 'chip-row chip-row-cats');
+  catGroup.id = 'cat-row';
+  catGroup.setAttribute('role', 'group');
+  catGroup.setAttribute('aria-label', 'Categories');
 
-  // Tools row: (search goes first), General toggle, clear button.
-  const tools = el('div', 'tools');
-  tools.id = 'tools';
-  const gen = el('button', 'toggle');
-  gen.type = 'button';
-  gen.id = 'general-toggle';
-  // "Show " / " changes" are hidden on narrow screens (class "opt") to keep the bar compact.
-  const genLabel = el('span', 'toggle-label');
-  genLabel.append(el('span', 'opt', 'Show '), 'General', el('span', 'opt', ' changes'));
-  gen.append(el('span', 'toggle-box'), genLabel);
-  gen.addEventListener('click', () => setState({ ...state, general: !state.general }));
-  const clear = el('button', 'btn-clear');
+  const title = el('h2', 'panel-title', 'Filters');
+  title.id = 'panel-title';
+  title.tabIndex = -1;
+  const clear = el('button', 'btn-clear', 'Clear filters');
   clear.type = 'button';
   clear.id = 'clear-filters';
-  const clearLabel = el('span');
-  clearLabel.append('Clear', el('span', 'opt', ' filters'));
-  clear.append(clearLabel);
   clear.addEventListener('click', () => setState(defaultState()));
-  tools.append(buildSearch(), gen, clear);
+  const head = el('div', 'panel-head');
+  head.append(title, clear);
+
+  const done = el('button', 'btn done-btn', 'Done');
+  done.type = 'button';
+  done.id = 'done-btn';
+  done.addEventListener('click', () => setPanelOpen(false));
+  const foot = el('div', 'panel-foot');
+  foot.append(done);
+
+  const panel = el('div', 'filter-panel');
+  panel.id = 'filter-panel';
+  panel.append(
+    head,
+    el('p', 'filter-label', 'Show'), buildKindFilter(),
+    el('p', 'filter-label', 'Class'), classGroup, specGroup,
+    el('p', 'filter-label', 'Categories'), catGroup,
+    foot,
+  );
+
+  const backdrop = el('div', 'filter-backdrop');
+  backdrop.addEventListener('click', () => setPanelOpen(false));
 
   // Polite live region so screen readers hear how many changes are shown.
   const live = el('p', 'visually-hidden');
   live.id = 'live';
   live.setAttribute('role', 'status');
-  box.replaceChildren(tools, buildKindFilter(), classGroup, specGroup, live);
+  box.replaceChildren(bar, summary, backdrop, panel, live);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panelOpen) { e.preventDefault(); setPanelOpen(false); }
+    else trapFocus(e);
+  });
+  // Rotating a tablet / resizing to desktop turns the sheet into the sidebar.
+  sheetQuery.addEventListener('change', () => { if (!sheetQuery.matches) setPanelOpen(false, false); });
   watchBarHeight(box);
 }
 
-/** Sync the General toggle and the clear button with the state. */
+/** How many changes are shown right now (for the sheet's "Show N changes" button). */
+let shownCount = 0;
+
+/**
+ * Sync the narrow-screen bar with the state: badge (number of active
+ * filters), the button's accessible name, the one-line summary and the Done
+ * button's label.
+ */
+function renderFilterBar() {
+  const n = activeFilterCount(state);
+  const badge = $('filters-badge');
+  badge.hidden = n === 0;
+  badge.textContent = String(n);
+  $('filters-btn').setAttribute('aria-label', n ? `Filters, ${n} active` : 'Filters');
+  const text = filterSummary(state, categories);
+  const sum = $('filter-summary');
+  sum.hidden = !text;
+  sum.textContent = text;
+  $('done-btn').textContent = `Show ${shownCount} ${shownCount === 1 ? 'change' : 'changes'}`;
+}
+
+/** Sync the clear button with the state (enabled only when something differs from the defaults). */
 function renderTools() {
-  const gen = $('general-toggle');
-  gen.setAttribute('role', 'switch');
-  gen.setAttribute('aria-checked', String(state.general));
   const d = defaultState();
-  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.general !== d.general || state.kind !== d.kind;
+  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.cats !== d.cats || state.kind !== d.kind;
   $('clear-filters').disabled = !dirty;
 }
 
@@ -687,8 +932,21 @@ function loadSelection() {
  * @returns {object} state
  */
 function initialState() {
-  if (location.hash.length > 1) return decodeHash(location.hash);
+  // A hash that only carries the UI flag (#filters=open) has no filter in it:
+  // fall through to the remembered class like an empty hash.
+  const params = new URLSearchParams(location.hash.replace(/^#/, ''));
+  params.delete('filters');
+  if (params.toString()) return decodeHash(location.hash);
   return { ...defaultState(), ...(loadSelection() || {}) };
+}
+
+/**
+ * The hash that describes the current view: the filter state plus the
+ * `filters=open` flag while the mobile sheet is open (so it can be shared).
+ * @returns {string}
+ */
+function currentHash() {
+  return withPanelFlag(encodeHash(state), panelOpen);
 }
 
 /**
@@ -696,7 +954,7 @@ function initialState() {
  * browser history, and it does not fire hashchange).
  */
 function syncHash() {
-  const want = encodeHash(state);
+  const want = currentHash();
   if (want === location.hash) return;
   history.replaceState(null, '', want || location.pathname + location.search);
 }
@@ -706,12 +964,14 @@ function syncHash() {
  * @param {object} next new state
  */
 function setState(next, opts = {}) {
-  state = next;
+  // One canonical `cats` (null when every chip is on), whatever the source.
+  state = { ...next, cats: normalizeCats(next.cats, categories) };
   syncHash();
   saveSelection(state);
   if (!opts.fromInput) renderSearch();
   renderClassChips();
   renderSpecChips();
+  renderCategoryChips();
   renderKindFilter();
   renderTools();
   renderResults();
@@ -720,12 +980,19 @@ function setState(next, opts = {}) {
 /** Render everything that depends on the data. */
 function render() {
   renderHeader();
+  categories = availableCategories(data);
   buildFilters();
+  // Read the UI flag first: setState() rewrites the hash without it.
+  const openAtStart = hasPanelFlag(location.hash);
   state = initialState();
   setState(state);
+  // #filters=open opens the sheet right away (narrow screens only).
+  if (openAtStart) setPanelOpen(true, false);
   // Back/forward or a manually edited hash: re-read the state from the URL.
   window.addEventListener('hashchange', () => {
-    if (encodeHash(state) !== location.hash) setState(decodeHash(location.hash));
+    if (currentHash() === location.hash) return;
+    setPanelOpen(hasPanelFlag(location.hash), false);
+    if (encodeHash(state) !== encodeHash(decodeHash(location.hash))) setState(decodeHash(location.hash));
   });
 }
 
