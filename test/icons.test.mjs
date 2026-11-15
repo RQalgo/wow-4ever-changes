@@ -11,7 +11,7 @@ import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { extractCandidates, lookupName, addSubjects, createLimits } from '../scripts/icons.mjs';
+import { extractCandidates, extractCandidateGroups, lookupName, addSubjects, createLimits } from '../scripts/icons.mjs';
 
 // ---------------------------------------------------------------------------
 // 1. Candidate extraction
@@ -38,7 +38,41 @@ describe('extractCandidates', () => {
     ['Fixed a bug with diminishing returns on creature stuns.', []],
     ['All Mace and Sword users take less damage.', []],
     ['Resolved an issue with Developers notes and the UI.', []],
-    ['Sap and Gouge now share diminishing returns.', ['Sap and Gouge']],
+    // v3: "A and B" lists are split into parts (the whole is kept separately in
+    // extractCandidateGroups, see the groups tests below); before v3 this
+    // returned the single candidate 'Sap and Gouge'.
+    ['Sap and Gouge now share diminishing returns.', ['Sap', 'Gouge']],
+
+    // --- v3 rules: patch-note style lines (each example from the owner's brief) ---
+    ['Reckoning: Now has a 1.5 second cooldown on how often it can be triggered.', ['Reckoning']],
+    ['Righteous Fury: Holy threat increase increased to 60% (was 90%).', ['Righteous Fury']],
+    ['Lightning Bolt: Base damage increased to 40.', ['Lightning Bolt']],
+    ['Aspect of the Hawk: Ranged Attack Power bonus has been reduced.', ['Aspect of the Hawk']],
+    ['Bear Form and Dire Bear Form: Threat generation has been reduced.', ['Bear Form', 'Dire Bear Form']],
+    ['New Talent Oath of Light in Row 4. 40-yard range, 8% of Base Mana cost. No cooldown. Swear an Oath to protect an ally.', ['Oath of Light']],
+    ['New Talent: Quick Getaway grants movement speed after vanishing.', ['Quick Getaway']],
+    ['New Talent Stoicism added to Row 5. Reduces the duration of Stun and Charm effects on you.', ['Stoicism']],
+    ['Added: Shank deals damage to the target.', ['Shank']],
+    ['Instrument of Law Removed.', ['Instrument of Law']],
+    ['Lava Burst: Removed.', ['Lava Burst']],
+    ['Holy Shield moved to Row 5 (Was Row 7).', ['Holy Shield']],
+    ['Holy Shield’s chance to Block changed to 30% (was 20%).', ['Holy Shield']],
+    ['Consecration’s Spell Power Coefficient per tick has been changed.', ['Consecration']],
+    ['Blessing of Salvation and Greater Blessing of Salvation have been replaced with Salvation and Mass Salvation.',
+      ['Blessing of Salvation', 'Greater Blessing of Salvation', 'Salvation', 'Mass Salvation']],
+    ['Judgement of Righteousness and Judgement of Fury now have the correct spell power coefficients.',
+      ['Judgement of Righteousness', 'Judgement of Fury']],
+    ['Improved Seal of Fury and Shield Specialization no longer generate threat.', ['Improved Seal of Fury', 'Shield Specialization']],
+    ['Shield Specialization Mana restored to the Paladin lowered to 4%.', ['Shield Specialization']],
+    ['Twist of Light now additionally reduces the Mana cost of your Seal spells by 20%.', ['Twist of Light']],
+    ['Fireball: Renamed Accelerant.', ['Fireball', 'Accelerant']],
+    ['Hemorrhage and Ghostly Strike now deal more damage.', ['Hemorrhage', 'Ghostly Strike']],
+    ['Rupture and Garrote now refresh correctly.', ['Rupture', 'Garrote']],
+    ['Cure Disease and Abolish Disease no longer conflict.', ['Cure Disease', 'Abolish Disease']],
+    ['Heart of the Wild and Gift of the Earthmother now stack.', ['Heart of the Wild', 'Gift of the Earthmother']],
+    // A real "Word:" name keeps its colon part; stoplisted nouns are never names.
+    ['Power Word: Shield and Shadow Word: Pain were adjusted.', ['Power Word: Shield', 'Shadow Word: Pain']],
+    ['Row 5 Base Mana Attack Power Combo Points and Diminishing Returns.', []],
   ];
   for (const [line, expected] of cases) {
     test(line.slice(0, 60), () => assert.deepEqual(extractCandidates(line), expected));
@@ -58,16 +92,32 @@ describe('extractCandidates', () => {
     assert.deepEqual(curly, ['Windfury Totem']);
   });
 
-  test('is capped at 4 candidates and de-duplicated in order', () => {
-    const got = extractCandidates('Sap, Gouge, Kick, Evasion, Vanish and Sap again, plus Garrote.');
-    assert.equal(got.length, 4);
-    assert.deepEqual(got, ['Sap', 'Gouge', 'Kick', 'Evasion']);
+  test('is capped at 6 candidates and de-duplicated in order', () => {
+    const got = extractCandidates('Sap, Gouge, Kick, Evasion, Vanish and Sap again, plus Garrote and Ambush.');
+    assert.equal(got.length, 6);
+    assert.deepEqual(got, ['Sap', 'Gouge', 'Kick', 'Evasion', 'Vanish', 'Garrote']);
     assert.deepEqual(extractCandidates('Sap now works. Sap is great.'), ['Sap']);
   });
 
   test('class and spec names alone are not candidates', () => {
     assert.deepEqual(extractCandidates('Retribution Paladin changes.'), []);
     assert.deepEqual(extractCandidates('Rogues and Warriors are happier.'), []);
+  });
+
+  test('groups: "A and B" with one word per side keeps the whole as a first try', () => {
+    assert.deepEqual(extractCandidateGroups('Slice and Dice now lasts longer.'),
+      [{ whole: 'Slice and Dice', parts: ['Slice', 'Dice'] }]);
+    assert.equal(extractCandidateGroups('Shadow and Flame is a talent.')[0].whole, 'Shadow and Flame');
+    // multi-word sides are lists, not names: no whole
+    assert.deepEqual(extractCandidateGroups('Cure Disease and Abolish Disease are fine.'),
+      [{ whole: null, parts: ['Cure Disease', 'Abolish Disease'] }]);
+    // "of the" never splits
+    assert.deepEqual(extractCandidateGroups('Heart of the Wild is fine.'), [{ whole: null, parts: ['Heart of the Wild'] }]);
+  });
+
+  test('a plural category noun after one capital word is not a name; a longer run is kept', () => {
+    assert.deepEqual(extractCandidates('Reduces the cost of your Seal spells.'), []);
+    assert.deepEqual(extractCandidates('Windfury Totem attacks now proc.'), ['Windfury Totem']);
   });
 
   test('classSlug option is accepted', () => {

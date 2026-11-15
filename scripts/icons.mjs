@@ -57,8 +57,8 @@ const REQUEST_TIMEOUT_MS = 15_000;
 /** Stop making network calls after this many consecutive failures. */
 const MAX_CONSECUTIVE_FAILURES = 5;
 
-/** Maximum number of candidates kept per change line. */
-const MAX_CANDIDATES = 4;
+/** Maximum number of candidate names kept per change line (or note). */
+const MAX_CANDIDATES = 6;
 
 // ---------------------------------------------------------------------------
 // STOPLISTS  (all entries are compared lower-cased; keep them in this block)
@@ -214,58 +214,255 @@ function isGenericToken(token) {
 }
 
 /**
+ * Multi-word phrases made ONLY of generic vocabulary that are nevertheless real
+ * skills ("Holy Shield", "Mana Shield"). Without this list the all-generic rule
+ * below would drop them. Grown from the real data; names are lower-case.
+ */
+const ALLOWED_GENERIC_NAMES = new Set([
+  'holy shield', 'mana shield', 'shield block', 'arcane power', 'frost armor',
+  'ice armor', 'fire shield', 'fire resistance', 'frost resistance',
+  'shadow resistance', 'nature resistance', 'holy power',
+]);
+
+/**
+ * TRAILING_STATUS: words patch notes append to a name to describe what happened
+ * to it ("Instrument of Law Removed", "Oath of Light in Row 4"). Stripped from
+ * the RIGHT edge of a run, together with any connector left dangling.
+ */
+const TRAILING_STATUS = new Set(['removed', 'added', 'renamed', 'moved', 'changed', 'replaced', 'row']);
+
+/**
+ * TRAILING_NOISE: capitalised stat words that follow a name ("Shield
+ * Specialization Mana restored ..."). Stripped from the right edge, but only
+ * when something else remains. Deliberately excludes Rage / Energy / Shield /
+ * Armor, which end real names ("Berserker Rage", "Holy Shield").
+ */
+const TRAILING_NOISE = new Set([
+  'mana', 'damage', 'cooldown', 'duration', 'threat', 'health', 'healing', 'cost',
+  'range', 'experience', 'coefficient', 'base',
+]);
+
+/**
+ * PLURAL_CATEGORY_NOUNS: a single capitalised word followed by one of these in
+ * lower case names a CATEGORY, not a skill ("your Seal spells" -> not "Seal").
+ */
+const PLURAL_CATEGORY_RE = /^\s+(?:spells|abilities|attacks|effects|talents|strikes|auras|totems|shouts|curses|stings|traps|blessings|seals|judgements)\b/;
+
+/**
  * True when the whole phrase is not a candidate: it is itself a generic term
- * ("Cooldown Manager", "Spell Power") or every word is generic ("Holy Mace").
+ * ("Cooldown Manager", "Spell Power") or every word is generic ("Fire Mage"),
+ * unless it is on the ALLOWED_GENERIC_NAMES list.
  * @param {string[]} tokens
  * @returns {boolean}
  */
 function isGenericPhrase(tokens) {
-  const phrase = normalizeName(tokens.join(' ')).replace(/:/g, '');
+  const words = tokens.filter((t) => !CONNECTORS.has(t)).map((t) => normalizeName(t).replace(/:/g, ''));
+  const phrase = words.join(' ');
+  if (ALLOWED_GENERIC_NAMES.has(normalizeName(tokens.join(' ')).replace(/:/g, ''))) return false;
   if (GENERIC_SET.has(phrase) || CLASS_AND_SPEC_SET.has(phrase)) return true;
   // Lower-case connectors are ignored so "Mace and Sword" counts as all-generic.
-  return tokens.every((t) => CONNECTORS.has(t) || isGenericToken(t));
+  // Dynamic programme: can the words be covered by generic words / phrases
+  // ("Base Mana" + "Attack Power" + "Combo Points")?
+  const covered = new Array(words.length + 1).fill(false);
+  covered[0] = true;
+  for (let i = 0; i < words.length; i++) {
+    if (!covered[i]) continue;
+    for (let j = i + 1; j <= words.length; j++) {
+      const piece = words.slice(i, j).join(' ');
+      if (GENERIC_SET.has(piece) || CLASS_AND_SPEC_SET.has(piece)) covered[j] = true;
+    }
+  }
+  return words.length > 0 && covered[words.length];
 }
 
 /**
- * Split one regex run into name segments and clean each of them:
- *   - a possessive followed by a generic word ends the segment
- *     ("Eye’s Spirit" -> "Eye", then "Spirit" which is dropped as generic);
- *   - a trailing possessive is stripped ("Eye’s" -> "Eye");
- *   - leading filler words are stripped ("Fixed Consecration" -> "Consecration");
- *   - segments that are entirely generic vocabulary are discarded.
- * @param {string} run
- * @returns {string[]} cleaned names (possibly empty)
+ * True when a token is "noise" as the first word AFTER a colon or possessive:
+ * filler ("Now"), generic ("Base", "Holy", "Threat") or a status word
+ * ("Renamed", "Removed"). Used to decide whether "Name: Word" is one name
+ * ("Shadow Word: Pain") or a heading followed by a sentence ("Reckoning: Now").
+ * @param {string} token
+ * @returns {boolean}
  */
-function segmentsFromRun(run) {
-  const tokens = run.split(/\s+/);
+function isNoiseToken(token) {
+  const t = normalizeName(token).replace(/:$/, '');
+  return FILLER_WORDS.has(t) || TRAILING_STATUS.has(t) || isGenericToken(token);
+}
+
+/**
+ * Split a token list at the first "Heading:" colon when what follows is noise.
+ * "Reckoning: Now" -> ["Reckoning:"], ["Now"]; "Fireball: Renamed Accelerant"
+ * -> ["Fireball:"], ["Renamed", "Accelerant"]. When the word after the colon is
+ * real ("Shadow Word: Pain") or the heading ends in "Word:" ("Power Word:
+ * Shield") the list stays whole.
+ * @param {string[]} tokens
+ * @returns {string[][]} one or more token lists
+ */
+function splitAtColon(tokens) {
+  const i = tokens.findIndex((t, k) => k < tokens.length - 1 && t.endsWith(':'));
+  if (i < 0) return [tokens];
+  const head = tokens.slice(0, i + 1);
+  const tail = tokens.slice(i + 1);
+  if (/^word:$/i.test(head[head.length - 1])) return [tokens]; // Power/Shadow Word: X
+  if (!isNoiseToken(tail[0])) return [tokens];
+  return [head, ...splitAtColon(tail)];
+}
+
+/**
+ * Split a token list after every possessive that is followed by noise:
+ * "Consecration’s Spell Power Coefficient" -> ["Consecration’s"],
+ * ["Spell", "Power", "Coefficient"]. A possessive followed by a real word is
+ * kept ("Nature's Grasp", "Hunter's Mark").
+ * @param {string[]} tokens
+ * @returns {string[][]}
+ */
+function splitAtPossessive(tokens) {
   const groups = [];
   let current = [];
   tokens.forEach((tok, i) => {
     current.push(tok);
-    const possessive = /['’]s:?$/i.test(tok);
-    const next = tokens.slice(i + 1).find((t) => !CONNECTORS.has(t));
-    // Possessive in the middle of a run only splits when what follows is generic.
-    if (possessive && next !== undefined && isGenericToken(next)) {
-      groups.push(current);
-      current = [];
+    if (/['’]s:?$/i.test(tok)) {
+      const next = tokens.slice(i + 1).find((t) => !CONNECTORS.has(t));
+      if (next !== undefined && isNoiseToken(next)) { groups.push(current); current = []; }
     }
   });
   if (current.length) groups.push(current);
+  return groups;
+}
 
-  const names = [];
-  for (let g of groups) {
-    // Drop leading filler ("Fixed", "The", "Players", ...). Compare without colon.
-    while (g.length && FILLER_WORDS.has(normalizeName(g[0]).replace(/:$/, ''))) g = g.slice(1);
-    // A run cannot end on a connector, but a stripped colon may remain.
-    if (!g.length) continue;
-    g = [...g];
-    // Strip a trailing possessive / colon from the last word only.
-    g[g.length - 1] = g[g.length - 1].replace(/['’]s$/i, '').replace(/:$/, '');
-    if (!g[g.length - 1]) continue;
-    if (isGenericPhrase(g)) continue;
-    names.push(g.join(' '));
+/**
+ * Clean one token list into a name (string) or null when nothing usable is
+ * left: strips leading filler ("Fixed", "The"; but "Improved Seal of Fury"
+ * keeps its "Improved"), trailing status / noise / dangling connectors, and a
+ * trailing possessive or colon; drops generic phrases.
+ * @param {string[]} tokens
+ * @returns {string[]|null} cleaned tokens, or null
+ */
+function cleanTokens(tokens) {
+  let g = [...tokens];
+  // Leading filler. "Improved" is a real name prefix when more words follow.
+  while (g.length) {
+    const first = normalizeName(g[0]).replace(/:$/, '');
+    if (first === 'improved' && g.length > 1) break;
+    if (!(FILLER_WORDS.has(first) || CONNECTORS.has(g[0]))) break;
+    g = g.slice(1);
   }
-  return names;
+  // Trailing status words, noise nouns and connectors left dangling by them.
+  while (g.length) {
+    const last = normalizeName(g[g.length - 1]).replace(/:$/, '');
+    const strip = CONNECTORS.has(last) || TRAILING_STATUS.has(last)
+      || (g.length > 1 && TRAILING_NOISE.has(last));
+    if (!strip) break;
+    g = g.slice(0, -1);
+  }
+  if (!g.length) return null;
+  g[g.length - 1] = g[g.length - 1].replace(/['’]s$/i, '').replace(/:$/, '');
+  if (!g[g.length - 1]) return null;
+  return isGenericPhrase(g) ? null : g;
+}
+
+/**
+ * @typedef {{ whole: string|null, parts: string[] }} CandidateGroup
+ *   `parts` are the names to look up (in order). `whole` is set only for
+ *   "A and B" with one word on each side ("Slice and Dice"): it may be a real
+ *   name, so lookup tries it first and uses `parts` only when it misses.
+ */
+
+/**
+ * Turn one regex run into candidate groups: split at noise colons and
+ * possessives, clean each piece, then split "A and B" lists into parts.
+ * @param {string} run
+ * @returns {CandidateGroup[]}
+ */
+function groupsFromRun(run) {
+  const groups = [];
+  const tokens = run.split(/\s+/);
+  for (const piece of splitAtColon(tokens)) {
+    for (const sub of splitAtPossessive(piece)) {
+      // "A and B" -> sides; every other connector stays inside a name.
+      const sides = [[]];
+      for (const t of sub) { if (t === 'and') sides.push([]); else sides[sides.length - 1].push(t); }
+      const parts = sides.map((side) => cleanTokens(side)).filter(Boolean).map((g) => g.join(' '));
+      // "Slice and Dice", "Shadow and Flame": one word per side may be ONE real
+      // name, so keep the whole as a first try (even if a side is generic).
+      let whole = null;
+      if (sides.length === 2 && sides.every((sd) => sd.length === 1) && !isGenericPhrase(sub)) {
+        whole = sub.join(' ').replace(/:$/, '');
+      }
+      if (!parts.length && !whole) continue;
+      groups.push({ whole, parts });
+    }
+  }
+  return groups;
+}
+
+/**
+ * Prepare one change line (or note) for extraction: remove quoted text,
+ * parentheses, rank suffixes and zone prefixes (cleanText), strip the
+ * "Developers' notes:" lead-in of notes and the "New Talent" / "Added:" /
+ * "New:" lead-ins of patch-note lines.
+ * @param {string} text
+ * @returns {{ text: string, talentLine: boolean }} `talentLine` is true for a
+ *   "New Talent ..." line, whose prose after the name is not scanned for names
+ */
+function prepareLine(text) {
+  let s = cleanText(text);
+  s = s.replace(/^Developers?['’]?s?['’]?\s+notes?\s*:\s*/i, '');
+  let talentLine = false;
+  const lead = /^(?:New Talent\b\s*:?|Added\s*:|New\s*:)\s*/i;
+  const m = lead.exec(s);
+  if (m) { talentLine = /^new talent/i.test(m[0]); s = s.slice(m[0].length); }
+  return { text: s, talentLine };
+}
+
+/**
+ * Find the candidate groups of one change line or note (see CandidateGroup).
+ * Order of appearance, de-duplicated case-insensitively, capped at
+ * MAX_CANDIDATES names in total.
+ *
+ * @param {string} text
+ * @param {{ classSlug?: string|null }} [opts]  accepted for API symmetry
+ * @returns {CandidateGroup[]}
+ */
+export function extractCandidateGroups(text, { classSlug } = {}) {
+  void classSlug; // reserved: every class name is already in the stoplist
+  const { text: cleaned, talentLine } = prepareLine(text);
+  const seen = new Set();
+  const out = [];
+  let count = 0;
+  for (const m of cleaned.matchAll(RUN_RE)) {
+    // A single capitalised word before a plural category noun ("your Seal
+    // spells") names a category, not a skill.
+    const after = cleaned.slice(m.index + m[0].length);
+    if (!/\s/.test(m[0]) && PLURAL_CATEGORY_RE.test(after)) continue;
+    for (const group of groupsFromRun(m[0])) {
+      const parts = group.parts.filter((n) => !seen.has(normalizeName(n)));
+      if (!parts.length && !group.whole) continue;
+      parts.forEach((n) => seen.add(normalizeName(n)));
+      out.push({ whole: group.whole && parts.length === group.parts.length ? group.whole : null, parts });
+      count += parts.length;
+      if (count >= MAX_CANDIDATES) return trimGroups(out);
+    }
+    // "New Talent X in Row 4. <prose>": only the name itself is a candidate.
+    if (talentLine && out.length) break;
+  }
+  return trimGroups(out);
+}
+
+/**
+ * Enforce MAX_CANDIDATES on the flattened part count (the last group may be cut).
+ * @param {CandidateGroup[]} groups
+ * @returns {CandidateGroup[]}
+ */
+function trimGroups(groups) {
+  let left = MAX_CANDIDATES;
+  const out = [];
+  for (const g of groups) {
+    if (left <= 0) break;
+    const parts = g.parts.slice(0, left);
+    left -= parts.length;
+    out.push({ whole: parts.length === g.parts.length ? g.whole : null, parts });
+  }
+  return out;
 }
 
 /**
@@ -273,34 +470,26 @@ function segmentsFromRun(run) {
  *
  * Heuristic: runs of Capitalised Words (with lower-case connectors such as
  * "of"/"the") that survive the stoplists, after removing quotes, parentheses,
- * rank suffixes and zone prefixes. Single capitalised words count too unless
- * they are filler or generic. Results keep order of appearance, are
- * de-duplicated case-insensitively and capped at 4.
+ * rank suffixes, zone prefixes and the patch-note lead-ins ("New Talent",
+ * "Added:"). A "Name:" heading followed by noise ("Reckoning: Now has ...")
+ * yields just the name; a possessive followed by noise ends the name
+ * ("Holy Shield’s chance to Block"); trailing "Removed" / "in Row 4" are
+ * dropped; "A and B" lists are returned as separate names. Results keep order
+ * of appearance, are de-duplicated and capped at 6.
  *
- * Shrinking of long runs that miss on Wowhead (e.g. "Lesser Rock Elemental" ->
- * "Rock Elemental") happens at lookup time in addSubjects, not here, so that
- * this function stays a stable, easily tested "what looks like a name" step.
+ * Only the PARTS are returned (so "Rupture and Garrote" gives both names); the
+ * "whole phrase may be a real name" information ("Slice and Dice") is in
+ * extractCandidateGroups, which addSubjects uses.
+ *
+ * Shrinking of long runs that miss on Wowhead happens at lookup time in
+ * addSubjects, not here.
  *
  * @param {string} text  plain text of one change
- * @param {{ classSlug?: string|null }} [opts]  classSlug is accepted for API
- *   symmetry with lookupName; class names are already stoplisted globally.
+ * @param {{ classSlug?: string|null }} [opts]
  * @returns {string[]} ordered candidate names
  */
-export function extractCandidates(text, { classSlug } = {}) {
-  void classSlug; // reserved: every class name is already in the stoplist
-  const cleaned = cleanText(text);
-  const seen = new Set();
-  const out = [];
-  for (const m of cleaned.matchAll(RUN_RE)) {
-    for (const name of segmentsFromRun(m[0])) {
-      const key = normalizeName(name);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(name);
-      if (out.length >= MAX_CANDIDATES) return out;
-    }
-  }
-  return out;
+export function extractCandidates(text, opts = {}) {
+  return extractCandidateGroups(text, opts).flatMap((g) => g.parts);
 }
 
 // ---------------------------------------------------------------------------
