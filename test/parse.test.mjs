@@ -118,15 +118,18 @@ describe('fixture: hotfixes-sample.html', () => {
 });
 
 describe('list walker', () => {
-  test('unknown class headings are slugified; deeper class headings become groups', () => {
+  test('non-class headings under Classes become a group of all-class changes', () => {
+    // Seen in the real post: "Cooldown Manager" as a bold heading under Classes.
     const html = day('Classes', `<ul>
-      <li><strong>Death Knight</strong><ul>
-        <li><strong>Frost</strong><ul>
-          <li><strong>Runeforging</strong><ul><li>Rune text.</li></ul></li>
+      <li><strong>Cooldown Manager</strong><ul><li>Now shows Seals.</li></ul></li>
+      <li><strong>Paladin</strong><ul>
+        <li><strong>Retribution</strong><ul>
+          <li><strong>Seals</strong><ul><li>Seal text.</li></ul></li>
         </ul></li>
       </ul></li></ul>`);
     assert.deepEqual(changes(parseHotfixHtml(html)).map(brief), [
-      { scope: 'class', category: 'Classes', class: 'death-knight', spec: 'frost', group: 'Runeforging', text: 'Rune text.', notes: [] },
+      { scope: 'class', category: 'Classes', class: null, spec: null, group: 'Cooldown Manager', text: 'Now shows Seals.', notes: [] },
+      { scope: 'class', category: 'Classes', class: 'paladin', spec: 'retribution', group: 'Seals', text: 'Seal text.', notes: [] },
     ]);
   });
 
