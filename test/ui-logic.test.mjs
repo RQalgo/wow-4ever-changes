@@ -959,3 +959,9 @@ test('dev posts: search finds them by author and tag words; suggestions include 
   const names = L.buildSuggestions(data, { ...L.defaultState(), kind: 'dev' }, '', 50).map((s) => s.name);
   assert.deepEqual(names.sort(), ['Fire Blast', 'Pyroblast']);
 });
+
+test('glyphKey: dev posts get the speech bubble', () => {
+  assert.equal(L.glyphKey(devPost()), 'bubble');
+  assert.equal(L.glyphKey(byId('2026-11-13-d000')), 'bubble');
+  assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Items' })), 'gem'); // unchanged
+});

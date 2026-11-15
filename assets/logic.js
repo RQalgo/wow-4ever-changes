@@ -773,11 +773,13 @@ export function iconUrl(icon) {
 /**
  * Pick which fallback glyph a change should get when it has no usable icon.
  * Class lines share one glyph (the tile colour tells the class); General
- * lines get a neutral glyph per category.
+ * lines get a neutral glyph per category; dev posts (schema v4) get a speech
+ * bubble, whatever their category.
  * @param {object} ch change
- * @returns {'spark'|'gem'|'scroll'|'arch'|'hex'}
+ * @returns {'spark'|'gem'|'scroll'|'arch'|'hex'|'bubble'}
  */
 export function glyphKey(ch) {
+  if (isDevPost(ch)) return 'bubble';
   if (ch.scope !== 'general') return 'spark';
   const cat = String(ch.category || '').toLowerCase();
   if (/item|gear|equipment/.test(cat)) return 'gem';
