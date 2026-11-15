@@ -731,3 +731,157 @@ export function makeGameIndex(data) {
 
   return { version: data?.version ?? null, size, lookup };
 }
+
+// ---------------------------------------------------------------------------
+// Wowhead talent calculator data (cross-check and gap filler)
+// ---------------------------------------------------------------------------
+
+/** One file with the talents of every class; its keys are TalentTab ids. */
+export const WOWHEAD_TALENTS_URL = 'https://nether.wowhead.com/forever/data/talents-classic';
+
+/**
+ * Starting at `start` (index of an opening "{" or "["), returns the index just
+ * past the matching closing bracket, or -1. Brackets inside JSON strings are
+ * ignored and backslash escapes are honoured, so descriptions containing
+ * braces or \" cannot confuse it. Nothing is evaluated.
+ * @param {string} text
+ * @param {number} start
+ * @returns {number}
+ */
+function scanJsonValue(text, start) {
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (c === '\\') i++; // skip the escaped character, whatever it is
+      else if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if (c === '{' || c === '[') depth++;
+    else if (c === '}' || c === ']') {
+      depth--;
+      if (depth === 0) return i + 1;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Extracts the talents from the body of the Wowhead talent data file. The file
+ * is JavaScript, a series of WH.setPageData("<key>", <json>) calls; the one
+ * whose key starts with "wow.talentCalcClassic" holds { talents: { <tabId>:
+ * { <talentId>: { name, icon, row, col, ranks:[spellIds] } } } }. The JSON is
+ * cut out by bracket scanning and parsed with JSON.parse (never eval).
+ * @param {string} text
+ * @returns {Array<{id: number, name: string, icon: string, tabId: number, row: number, col: number, ranks: number[]}>}
+ *   empty array on any problem
+ */
+export function parseWowheadTalentData(text) {
+  try {
+    const src = String(text ?? '');
+    const callRe = /WH\.setPageData\(\s*"([^"]*)"\s*,\s*/g;
+    let m;
+    while ((m = callRe.exec(src))) {
+      if (!m[1].startsWith('wow.talentCalcClassic')) continue;
+      const start = m.index + m[0].length;
+      if (src[start] !== '{') continue;
+      const end = scanJsonValue(src, start);
+      if (end < 0) continue;
+      const data = JSON.parse(src.slice(start, end));
+      const out = [];
+      for (const [tabId, tab] of Object.entries(data?.talents ?? {})) {
+        if (!tab || typeof tab !== 'object') continue;
+        for (const t of Object.values(tab)) {
+          if (!t || typeof t.name !== 'string' || typeof t.icon !== 'string' || !t.name || !t.icon) continue;
+          out.push({
+            id: Number(t.id) || 0,
+            name: t.name,
+            icon: t.icon.toLowerCase(),
+            tabId: Number(tabId),
+            row: Number(t.row) || 0,
+            col: Number(t.col) || 0,
+            ranks: Array.isArray(t.ranks) ? t.ranks.map(Number).filter((n) => n > 0) : [],
+          });
+        }
+      }
+      if (out.length) return out;
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Downloads and parses the Wowhead talent data (one request). Never throws.
+ * @param {{fetchImpl?: typeof fetch, log?: (msg: string) => void}} [opts]
+ * @returns {Promise<ReturnType<typeof parseWowheadTalentData>>}
+ */
+export async function fetchWowheadTalents({ fetchImpl = fetch, log = console.error } = {}) {
+  try {
+    const res = await request(fetchImpl, WOWHEAD_TALENTS_URL);
+    const talents = parseWowheadTalentData(await res.text());
+    if (talents.length === 0) log('gamedata: Wowhead talent data had no talents (format changed?)');
+    return talents;
+  } catch (err) {
+    log(`gamedata: Wowhead talent data unavailable (${err.message})`);
+    return [];
+  }
+}
+
+/**
+ * Merges Wowhead talents into index data (returns a copy; the input is not
+ * changed, so the cached client index stays pure).
+ *   - talent in both: match by tab id + normalised name, else by a shared rank
+ *     spell id; entry gets verified true (icons equal, case-insensitive) or
+ *     false (differ; the client icon is kept);
+ *   - talent only in Wowhead: added as kind "talent", source "wowhead", with
+ *     class/tree from the client's TalentTab row when that tab is known.
+ * One summary line is logged for disagreements (count plus up to 10 examples).
+ * @param {object} data index data from buildGameIndexData (or a stub)
+ * @param {ReturnType<typeof parseWowheadTalentData>} talents
+ * @param {{log?: (msg: string) => void}} [opts]
+ * @returns {object} merged data
+ */
+export function mergeWowheadTalents(data, talents, { log = () => {} } = {}) {
+  const out = { ...data, spells: structuredClone(data?.spells ?? {}), tabs: data?.tabs ?? {} };
+  // rank spell id -> client talent entry, for the fallback match
+  const byRankId = new Map();
+  for (const list of Object.values(out.spells)) {
+    for (const e of list) if (e.kind === 'talent') for (const id of e.ids ?? [e.id]) if (!byRankId.has(id)) byRankId.set(id, e);
+  }
+
+  let added = 0;
+  let checked = 0;
+  const mismatches = [];
+  for (const w of talents) {
+    const key = normalizeName(w.name);
+    const list = Object.hasOwn(out.spells, key) ? out.spells[key] : [];
+    let match = list.find((e) => e.kind === 'talent' && e.tab === w.tabId);
+    if (!match) for (const id of w.ranks) if ((match = byRankId.get(id))) break;
+    if (match) {
+      checked++;
+      match.verified = String(match.icon).toLowerCase() === w.icon.toLowerCase();
+      if (!match.verified) mismatches.push(`${w.name} (client ${match.icon}, wowhead ${w.icon})`);
+      continue;
+    }
+    const tab = out.tabs[w.tabId];
+    const entry = {
+      name: w.name, kind: 'talent', class: tab?.class ?? null, tree: tab?.tree ?? null,
+      icon: w.icon, id: w.ranks[0] ?? w.id, tab: w.tabId, ids: [...w.ranks], source: 'wowhead',
+    };
+    if (!Object.hasOwn(out.spells, key)) out.spells[key] = [];
+    out.spells[key].push(entry);
+    added++;
+  }
+  // Keep each name ordered talent -> ability -> spell and capped.
+  for (const k of Object.keys(out.spells)) {
+    out.spells[k].sort((a, b) => (KIND_RANK[a.kind] ?? 9) - (KIND_RANK[b.kind] ?? 9) || a.id - b.id);
+    out.spells[k] = out.spells[k].slice(0, MAX_ENTRIES_PER_NAME);
+  }
+  if (mismatches.length) {
+    log(`gamedata: ${mismatches.length} of ${checked} talent icons differ between client data and Wowhead (client kept), e.g. ${mismatches.slice(0, 10).join('; ')}`);
+  }
+  if (added) log(`gamedata: added ${added} talents that only Wowhead knows`);
+  return out;
+}

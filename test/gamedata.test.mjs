@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import {
   classFromMask, normalizeName, treeSlug, parseCsv, csvRows, pickLatestBuild,
   buildGameIndexData, makeGameIndex,
+  parseWowheadTalentData, fetchWowheadTalents, mergeWowheadTalents,
 } from '../scripts/gamedata.mjs';
 
 const FIXTURES = fileURLToPath(new URL('./fixtures/gamedata/', import.meta.url));
@@ -374,5 +375,90 @@ describe('makeGameIndex lookup', () => {
     const r = idx.lookup('foo');
     assert.equal(r.verified, false);
     assert.equal(r.source, 'wowhead');
+  });
+});
+
+describe('parseWowheadTalentData', () => {
+  const text = fixture('wowhead-talents.txt');
+
+  test('finds the talentCalcClassic call among several, survives braces and escaped quotes in strings', () => {
+    const t = parseWowheadTalentData(text);
+    assert.equal(t.length, 6);
+    assert.deepEqual(t.find((x) => x.name === 'Incineration'), {
+      id: 105796, name: 'Incineration', icon: 'spell_fire_flameshock', tabId: 41, row: 0, col: 1, ranks: [18459, 18459],
+    });
+    assert.equal(t.find((x) => x.name === 'Mortal Strike').icon, 'ability_warrior_savageblow'); // lower-cased
+    assert.equal(t.find((x) => x.name === 'Mortal Strike').tabId, 161);
+  });
+
+  test('malformed input gives []', () => {
+    for (const bad of ['', null, undefined, 'garbage', 'WH.setPageData("wow.talentCalcClassic.x",{"talents":{', 'WH.setPageData("wow.talentCalcClassic.x",{"talents":}})',
+      'WH.setPageData("wow.talentCalcClassic.x",{"talents":{"1":{"2":{"id":2}}}});', 'WH.setPageData("wow.other",{"talents":{}});', '<html>']) {
+      assert.deepEqual(parseWowheadTalentData(bad), [], String(bad));
+    }
+  });
+});
+
+describe('fetchWowheadTalents', () => {
+  test('one request with the honest User-Agent; failures log and return []', async () => {
+    const calls = [];
+    const ok = async (url, init) => { calls.push({ url, init }); return new Response(fixture('wowhead-talents.txt')); };
+    assert.equal((await fetchWowheadTalents({ fetchImpl: ok, log: () => {} })).length, 6);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, 'https://nether.wowhead.com/forever/data/talents-classic');
+    assert.match(calls[0].init.headers['User-Agent'], /^wow-4ever-changes\/0\.1/);
+
+    const logs = [];
+    assert.deepEqual(await fetchWowheadTalents({ fetchImpl: async () => new Response('x', { status: 500 }), log: (m) => logs.push(m) }), []);
+    assert.deepEqual(await fetchWowheadTalents({ fetchImpl: async () => { throw new Error('boom'); }, log: (m) => logs.push(m) }), []);
+    assert.deepEqual(await fetchWowheadTalents({ fetchImpl: async () => new Response('nothing here'), log: (m) => logs.push(m) }), []);
+    assert.equal(logs.length, 3);
+  });
+});
+
+describe('mergeWowheadTalents', () => {
+  /** Fixture client data and the fixture Wowhead talents. */
+  async function setup() {
+    const data = await buildGameIndexData({ fetchImpl: makeFetch(), version: '1', pauseMs: 0 });
+    return { data, wh: parseWowheadTalentData(fixture('wowhead-talents.txt')) };
+  }
+
+  test('equal icons (case-insensitive) -> verified true; differing -> false, client icon kept', async () => {
+    const { data, wh } = await setup();
+    const logs = [];
+    const merged = mergeWowheadTalents(data, wh, { log: (m) => logs.push(m) });
+    const idx = makeGameIndex(merged);
+    assert.equal(idx.lookup('Improved Fireball').verified, true);
+    assert.equal(idx.lookup('Mortal Strike').verified, true);
+    const fc = idx.lookup('Feral Charge');
+    assert.equal(fc.verified, false);
+    assert.equal(fc.icon, 'ability_hunter_pet_bear'); // client icon kept
+    assert.equal(fc.source, 'client');
+    assert.ok(logs.some((l) => /1 of 4 talent icons differ.*Feral Charge/.test(l)), logs.join('|'));
+    assert.equal(idx.lookup('Bestial Wrath').verified, undefined); // not in the Wowhead file: not cross-checked
+  });
+
+  test('fallback match by a shared rank spell id when the names differ', async () => {
+    const { data, wh } = await setup();
+    const idx = makeGameIndex(mergeWowheadTalents(data, wh));
+    assert.equal(idx.lookup('Mutilate').verified, true); // Wowhead calls it "Mutilation", rank 820 is shared
+    assert.equal(idx.lookup('Mutilation'), null); // matched, so it is not added under its Wowhead name too
+  });
+
+  test('talents only Wowhead has are added with class/tree from the client tab (or null)', async () => {
+    const { data, wh } = await setup();
+    const idx = makeGameIndex(mergeWowheadTalents(data, wh));
+    assert.deepEqual(idx.lookup('Incineration'), {
+      name: 'Incineration', type: 'spell', kind: 'talent', class: 'mage', tree: 'fire', icon: 'spell_fire_flameshock', source: 'wowhead',
+    });
+    const mystery = idx.lookup('Mystery Talent');
+    assert.deepEqual([mystery.class, mystery.tree, mystery.source], [null, null, 'wowhead']);
+  });
+
+  test('does not modify its input', async () => {
+    const { data, wh } = await setup();
+    const before = JSON.stringify(data);
+    mergeWowheadTalents(data, wh);
+    assert.equal(JSON.stringify(data), before);
   });
 });
