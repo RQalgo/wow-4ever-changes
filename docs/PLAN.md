@@ -64,3 +64,26 @@ filter state in the URL hash, light/dark.
   are keyed by date + kind.
 - The UI shows a Hotfix/Patch badge on every date and an
   All / Hotfixes / Patches filter.
+
+## Update: tags and icon coverage
+- Every change has `tags` (docs/SCHEMA.md, version 3), computed by the pure
+  functions in `scripts/tags.mjs` (`computeTags`, `addTags`). `update.mjs` runs
+  `addTags` over ALL merged days, stored ones included, so a rule change revises
+  the whole history on the next run.
+- Subjects are found in the text and then the notes (max 8), with `kind`
+  (talent / ability / spell / item), `class`, `tree`, `source`
+  (`override` | `client` | `wowhead`) and `verified`. Extraction understands
+  patch-note style: `Name: description`, possessives, `New Talent ... in Row N`,
+  `Removed`, and `A and B` lists (`extractCandidateGroups` keeps the whole phrase
+  of one-word pairs such as "Slice and Dice" as a first try).
+- Icon sources: overrides, then the optional game-data index (`gameIndex`, from
+  `scripts/gamedata.mjs`; no network), then Wowhead. A client-resolved name that
+  Wowhead also answered gets `verified` true / false (the client icon wins).
+  Wowhead budget per run: 250 lookups, 1.5 s apart, spent on names unknown to
+  the client index first, then at most 100 cross-checks, then refreshing old
+  cache entries (v2 shape, no kind/class).
+- `data/name-aliases.json` maps a name as written in the notes to the game-data
+  name; the subject keeps the written name and gets `alias`.
+- Known gaps: typos in the source are not fixed; names with a leading
+  adjective that Wowhead lacks may still miss; the class-word detector is
+  deliberately conservative ("Tauren Warriors" gets no class tag).
