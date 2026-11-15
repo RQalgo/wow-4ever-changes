@@ -1,0 +1,8 @@
+ID,ClassID,SubclassID,Material,InventoryType,SheatheType,ItemPetFoodID,Sound_override_subclassID,IconFileDataID
+2000,2,5,1,17,1,0,-1,1007
+2001,2,5,1,17,1,0,-1,1007
+2002,2,7,1,13,3,0,-1,1023
+2003,15,0,0,0,0,0,-1,1008
+2004,2,7,1,13,3,0,-1,0
+2006,2,7,1,13,3,0,-1,9999
+2999,2,7,1,13,3,0,-1,1007

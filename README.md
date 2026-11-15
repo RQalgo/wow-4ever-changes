@@ -51,6 +51,16 @@ Icon lookups are rate-limited on purpose (150 new names per run, 1.2 s apart)
 and cached in `data/icon-cache.json`; names that are still unknown are retried
 on later runs. Lines without an icon show a class or category tile.
 
+Icons come from two sources. The primary one is the game client's own data
+tables for the newest WoW: Forever build, published as CSV by wago.tools
+(`scripts/gamedata.mjs`); it knows every spell, talent (with its tree and
+class) and item by name, so it needs no per-name requests and is cached in
+`.cache/gamedata/` (restored between workflow runs). Wowhead is the fallback
+for names the tables do not have, and its talent calculator data
+(`nether.wowhead.com/forever/data/talents-classic`, reused for 24 h) is used to
+cross-check talent icons (`verified`) and to add talents the tables lack. Try
+it locally with `node scripts/gamedata.mjs "Mortal Strike"`.
+
 ## Maintenance
 
 - **Wrong or missing icon:** edit `data/icon-overrides.json`. Keys are
