@@ -386,7 +386,10 @@ function renderDay(day, changes) {
   if (src) head.append(src);
   head.append(el('span', 'day-count', `${view.count} ${view.count === 1 ? 'change' : 'changes'}`));
   sec.append(head);
-  for (const card of view.cards) sec.append(renderCard(card));
+  // Cards sit in a wrapper so wide screens can flow them into columns (see .cards in styles.css).
+  const cards = el('div', 'cards');
+  for (const card of view.cards) cards.append(renderCard(card));
+  sec.append(cards);
   return sec;
 }
 

@@ -92,7 +92,7 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 
 /* ---------- 4. Layout ---------- */
 .layout { max-width: 1200px; margin: 0 auto; }
-.results { padding: .5rem 1rem 0; min-width: 0; }
+.results { padding: .4rem 1rem 0; min-width: 0; }
 .results:focus { outline: none; }
 
 /* ---------- 7. States ---------- */
@@ -111,15 +111,15 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .btn:hover { filter: brightness(1.08); }
 
 /* ---------- 6. Results ---------- */
-.day { margin: 0 0 1.5rem; }
+.day { margin: 0 0 .9rem; }
 /* Sticky date heading: offset by the mobile filter bar height (--bar-h). */
 .day-heading {
-  position: sticky; top: var(--bar-h); z-index: 5; margin: 0 -1rem .6rem; padding: .55rem 1rem;
+  position: sticky; top: var(--bar-h); z-index: 5; margin: 0 -1rem .4rem; padding: .3rem 1rem;
   display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .75rem;
   background: color-mix(in srgb, var(--bg) 94%, transparent);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--accent);
-  font: 700 1.15rem/1.3 var(--serif);
+  font: 700 1.05rem/1.3 var(--serif);
 }
 /* Kind badge: squarish and outlined so it never reads as the pill-shaped change count. */
 .day-kind { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .15rem .4rem; min-width: 0; }
@@ -144,25 +144,25 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   background: var(--accent); border-radius: 999px; padding: .1rem .6rem;
 }
 .card {
-  margin: 0 0 .9rem; padding: .7rem .9rem .5rem; background: var(--surface);
-  border: 1px solid var(--border); border-left: 5px solid var(--cc, var(--accent));
+  margin: 0 0 .4rem; padding: .35rem .7rem .15rem; background: var(--surface);
+  border: 1px solid var(--border); border-left: 4px solid var(--cc, var(--accent));
   border-radius: var(--radius); box-shadow: var(--shadow);
 }
 /* One heading line carries the whole path ("Druid › Restoration", "Dungeons › The Deadmines"). */
-.card-title { margin: 0 0 .4rem; font: 700 1.05rem var(--serif); letter-spacing: .02em; }
-.card-title:not(:first-child) { margin-top: .6rem; }
+.card-title { margin: 0 0 .1rem; font: 700 .98rem/1.3 var(--serif); letter-spacing: .02em; }
+.card-title:not(:first-child) { margin-top: .4rem; padding-top: .35rem; border-top: 1px dashed var(--border); }
 .crumb-sub { font-weight: 600; }
 .crumb-sep { color: var(--muted); font-family: var(--sans); }
 .lines { list-style: none; margin: 0; padding: 0; }
-.line { display: flex; gap: .7rem; padding: .5rem 0; border-top: 1px solid var(--border); }
+.line { display: flex; gap: .6rem; padding: .22rem 0; border-top: 1px solid var(--border); }
 .lines > .line:first-child { border-top: 0; }
 .line-body { min-width: 0; flex: 1; }
-.line-text { margin: 0; overflow-wrap: anywhere; }
+.line-text { margin: 0; overflow-wrap: anywhere; font-size: .9375rem; line-height: 1.4; }
 /* Inline sub-heading label for class lines that belong to a named group. */
 .line-group { font-weight: 700; font-size: .8em; letter-spacing: .04em; text-transform: uppercase; opacity: .75; margin-right: .15em; }
 .line-note {
-  margin: .3rem 0 0 .2rem; padding-left: .7rem; border-left: 3px solid var(--border);
-  color: var(--muted); font-size: .9rem; font-style: italic;
+  margin: .15rem 0 0 .1rem; padding-left: .6rem; border-left: 3px solid var(--border);
+  color: var(--muted); font-size: .875rem; line-height: 1.35; font-style: italic;
 }
 
 /* ---------- 5. Filters ---------- */
@@ -244,7 +244,7 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 
 /* Icon cluster: fixed 44px-wide box so line text aligns and loading images never shift anything.
    1 icon = one 32px tile; 2 icons = a row of 21px tiles; 3-4 icons = a 2x2 grid of 21px tiles. */
-.icons { flex: none; width: 44px; display: grid; gap: 2px; align-content: start; justify-content: start; margin-top: 2px; }
+.icons { flex: none; width: 44px; display: grid; gap: 2px; align-content: start; justify-content: start; }
 .icons-1 { grid-template-columns: 32px; }
 .icons-2, .icons-3, .icons-4 { grid-template-columns: repeat(2, 21px); }
 .tile {
@@ -277,10 +277,10 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .search-input:focus-visible { outline-offset: 0; border-color: var(--focus); }
 
 /* Extra skill chips under a line */
-.subject-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem; }
+.subject-chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .2rem; }
 .subject-chip {
-  min-height: 28px; padding: 0 .65rem; background: var(--surface-2); color: var(--text); cursor: pointer;
-  border: 1px solid var(--border); border-radius: 999px; font: 500 .8rem var(--sans); position: relative;
+  min-height: 22px; padding: 0 .55rem; background: var(--surface-2); color: var(--text); cursor: pointer;
+  border: 1px solid var(--border); border-radius: 999px; font: 500 .75rem var(--sans); position: relative;
 }
 /* Extra tag chips (other classes / Talent / categories) share the subject-chip look. */
 .tag-class { display: inline-flex; align-items: center; gap: .35rem; }
@@ -350,8 +350,8 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 
 /* Desktop: filters become a sticky left sidebar (dense, 32px controls); headings stick to the top. */
 @media (min-width: 900px) {
-  .site-header { padding: 1.5rem 1.5rem .75rem; }
-  .site-header h1 { font-size: 1.75rem; }
+  .site-header { padding: 1rem 1.5rem .5rem; }
+  .site-header h1 { font-size: 1.5rem; }
   .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 1.25rem; padding: 0 1.5rem; align-items: start; }
   .filters {
     top: 1rem; margin-top: .5rem; padding: .75rem; max-height: calc(100vh - 2rem); overflow-y: auto;
