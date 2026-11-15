@@ -89,3 +89,58 @@ Rules:
   (e.g. "Pets", a race name) becomes `group`.
 - Extra categories appear in patch notes (e.g. "Bugfixes", "Races",
   "Gamepad Support", "Known Issues"); they are all `scope: "general"`.
+
+## Version 3: tags, richer subjects
+
+Every change gains `tags`, and subjects gain `kind` and `class`. The section a
+line was published under (`scope`/`category`/`class`/`spec`/`group`) is
+unchanged; tags are what the filters use, so one line can belong to several
+classes and categories at once.
+
+```jsonc
+{
+  "id": "2026-11-13-031",
+  "scope": "class", "category": "Classes", "class": "shaman", "spec": null, "group": null,
+  "text": "Windfury Totem is now correctly activated by all melee abilities …",
+  "notes": ["Developers’ notes: … Whirlwind or Mutilate …"],
+  "subjects": [
+    { "name": "Windfury Totem", "type": "spell", "kind": "ability", "class": "shaman", "icon": "spell_nature_windfury" },
+    { "name": "Whirlwind",      "type": "spell", "kind": "ability", "class": "warrior", "icon": "ability_whirlwind" },
+    { "name": "Mutilate",       "type": "spell", "kind": "talent",  "class": "rogue",   "icon": "ability_rogue_shadowstrikes" }
+  ],
+  "tags": ["class:shaman", "class:warrior", "class:rogue", "talent"]
+}
+```
+
+Subject fields:
+- `type`: `"spell"` | `"item"` (as before).
+- `kind`: `"talent"` | `"ability"` | `"item"` | `"spell"` (spell of unknown sort).
+- `class`: class slug the skill belongs to, or `null`.
+- Subjects are found in the change text **and its notes**; text subjects come first.
+
+Tag vocabulary (all lower-case):
+- `class:<slug>` — the published class heading, plus the class of every
+  talent/ability subject, plus classes named in the text or notes
+  ("Shaman quest reward", "rogues").
+- `spec:<class>/<tree>` — the published talent-tree heading (e.g. `spec:paladin/retribution`).
+- `talent` — at least one subject is a talent, or the text is about a talent
+  ("New Talent", "talent", "Row 4").
+- Exactly one or more **category tags** for non-class content, mapped from the
+  published category and from the text:
+  `items`, `quests`, `dungeons` (dungeons and raids), `professions`, `pvp`,
+  `ui` (User Interface, Cooldown Manager, Gamepad Support, accessibility),
+  `world` (World, Enemies and NPCs, zones), `races`, `events`, `systems`
+  (Legacy system, perks, camps, experience), `bugfix`, `known-issue`, `other`.
+  A class line gets a category tag too when its text is clearly about one
+  (e.g. a class quest → `quests`).
+- Every change has at least one tag. A change published outside **Classes**
+  always has at least one category tag.
+
+Filter semantics used by the app:
+- Class filter `X`: changes tagged `class:X`, plus all-class lines (published
+  under Classes with no class heading and no `class:` tag).
+- Tree filter `X/T`: changes tagged `spec:X/T`, plus changes tagged `class:X`
+  that have no `spec:X/…` tag, plus all-class lines.
+- Category chips: a change with no `class:` tag is shown when at least one of
+  its category tags is switched on. With a class selected, class-tagged
+  changes are always shown regardless of the category chips.
