@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, stat, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { mergeDays, sameContent, runUpdate } from '../scripts/update.mjs';
+import { mergeDays, sameContent, runUpdate, dayKind } from '../scripts/update.mjs';
 
 /**
  * Build a minimal schema-shaped day with n changes.
@@ -51,6 +51,29 @@ test('mergeDays handles empty inputs and does not mutate them', () => {
   assert.deepEqual(mergeDays([], []), []);
   assert.deepEqual(mergeDays(prev, []).map((d) => d.date), ['2026-11-03', '2026-11-01']);
   assert.deepEqual(prev, copy);
+});
+
+test('mergeDays keys on date + kind: a patch and a hotfix on one date are two days', () => {
+  const patch = (date, text = 'p') => ({ ...day(date, 1, text), kind: 'patch' });
+  const hotfix = (date, text = 'h') => ({ ...day(date, 1, text), kind: 'hotfix' });
+  const merged = mergeDays(
+    [day('2026-11-02', 1, 'old hotfix, no kind'), patch('2026-11-02', 'old patch')],
+    [hotfix('2026-11-02', 'new hotfix')],
+  );
+  // The kind-less stored day counts as a hotfix, so the fresh hotfix replaces it.
+  assert.deepEqual(merged.map((d) => [d.date, d.kind, d.changes[0].text]), [
+    ['2026-11-02', 'patch', 'old patch'],
+    ['2026-11-02', 'hotfix', 'new hotfix'],
+  ]);
+});
+
+test('mergeDays orders newest date first, and patch before hotfix on the same date', () => {
+  const k = (date, kind) => ({ ...day(date), kind });
+  const merged = mergeDays([k('2026-11-01', 'hotfix'), k('2026-11-13', 'hotfix')], [k('2026-11-13', 'patch'), k('2026-11-02', 'patch')]);
+  assert.deepEqual(merged.map((d) => `${d.date} ${d.kind}`), [
+    '2026-11-13 patch', '2026-11-13 hotfix', '2026-11-02 patch', '2026-11-01 hotfix',
+  ]);
+  assert.equal(dayKind({}), 'hotfix');
 });
 
 test('sameContent ignores generatedAt but not other differences', () => {

@@ -19,29 +19,55 @@ import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
 /**
- * Merge a fresh parse of the rolling source post into the previously stored
- * days. The source may eventually drop old dates, but the site should keep
- * showing them, so:
- *   - a previous day whose date is absent from the fresh parse is retained;
- *   - for a date present in both, the fresh version wins (Blizzard may edit
+ * Kind of a stored day; data written before schema v2 has no `kind` and is
+ * all hotfixes.
+ *
+ * @param {{kind?: string}} day
+ * @returns {string} "hotfix" | "patch"
+ */
+export function dayKind(day) {
+  return day?.kind ?? 'hotfix';
+}
+
+/** Sort rank on the same date: the patch comes before the hotfix. */
+const KIND_ORDER = { patch: 0, hotfix: 1 };
+
+/**
+ * Order two days: newest date first; on the same date, patch before hotfix
+ * (docs/SCHEMA.md v2). Unknown kinds sort after the known ones.
+ *
+ * @param {{date: string, kind?: string}} a
+ * @param {{date: string, kind?: string}} b
+ * @returns {number}
+ */
+export function compareDays(a, b) {
+  // ISO dates (YYYY-MM-DD) sort correctly as plain strings.
+  if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+  return (KIND_ORDER[dayKind(a)] ?? 9) - (KIND_ORDER[dayKind(b)] ?? 9);
+}
+
+/**
+ * Merge freshly fetched days into the previously stored days. Sources may
+ * eventually drop old dates, but the site should keep showing them, so:
+ *   - a day is identified by `date` + `kind` (a missing kind is "hotfix"):
+ *     a patch and a hotfix on the same date are two separate days;
+ *   - a previous day whose key is absent from the fresh days is retained;
+ *   - for a key present in both, the fresh version wins (Blizzard may edit
  *     an existing day's entries).
  *
- * @param {Array<{date: string}>} previousDays days from the existing file
- * @param {Array<{date: string}>} freshDays    days from the new parse
- * @returns {Array<{date: string}>} merged days, newest first
+ * @param {Array<{date: string, kind?: string}>} previousDays days from the existing file
+ * @param {Array<{date: string, kind?: string}>} freshDays    days from the new fetch
+ * @returns {Array<{date: string, kind?: string}>} merged days, newest first,
+ *   patch before hotfix on the same date
  */
 export function mergeDays(previousDays, freshDays) {
-  // Keyed by ISO date; inserting previous first then fresh means fresh
-  // overwrites any same-date entry.
-  const byDate = new Map();
-  for (const day of previousDays ?? []) byDate.set(day.date, day);
-  for (const day of freshDays ?? []) byDate.set(day.date, day);
-
-  // ISO dates (YYYY-MM-DD) sort correctly as plain strings; descending
-  // order gives newest first.
-  return [...byDate.values()].sort((a, b) =>
-    a.date < b.date ? 1 : a.date > b.date ? -1 : 0,
-  );
+  // Inserting previous first then fresh means fresh overwrites any day with
+  // the same key.
+  const byKey = new Map();
+  const key = (day) => `${day.date}|${dayKind(day)}`;
+  for (const day of previousDays ?? []) byKey.set(key(day), day);
+  for (const day of freshDays ?? []) byKey.set(key(day), day);
+  return [...byKey.values()].sort(compareDays);
 }
 
 /**
