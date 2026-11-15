@@ -535,10 +535,12 @@ export function highlightSegments(text, terms) {
  * `hideClasses` is the "No classes" choice of the class row: true hides every
  * class change (see isClassChange); it is only ever true while `cls` is empty
  * (see normalizeClassState).
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean}}
+ * `from` / `to` are the date range (ISO dates, inclusive); "" is an open end,
+ * so the default is every date (see section 11, normalizeDateRange).
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean, from: string, to: string}}
  */
 export function defaultState() {
-  return { cls: '', spec: '', q: '', cats: null, kind: 'all', hideClasses: false };
+  return { cls: '', spec: '', q: '', cats: null, kind: 'all', hideClasses: false, from: '', to: '' };
 }
 
 /**
@@ -731,8 +733,8 @@ export function matchesState(ch, state) {
 export function visibleDays(data, state) {
   const out = [];
   for (const day of data.days || []) {
-    // Kind filter first: it is per day, so skip the day's lines entirely.
-    if (!matchesKind(day, state.kind)) continue;
+    // Kind and date range first: both are per day, so skip the day's lines entirely.
+    if (!matchesKind(day, state.kind) || !matchesDateRange(day, state)) continue;
     const changes = (day.changes || []).filter((c) => matchesState(c, state));
     if (changes.length) out.push({ day, changes });
   }
@@ -795,7 +797,7 @@ export function glyphKey(ch) {
 /**
  * Build search-box suggestions from `subjects[].name` across the data.
  *
- * - Only changes passing the kind, class/spec filters and the category chips count
+ * - Only changes passing the kind, date range, class/spec filters and the category chips count
  *   (the search text itself is ignored here, otherwise the list would shrink
  *   to the thing already typed).
  * - Ranked by how many changes mention the subject (most frequent first),
@@ -805,7 +807,7 @@ export function glyphKey(ch) {
  *   substring matches, each group keeping the frequency order.
  *
  * @param {{days: object[]}} data
- * @param {object} state current UI state (cls/spec/cats/kind used)
+ * @param {object} state current UI state (cls/spec/cats/kind/from/to used)
  * @param {string} query text currently typed
  * @param {number} [limit] max suggestions
  * @returns {{name: string, alias: string|null, label: string, icon: string, type: string, count: number}[]}
@@ -817,7 +819,8 @@ export function buildSuggestions(data, state, query, limit = 8) {
   const tally = new Map(); // lower-cased name -> suggestion
 
   for (const day of data.days || []) {
-    if (!matchesKind(day, state.kind)) continue; // hidden kind: no suggestions from it
+    // Hidden kind or a day outside the date range: no suggestions from it.
+    if (!matchesKind(day, state.kind) || !matchesDateRange(day, state)) continue;
     for (const ch of day.changes || []) {
       if (!matchesState(ch, filterState)) continue;
       const seen = new Set(); // count a subject once per change
@@ -872,8 +875,11 @@ export function sanitizeSelection(cls, spec) {
  * encodes to "" (no hash). `cats` lists the ENABLED categories and is written
  * only when not all are on: "cats=none" means every chip is off. The slugs
  * are written in chip order, so one selection has one URL. Hidden class
- * changes ("No classes") are written as "class=none".
- * @param {{cls: string, spec: string, q: string, cats?: string[]|null, kind?: string, hideClasses?: boolean}} state
+ * changes ("No classes") are written as "class=none". The date range is
+ * written as "from=2026-11-04&to=2026-11-14", each end only when it is not
+ * open (the app normalises the range first, so an end on the data's bound is
+ * open and omitted; see normalizeDateRange).
+ * @param {{cls: string, spec: string, q: string, cats?: string[]|null, kind?: string, hideClasses?: boolean, from?: string, to?: string}} state
  * @returns {string} "" or a string starting with "#"
  */
 export function encodeHash(state) {
@@ -890,6 +896,10 @@ export function encodeHash(state) {
   }
   const kind = sanitizeKindFilter(state.kind);
   if (kind !== 'all') p.set('kind', kind);
+  const from = sanitizeIsoDate(state.from);
+  const to = sanitizeIsoDate(state.to);
+  if (from) p.set('from', from);
+  if (to) p.set('to', to);
   // Commas are legal in a fragment and far more readable than %2C.
   const parts = [p.toString(), catsValue ? `cats=${catsValue}` : ''].filter(Boolean);
   const str = parts.join('&');
@@ -922,12 +932,18 @@ export function decodeCats(raw, generalOff = false) {
  * An unknown `kind` value is ignored (treated as "all"). `class=none` (exact,
  * lower-case, like class slugs) hides class changes; a `spec` next to it is
  * ignored because a tree needs a class.
+ * `from` / `to` must be valid ISO dates (anything else is an open end) and
+ * are swapped when from > to. Clamping to the data's bounds needs the data,
+ * so it happens in the app (normalizeDateRange), not here.
  * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean}}
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean, from: string, to: string}}
  */
 export function decodeHash(hash) {
   const p = new URLSearchParams(String(hash || '').replace(/^#/, ''));
   const { cls, spec } = sanitizeSelection(p.get('class'), p.get('spec'));
+  let from = sanitizeIsoDate(p.get('from'));
+  let to = sanitizeIsoDate(p.get('to'));
+  if (from && to && from > to) [from, to] = [to, from];
   return {
     cls,
     spec,
@@ -935,6 +951,8 @@ export function decodeHash(hash) {
     cats: decodeCats(p.get('cats'), p.get('general') === '0'),
     kind: sanitizeKindFilter(p.get('kind')),
     hideClasses: p.get('class') === 'none',
+    from,
+    to,
   };
 }
 

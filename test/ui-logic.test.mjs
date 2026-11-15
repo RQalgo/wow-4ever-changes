@@ -162,7 +162,7 @@ test('typing narrows: prefix matches first, then substring; items allowed', () =
 /* ---------- hash state ---------- */
 test('encodeHash omits defaults and round-trips', () => {
   assert.equal(L.encodeHash(L.defaultState()), '');
-  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', cats: [], kind: 'all', hideClasses: false };
+  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', cats: [], kind: 'all', hideClasses: false, from: '', to: '' };
   const h = L.encodeHash(st);
   assert.match(h, /^#class=paladin&spec=retribution&q=judgement\+of&cats=none$/); // kind=all is omitted
   assert.deepEqual(L.decodeHash(h), st);
@@ -170,7 +170,7 @@ test('encodeHash omits defaults and round-trips', () => {
 
 test('decodeHash accepts the documented example and rejects junk', () => {
   assert.deepEqual(L.decodeHash('#class=paladin&spec=retribution&q=judgement&general=0'),
-    { cls: 'paladin', spec: 'retribution', q: 'judgement', cats: [], kind: 'all', hideClasses: false }); // legacy general=0
+    { cls: 'paladin', spec: 'retribution', q: 'judgement', cats: [], kind: 'all', hideClasses: false, from: '', to: '' }); // legacy general=0
   assert.deepEqual(L.decodeHash('#class=notaclass&spec=holy'), L.defaultState()); // spec needs a valid class
   assert.equal(L.decodeHash('#class=mage&spec=<script>').spec, '');
   assert.deepEqual(L.decodeHash(''), L.defaultState());
@@ -251,7 +251,7 @@ test('kind hash: encode omits all, decode ignores unknown values, round-trips', 
   assert.equal(L.decodeHash('#kind=nonsense').kind, 'all');
   assert.equal(L.decodeHash('#kind=ALL').kind, 'all');
   assert.equal(L.decodeHash('#class=mage&kind=hotfix&cats=none').kind, 'hotfix');
-  const st = { cls: 'mage', spec: 'fire', q: 'fire', cats: ['items', 'quests'], kind: 'patch', hideClasses: false };
+  const st = { cls: 'mage', spec: 'fire', q: 'fire', cats: ['items', 'quests'], kind: 'patch', hideClasses: false, from: '', to: '' };
   assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });
 
@@ -418,7 +418,7 @@ test('cats hash: only enabled categories, none, and general=0 compatibility', ()
   assert.deepEqual(L.decodeHash('#general=0').cats, []); // legacy
   assert.equal(L.decodeHash('#general=1').cats, null);
   assert.deepEqual(L.decodeHash('#general=0&cats=items').cats, ['items']); // cats wins
-  const st = { cls: 'rogue', spec: '', q: 'x', cats: ['ui', 'world'], kind: 'hotfix', hideClasses: false };
+  const st = { cls: 'rogue', spec: '', q: 'x', cats: ['ui', 'world'], kind: 'hotfix', hideClasses: false, from: '', to: '' };
   assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });
 
@@ -616,7 +616,7 @@ test('classChoice / withClassChoice: all, none or one class, mutually exclusive'
 test('normalizeClassState: a class turns hiding off; no class means no tree', () => {
   assert.deepEqual(L.normalizeClassState({ ...L.defaultState(), cls: 'rogue', hideClasses: true }), { ...L.defaultState(), cls: 'rogue' });
   assert.deepEqual(L.normalizeClassState({ ...L.defaultState(), spec: 'arms', hideClasses: true }), hidden());
-  const legacy = { cls: '', spec: '', q: '', cats: null, kind: 'all' }; // no hideClasses field at all
+  const legacy = { cls: '', spec: '', q: '', cats: null, kind: 'all', from: '', to: '' }; // no hideClasses field at all
   assert.deepEqual(L.normalizeClassState(legacy), L.defaultState());
 });
 
@@ -1105,4 +1105,61 @@ test('monthTicks: one label per month at its first stop, overlapping labels drop
   assert.deepEqual(L.monthTicks(['2026-10-31', '2026-11-01', ...Array.from({ length: 8 }, (_, i) => `2026-11-1${i}`)]),
     [{ at: 0, label: 'Oct' }]); // Nov would sit right next to Oct
   assert.deepEqual(L.monthTicks(['2026-11-04']), []);
+});
+
+test('open ends follow the data: a range ending at the newest date shows days added later', () => {
+  // The end handle on the newest date is stored as an open end ...
+  const saved = L.normalizeDateRange({ from: '2026-11-13', to: '2026-11-15' }, fxBounds);
+  assert.deepEqual(saved, { from: '2026-11-13', to: '' });
+  assert.equal(L.encodeHash({ ...L.defaultState(), ...saved }), '#from=2026-11-13');
+  // ... so when a newer day arrives it is included, while an explicit `to` keeps cutting it off.
+  const grown = { days: [{ date: '2026-11-16', kind: 'hotfix', changes: [mk({ id: 'new' })] }, ...data.days] };
+  assert.ok(L.visibleDays(grown, { ...L.defaultState(), ...saved }).some((v) => v.day.date === '2026-11-16'));
+  assert.ok(!L.visibleDays(grown, { ...L.defaultState(), from: '2026-11-13', to: '2026-11-15' })
+    .some((v) => v.day.date === '2026-11-16'));
+  // Likewise an open start keeps older days that a later backfill adds.
+  assert.deepEqual(L.normalizeDateRange({ from: '2026-11-11', to: '2026-11-13' }, fxBounds), { from: '', to: '2026-11-13' });
+});
+
+test('date range filter: inclusive, combines with kind, class and search; counts and suggestions follow', () => {
+  const keys = (st) => L.visibleDays(data, { ...L.defaultState(), ...st }).map((v) => L.dayKey(v.day));
+  assert.deepEqual(keys({ from: '2026-11-13', to: '2026-11-14' }),
+    ['2026-11-14|patch', '2026-11-14|dev', '2026-11-13|patch', '2026-11-13|hotfix', '2026-11-13|dev']);
+  assert.deepEqual(keys({ from: '2026-11-13', to: '2026-11-13' }), ['2026-11-13|patch', '2026-11-13|hotfix', '2026-11-13|dev']);
+  assert.deepEqual(keys({ from: '2026-11-12', to: '2026-11-12' }), []); // no day on the 12th
+  assert.deepEqual(keys({ to: '2026-11-11' }), ['2026-11-11|hotfix']);
+  // Combines with the kind switch and the class filter.
+  assert.deepEqual(keys({ from: '2026-11-13', kind: 'dev' }), ['2026-11-14|dev', '2026-11-13|dev']);
+  const ids = (st) => L.visibleDays(data, { ...L.defaultState(), ...st }).flatMap((v) => v.changes.map((c) => c.id));
+  assert.ok(ids({ cls: 'paladin' }).includes('2026-11-11-001'));
+  assert.ok(!ids({ cls: 'paladin', from: '2026-11-13' }).includes('2026-11-11-001'));
+  assert.deepEqual(ids({ q: 'kaivax', to: '2026-11-13' }), ['2026-11-13-d000']);
+  // Per-day counts are the filtered lines; the total is their sum.
+  const v = L.visibleDays(data, { ...L.defaultState(), from: '2026-11-14', to: '2026-11-14' });
+  assert.deepEqual(v.map((d) => d.changes.length), [4, 3]);
+  // Suggestions only come from days in the range.
+  const names = (st) => L.buildSuggestions(data, { ...L.defaultState(), ...st }, '', 50).map((s) => s.name);
+  assert.ok(names({}).includes('Fire Blast'));
+  assert.ok(!names({ to: '2026-11-13' }).includes('Fire Blast')); // only the Nov 14 Fire reply mentions it
+});
+
+test('date range hash: from/to encoded, decoded, swapped, junk ignored, round-trip', () => {
+  assert.equal(L.encodeHash({ ...L.defaultState(), from: '2026-11-04', to: '2026-11-14' }), '#from=2026-11-04&to=2026-11-14');
+  assert.equal(L.encodeHash({ ...L.defaultState(), from: '2026-11-04' }), '#from=2026-11-04');
+  assert.equal(L.encodeHash({ ...L.defaultState(), to: '2026-10-31' }), '#to=2026-10-31');
+  assert.equal(L.encodeHash({ ...L.defaultState(), from: 'bogus', to: '' }), '');
+  assert.equal(L.encodeHash({ ...L.defaultState(), cls: 'mage', kind: 'patch', from: '2026-10-01', to: '2026-10-31', cats: ['items'] }),
+    '#class=mage&kind=patch&from=2026-10-01&to=2026-10-31&cats=items');
+  assert.deepEqual(L.decodeHash('#from=2026-11-04&to=2026-11-14'), { ...L.defaultState(), from: '2026-11-04', to: '2026-11-14' });
+  assert.deepEqual(L.decodeHash('#from=2026-11-14&to=2026-11-04'), { ...L.defaultState(), from: '2026-11-04', to: '2026-11-14' }); // swapped
+  assert.deepEqual(L.decodeHash('#from=2026-02-30&to=soon'), L.defaultState()); // invalid: open
+  assert.deepEqual(L.decodeHash('#from=2026-11-4'), L.defaultState()); // not zero-padded
+  assert.equal(L.decodeHash('#to=2026-10-31').to, '2026-10-31');
+  assert.deepEqual(L.decodeHash('#from=2026-11-04&filters=open'), { ...L.defaultState(), from: '2026-11-04' });
+  for (const st of [
+    { ...L.defaultState(), from: '2026-11-04' },
+    { ...L.defaultState(), to: '2026-10-31', kind: 'patch' },
+    { ...L.defaultState(), cls: 'paladin', spec: 'holy', q: 'light', cats: [], from: '2026-10-01', to: '2026-10-31' },
+    hidden({ from: '2026-11-13', to: '2026-11-13' }),
+  ]) assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });
