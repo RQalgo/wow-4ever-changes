@@ -572,7 +572,7 @@ function buildSearch() {
         ic.append(img);
       }
       const name = el('span', 'suggest-name');
-      for (const seg of highlightSegments(sug.name, inputTerms)) {
+      for (const seg of highlightSegments(sug.label, inputTerms)) {
         name.append(seg.match ? el('mark', null, seg.text) : document.createTextNode(seg.text));
       }
       li.append(ic, name, el('span', 'suggest-count', `\u00D7${sug.count}`));

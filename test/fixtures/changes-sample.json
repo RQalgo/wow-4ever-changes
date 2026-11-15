@@ -91,14 +91,20 @@
               "type": "spell",
               "kind": "talent",
               "class": "paladin",
-              "icon": "spell_holy_auraoflight"
+              "icon": "spell_holy_auraoflight",
+              "tree": "holy",
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Seal of Fury",
               "type": "spell",
               "kind": "ability",
               "class": "paladin",
-              "icon": "ability_warrior_innerrage"
+              "icon": "ability_warrior_innerrage",
+              "alias": "Seal of Wrath",
+              "verified": false,
+              "source": "wowhead"
             }
           ],
           "tags": [

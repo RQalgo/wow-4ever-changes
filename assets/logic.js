@@ -362,13 +362,14 @@ export function queryTerms(q) {
 }
 
 /**
- * The text a search is run against: line text, notes, subject names, group
+ * The text a search is run against: line text, notes, subject names and aliases, group
  * and category, lower-cased and joined.
  * @param {object} ch change
  * @returns {string}
  */
 export function searchHaystack(ch) {
-  return [ch.text, ...(ch.notes || []), ...(ch.subjects || []).map((s) => s.name), ch.group, ch.category]
+  // Subject aliases are searchable too: either the published or the in-game name finds the line.
+  return [ch.text, ...(ch.notes || []), ...(ch.subjects || []).flatMap((s) => [s.name, s.alias]), ch.group, ch.category]
     .filter(Boolean)
     .join('\n')
     .toLowerCase();
@@ -603,7 +604,8 @@ export function glyphKey(ch) {
  * @param {object} state current UI state (cls/spec/cats/kind used)
  * @param {string} query text currently typed
  * @param {number} [limit] max suggestions
- * @returns {{name: string, icon: string, type: string, count: number}[]}
+ * @returns {{name: string, alias: string|null, label: string, icon: string, type: string, count: number}[]}
+ *   `label` is what the dropdown shows ("Name (Alias)" when the subject has an alias)
  */
 export function buildSuggestions(data, state, query, limit = 8) {
   const q = String(query || '').trim().toLowerCase();
@@ -621,7 +623,9 @@ export function buildSuggestions(data, state, query, limit = 8) {
         if (seen.has(key)) continue;
         seen.add(key);
         if (!q && sub.type !== 'spell') continue; // default list: skills only
-        const entry = tally.get(key) || { name: sub.name, icon: sub.icon, type: sub.type, count: 0 };
+        const entry = tally.get(key) || {
+          name: sub.name, alias: sub.alias || null, label: subjectLabel(sub), icon: sub.icon, type: sub.type, count: 0,
+        };
         entry.count += 1;
         tally.set(key, entry);
       }
@@ -631,8 +635,10 @@ export function buildSuggestions(data, state, query, limit = 8) {
   const byFrequency = (a, b) => b.count - a.count || a.name.localeCompare(b.name);
   let list = [...tally.values()];
   if (q) {
-    const prefix = list.filter((s) => s.name.toLowerCase().startsWith(q)).sort(byFrequency);
-    const rest = list.filter((s) => !s.name.toLowerCase().startsWith(q) && s.name.toLowerCase().includes(q)).sort(byFrequency);
+    // A suggestion matches on its name or its alias.
+    const names = (s) => [s.name, s.alias].filter(Boolean).map((n) => n.toLowerCase());
+    const prefix = list.filter((s) => names(s).some((n) => n.startsWith(q))).sort(byFrequency);
+    const rest = list.filter((s) => !names(s).some((n) => n.startsWith(q)) && names(s).some((n) => n.includes(q))).sort(byFrequency);
     list = [...prefix, ...rest];
   } else {
     list.sort(byFrequency);
@@ -806,18 +812,33 @@ export const MAX_ICONS = 4;
 
 /**
  * Tooltip / alt text of one icon tile. The kind is spelled out so a talent is
- * not marked by the corner pip alone: "Oath of Light (talent)", or
- * "Oath of Light (Holy talent)" when the subject names its talent tree.
+ * not marked by the corner pip alone, and an alias (the canonical in-game name
+ * when Blizzard's notes used another) is included:
+ *   "Oath of Light (Holy talent)"
+ *   "Unsealed Fury (in game: Unsealed Wrath, Retribution talent)"
+ *   "Fireball (in game: Pyroblast Lite)"
  * Only an explicit `verified: false` (the two icon sources disagree) adds a
  * quiet "unverified icon" hint; a missing flag adds nothing.
  * @param {object} sub subject
  * @returns {string}
  */
 export function subjectTitle(sub) {
-  let t = sub.name;
-  if (sub.kind === 'talent') t += ` (${sub.tree ? `${titleCase(sub.tree)} ` : ''}talent)`;
+  const bits = [];
+  if (sub.alias && sub.alias !== sub.name) bits.push(`in game: ${sub.alias}`);
+  if (sub.kind === 'talent') bits.push(`${sub.tree ? `${titleCase(sub.tree)} ` : ''}talent`);
+  let t = bits.length ? `${sub.name} (${bits.join(', ')})` : sub.name;
   if (sub.verified === false) t += ' – unverified icon';
   return t;
+}
+
+/**
+ * Display label of a subject in lists: "Unsealed Fury (Unsealed Wrath)" when
+ * it has an alias, else just the name.
+ * @param {{name: string, alias?: string}} sub
+ * @returns {string}
+ */
+export function subjectLabel(sub) {
+  return sub.alias && sub.alias !== sub.name ? `${sub.name} (${sub.alias})` : sub.name;
 }
 
 /**

@@ -545,3 +545,34 @@ test('panel flag: filters=open is read and written, and ignored by decodeHash', 
   assert.equal(L.withPanelFlag('#class=mage', false), '#class=mage');
   assert.deepEqual(L.decodeHash('#class=mage&filters=open'), { ...L.defaultState(), cls: 'mage' });
 });
+
+/* ---------- subject aliases (SCHEMA v3 addendum) ---------- */
+test('alias: included in the icon title, and the label shows "Name (Alias)"', () => {
+  assert.equal(L.subjectTitle({ name: 'Unsealed Fury', alias: 'Unsealed Wrath', kind: 'talent', tree: 'retribution' }),
+    'Unsealed Fury (in game: Unsealed Wrath, Retribution talent)');
+  assert.equal(L.subjectTitle({ name: 'Fireball', alias: 'Pyroblast Lite' }), 'Fireball (in game: Pyroblast Lite)');
+  assert.equal(L.subjectTitle({ name: 'Fireball', alias: 'Fireball' }), 'Fireball'); // same name: no noise
+  assert.equal(L.subjectLabel({ name: 'Unsealed Fury', alias: 'Unsealed Wrath' }), 'Unsealed Fury (Unsealed Wrath)');
+  assert.equal(L.subjectLabel({ name: 'Fireball' }), 'Fireball');
+  // Fixture subject: alias + unverified icon.
+  const seal = L.iconSlots(byId('2026-11-15-002')).slots[1];
+  assert.equal(seal.title, 'Seal of Fury (in game: Seal of Wrath) – unverified icon');
+});
+
+test('alias: searching for either name finds the line, and the suggestion shows both', () => {
+  const ch = byId('2026-11-15-002');
+  assert.ok(L.matchesQuery(ch, 'seal of fury'));
+  assert.ok(L.matchesQuery(ch, 'seal of wrath')); // alias only appears in the subject, not the text
+  assert.ok(!/wrath/i.test(ch.text));
+  assert.deepEqual(idsFor({ q: 'seal of wrath' }), ['2026-11-15-002']);
+  for (const q of ['seal of f', 'wrath']) {
+    const hit = L.buildSuggestions(data, L.defaultState(), q, 50).find((s) => s.name === 'Seal of Fury');
+    assert.ok(hit, q);
+    assert.equal(hit.label, 'Seal of Fury (Seal of Wrath)');
+    assert.equal(hit.alias, 'Seal of Wrath');
+  }
+  // Prefix on the alias ranks as a prefix match.
+  assert.equal(L.buildSuggestions(data, L.defaultState(), 'seal of w', 50)[0].name, 'Seal of Fury');
+  // Subjects without alias keep a plain label.
+  assert.equal(L.buildSuggestions(data, L.defaultState(), 'Fireball', 5)[0].label, 'Fireball');
+});
