@@ -64,7 +64,8 @@ jobs:
 
       # Show days/changes counts on the workflow run page.
       - name: Job summary
-        run: echo "Data update result: ${{ steps.update.outputs.line }}" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "Data update result - ${{ steps.update.outputs.line }}" >> "$GITHUB_STEP_SUMMARY"
 
       # Commit and push only if files under data/ differ from HEAD.
       - name: Commit and push if changed
