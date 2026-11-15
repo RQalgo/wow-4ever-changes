@@ -235,9 +235,26 @@ export function trackerPageUrl(feedUrl, beforePostId = null) {
  * @returns {string} "YYYY-MM-DD"
  */
 export function defaultTrackerCutoff(storedDays) {
-  const dates = (storedDays ?? []).map((d) => d?.date).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d ?? ''));
-  return dates.length ? dates.reduce((a, b) => (b < a ? b : a)) : DEFAULT_TRACKER_CUTOFF;
+  // Review change: page back only a week past the NEWEST stored dev day.
+  // Older dev posts are already stored and kept by the merge, so reading back
+  // to the oldest stored date of any kind (the earlier rule) cost up to 30
+  // pages every run and, on the first run, cut off posts older than the
+  // oldest hotfix/patch day. A staff reply in an old thread has a recent
+  // created_at, so the margin still catches it. No dev days yet → the
+  // all-time default.
+  const dates = (storedDays ?? [])
+    .filter((d) => d?.kind === 'dev')
+    .map((d) => d.date)
+    .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d ?? ''));
+  if (!dates.length) return DEFAULT_TRACKER_CUTOFF;
+  const newest = dates.reduce((a, b) => (b > a ? b : a));
+  const t = new Date(`${newest}T00:00:00Z`);
+  t.setUTCDate(t.getUTCDate() - TRACKER_CUTOFF_MARGIN_DAYS);
+  return t.toISOString().slice(0, 10);
 }
+
+/** Days before the newest stored dev day that each run still re-reads. */
+export const TRACKER_CUTOFF_MARGIN_DAYS = 7;
 
 /**
  * Pacific date of a post, or null when its `created_at` is unusable (such a

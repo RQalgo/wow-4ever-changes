@@ -225,7 +225,9 @@ describe('discourse-tracker (fixtures: tracker-page1/2.json, tracker-post-*.json
     assert.equal(devChangeId('2026-11-14', 0), '2026-11-14-d001');
     assert.equal(defaultTrackerCutoff([]), '2026-09-01');
     assert.equal(defaultTrackerCutoff(undefined), '2026-09-01');
-    assert.equal(defaultTrackerCutoff([{ date: '2026-11-02' }, { date: '2026-09-24' }, { date: '2026-10-01' }]), '2026-09-24');
+    // Non-dev days are ignored; with dev days the cutoff is the newest one minus 7 days.
+    assert.equal(defaultTrackerCutoff([{ date: '2026-11-02', kind: 'hotfix' }, { date: '2026-09-24', kind: 'patch' }]), '2026-09-01');
+    assert.equal(defaultTrackerCutoff([{ date: '2026-11-14', kind: 'dev' }, { date: '2026-10-01', kind: 'dev' }, { date: '2026-11-15', kind: 'hotfix' }]), '2026-11-07');
   });
 
   test('validateSources: a tracker needs a positive integer categoryId; kind "dev" is known', () => {
@@ -294,10 +296,15 @@ describe('discourse-tracker (fixtures: tracker-page1/2.json, tracker-post-*.json
     assert.deepEqual(later.map((d) => d.date), ['2026-11-14', '2026-11-10'], 'Oct 7 is before the cutoff');
   });
 
-  test('default cutoff: the oldest stored day (any kind), else 2026-09-01', async () => {
+  test('default cutoff: newest stored dev day minus 7 days, else 2026-09-01', async () => {
     const s = stub();
-    const days = await run({ storedDays: [{ date: '2026-11-01', kind: 'hotfix', changes: [] }] }, s);
-    // Page 1 ends on Nov 10 (not older than Nov 1), page 2 on Oct 1 (older): stop after 2.
+    // A stored dev day on Nov 8 → cutoff Nov 1. Page 1 ends on Nov 10 (not
+    // older than Nov 1), page 2 on Oct 1 (older): stop after 2 pages, and the
+    // Oct 7 post is dropped by the cutoff. Hotfix days do not move the cutoff.
+    const days = await run({ storedDays: [
+      { date: '2026-11-08', kind: 'dev', changes: [] },
+      { date: '2026-09-24', kind: 'patch', changes: [] },
+    ] }, s);
     assert.equal(s.urls.filter((u) => u.includes('/posts.json')).length, 2);
     assert.deepEqual(days.map((d) => d.date), ['2026-11-14', '2026-11-10']);
   });
