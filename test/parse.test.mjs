@@ -637,3 +637,77 @@ describe('a sentence is never a heading', async () => {
     ]);
   });
 });
+
+// --- Dev posts (schema v4) ---------------------------------------------------
+
+describe('dev posts: parseDevPost and helpers', async () => {
+  const { parseDevPost, devPostBlocks, devPostSummary, cutAtWord, excerptText, DEV_SUMMARY_MAX } = await import('../scripts/parse.mjs');
+  const post = (id) => JSON.parse(readFileSync(new URL(`./fixtures/tracker-post-${id}.json`, import.meta.url), 'utf8')).cooked;
+
+  test('cutAtWord: unchanged when it fits, else a word boundary + "…" within the limit', () => {
+    assert.equal(cutAtWord('Short text.', 400), 'Short text.');
+    assert.equal(cutAtWord('one two three four', 12), 'one two…');
+    assert.equal(cutAtWord('one two, three', 9), 'one two…'); // trailing comma dropped
+    assert.equal(cutAtWord('one two three', 8), 'one two…'); // the boundary falls right on a space
+    assert.equal(cutAtWord('Supercalifragilistic', 5), '');
+    const long = 'word '.repeat(200);
+    const cut = cutAtWord(long, DEV_SUMMARY_MAX);
+    assert.ok(cut.length <= DEV_SUMMARY_MAX && cut.endsWith('word…'), cut.length);
+  });
+
+  test('quotes of other users and images are dropped', () => {
+    const blocks = devPostBlocks(post('30850001'));
+    assert.deepEqual(blocks.map((b) => b.tag), ['p']);
+    assert.ok(!blocks.some((b) => /RP-PvP realms\?/.test(b.text)), 'the quoted player question is gone');
+    const withImage = devPostBlocks('<p>Look <img src="x.jpg" alt="art"></p><div class="lightbox-wrapper"><a class="lightbox"><img src="y.png"><div class="meta"><span class="filename">shot.png</span> 1920×1080 300 KB</div></a></div>');
+    assert.deepEqual(withImage, [{ tag: 'p', text: 'Look' }]);
+  });
+
+  test('list items give one block each, nested lists included; headings are blocks', () => {
+    assert.deepEqual(devPostBlocks('<h2>Mage</h2><ul><li>One<ul><li>Two</li></ul></li></ul>Loose'), [
+      { tag: 'h2', text: 'Mage' }, { tag: 'li', text: 'One' }, { tag: 'li', text: 'Two' }, { tag: '', text: 'Loose' },
+    ]);
+  });
+
+  test('summary: first one or two paragraphs, at most 400 characters, cut at a word with "…"', () => {
+    const { notes, fullText } = parseDevPost(post('30912982'), { title: 'Player-Level Dungeon XP Adjustment - November 14' });
+    assert.equal(notes.length, 2);
+    assert.ok(notes.join('').length <= DEV_SUMMARY_MAX);
+    assert.ok(notes[0].startsWith('Yesterday, we updated dungeon play'));
+    assert.ok(notes[1].endsWith('…') && !notes[1].includes('Deadmines'));
+    // The whole post is in fullText (title first), the third paragraph too.
+    assert.equal(fullText.split('\n')[0], 'Player-Level Dungeon XP Adjustment - November 14');
+    assert.ok(fullText.includes('The Deadmines and Blackfathom Deeps') && fullText.includes('Thank you for the feedback!'));
+  });
+
+  test('summary skips headings (paragraphs only) and the image; fullText keeps the headings', () => {
+    const { notes, fullText } = parseDevPost(post('30700001'));
+    assert.deepEqual(notes, [
+      'Mages and Shamans get a fresh look in WoW: Forever.',
+      'Fire Mages now have Heating Up, and Arcane Missiles no longer consumes Clearcasting.',
+    ]);
+    assert.deepEqual(fullText.split('\n'), [
+      'Mages and Shamans get a fresh look in WoW: Forever.', 'Mage',
+      'Fire Mages now have Heating Up, and Arcane Missiles no longer consumes Clearcasting.', 'Shaman',
+      'Enhancement Shamans gain Maelstrom Weapon, and Windfury Totem has been reworked.',
+    ]);
+  });
+
+  test('devPostSummary: a long first paragraph is the only note; no short stub as a second', () => {
+    assert.deepEqual(devPostSummary(['a '.repeat(300), 'second']).length, 1);
+    assert.deepEqual(devPostSummary(['x'.repeat(350), 'second paragraph that would only fit as a stub of a few words']), ['x'.repeat(350)]);
+    assert.deepEqual(devPostSummary(['One.', 'Two.', 'Three.']), ['One.', 'Two.']);
+    assert.deepEqual(devPostSummary([]), []);
+  });
+
+  test('a post without paragraphs summarises its first blocks', () => {
+    assert.deepEqual(parseDevPost('<ul><li>First.</li><li>Second.</li><li>Third.</li></ul>').notes, ['First.', 'Second.']);
+  });
+
+  test('excerptText decodes entities and strips the trailing ellipsis', () => {
+    assert.equal(excerptText('Yesterday, we updated dungeon play so that experience &hellip;'), 'Yesterday, we updated dungeon play so that experience');
+    assert.equal(excerptText('To clarify, it&#39;s <b>only</b> PvP…'), 'To clarify, it\'s only PvP');
+    assert.equal(excerptText('Plain...'), 'Plain');
+    assert.equal(excerptText(undefined), '');
+  });
+});

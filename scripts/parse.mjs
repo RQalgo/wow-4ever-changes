@@ -27,6 +27,10 @@
  * - Patch notes (Blizzard forum posts) reuse the same block collector and
  *   list walker; they add <h2> headings, "Change Log" markers, categories
  *   named by top-level bold <li>s, and loose bold headings (see walkList).
+ * - Dev posts (schema v4, staff posts from the forum's Blizzard tracker) are
+ *   not lists of changes: parseDevPost turns one post's HTML into a short
+ *   summary (the `notes`) and the plain text of the whole post (the
+ *   transient `_fullText` that subjects and tags are computed from).
  * - Each pure helper is exported so it can be unit-tested on its own.
  */
 import { parse as parseDom, NodeType } from 'node-html-parser';
@@ -885,4 +889,146 @@ export function parsePatchPost(html, { date, title = null, sourceUrl = null } = 
  */
 export function patchChangeId(date, index) {
   return `${date}-p${String(index + 1).padStart(3, '0')}`;
+}
+
+// ---------------------------------------------------------------------------
+// Dev posts (docs/SCHEMA.md "Version 4")
+// ---------------------------------------------------------------------------
+
+/** Longest summary of a dev post, in characters, all notes together. */
+export const DEV_SUMMARY_MAX = 400;
+
+/**
+ * A second paragraph is only added to a summary when at least this many
+ * characters are left for it; a stub of a few words would read as noise.
+ */
+const MIN_SECOND_PARAGRAPH = 60;
+
+/**
+ * Elements removed from a dev post before reading it: quotes of other users
+ * (`<aside class="quote">`) and link previews (`<aside class="onebox">`) are
+ * not Blizzard's words; images and Discourse's image caption (`div.meta`:
+ * file name, size) carry no text worth keeping.
+ */
+const DEV_POST_DROP = 'aside.quote, aside.onebox, img, div.meta, svg, script, style';
+
+/** Block elements whose text is one paragraph-like block of a dev post. */
+const DEV_TEXT_BLOCKS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre']);
+
+/**
+ * Cut `text` to at most `max` characters at a word boundary and end it with
+ * "…". Text that already fits is returned unchanged. Trailing spaces and
+ * punctuation that would sit before the ellipsis (", ; : – —") are dropped.
+ *
+ * @param {string} text
+ * @param {number} max Maximum length of the result, "…" included.
+ * @returns {string} '' when not even one word fits.
+ */
+export function cutAtWord(text, max) {
+  const t = cleanText(text);
+  if (t.length <= max) return t;
+  if (max < 2) return '';
+  // Keep one character for "…". If the character right after the kept part
+  // is a space, the kept part already ends on a whole word; otherwise go
+  // back to the last space so no word is cut in half.
+  let cut = t.slice(0, max - 1);
+  if (t[max - 1] !== ' ') {
+    const space = cut.lastIndexOf(' ');
+    cut = space > 0 ? cut.slice(0, space) : '';
+  }
+  cut = cut.replace(/[\s,;:–—-]+$/u, '');
+  return cut ? `${cut}…` : '';
+}
+
+/**
+ * Text blocks of a dev post's HTML, in document order, after removing quotes,
+ * link previews and images (DEV_POST_DROP): one entry per paragraph, heading
+ * or list item (a list item's nested list gives entries of its own).
+ *
+ * @param {string} html A Discourse post's `cooked` HTML.
+ * @returns {{tag: string, text: string}[]} `tag` is the element name ("p",
+ *   "h2", "li", …; "" for loose text outside any element).
+ */
+export function devPostBlocks(html) {
+  const root = parseDom(String(html ?? ''), { comment: false });
+  for (const el of root.querySelectorAll(DEV_POST_DROP)) el.remove();
+  const out = [];
+  const push = (tag, text) => { const t = cleanText(text); if (t) out.push({ tag, text: t }); };
+  const visit = (node) => {
+    for (const child of node.childNodes) {
+      const tag = tagOf(child);
+      if (!tag) { if (child.nodeType === NodeType.TEXT_NODE) push('', child.text); continue; }
+      if (DEV_TEXT_BLOCKS.has(tag)) { push(tag, child.text); continue; }
+      if (tag === 'li') {
+        // The item's own text first, then its nested lists as separate blocks.
+        const { own, nested } = splitListItem(child);
+        push('li', textOf(own));
+        nested.forEach(visit);
+        continue;
+      }
+      if (tag === 'br') continue;
+      visit(child); // div, ul, ol, blockquote, details, …: look inside
+    }
+  };
+  visit(root);
+  return out;
+}
+
+/**
+ * Short summary of a dev post in Blizzard's words (docs/SCHEMA.md v4): the
+ * first one or two paragraphs, together at most `max` characters; the last
+ * one used is cut at a word boundary with "…" when it does not fit. A second
+ * paragraph is only added when at least MIN_SECOND_PARAGRAPH characters are
+ * left for it.
+ *
+ * @param {string[]} paragraphs Paragraph texts in order.
+ * @param {number} [max=DEV_SUMMARY_MAX]
+ * @returns {string[]} zero, one or two notes.
+ */
+export function devPostSummary(paragraphs, max = DEV_SUMMARY_MAX) {
+  const out = [];
+  let used = 0;
+  for (const p of paragraphs.slice(0, 2)) {
+    const room = max - used;
+    if (out.length && room < MIN_SECOND_PARAGRAPH) break;
+    const cut = cutAtWord(p, room);
+    if (!cut) break;
+    out.push(cut);
+    used += cut.length;
+    if (cut !== cleanText(p)) break; // this paragraph was cut: the summary ends here
+  }
+  return out;
+}
+
+/**
+ * Read one dev post: its summary notes and the plain text of the whole post.
+ * The summary takes the post's paragraphs (`<p>`); a post without any (only
+ * headings or a list) uses its first blocks of any kind instead.
+ *
+ * @param {string} html A Discourse post's `cooked` HTML.
+ * @param {{ title?: string }} [options] `title` (the topic title) is put on
+ *   the first line of `fullText`, so subjects and tags see title + body.
+ * @returns {{ notes: string[], fullText: string }} `fullText` has one block
+ *   per line; quotes of other users and images are not part of it.
+ */
+export function parseDevPost(html, { title = '' } = {}) {
+  const blocks = devPostBlocks(html);
+  const paragraphs = blocks.filter((b) => b.tag === 'p').map((b) => b.text);
+  const notes = devPostSummary(paragraphs.length ? paragraphs : blocks.map((b) => b.text));
+  const fullText = [cleanText(title), ...blocks.map((b) => b.text)].filter(Boolean).join('\n');
+  return { notes, fullText };
+}
+
+/**
+ * Plain text of a tracker feed `excerpt` (used when a post's full body could
+ * not be fetched): HTML entities decoded, tags removed, and the trailing
+ * ellipsis Discourse adds to a cut excerpt ("…" / "&hellip;") stripped.
+ *
+ * @param {string} excerpt
+ * @returns {string}
+ */
+export function excerptText(excerpt) {
+  const text = cleanText(parseDom(String(excerpt ?? ''), { comment: false }).text);
+  // "&hellip;" is decoded to "…" by .text; "..." is the ASCII spelling.
+  return text.replace(/\s*(?:…|\.\.\.)$/u, '').trim();
 }
