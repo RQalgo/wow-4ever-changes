@@ -58,7 +58,25 @@ export async function fetchPost(url = SOURCE_URL, { fetchImpl = fetch, timeoutMs
 
   if (!response.ok) {
     const statusText = response.statusText ? ` ${response.statusText}` : '';
-    throw new Error(`Failed to fetch ${url}: HTTP ${response.status}${statusText}`);
+    // Include the headers that explain *why* a request failed (where a
+    // redirect pointed, which server answered) plus the start of the body, so
+    // a failing scheduled run can be diagnosed from its log alone.
+    const h = (name) => response.headers?.get?.(name);
+    const details = ['location', 'server', 'content-type', 'cf-mitigated', 'retry-after']
+      .filter((name) => h(name))
+      .map((name) => `${name}=${h(name)}`)
+      .join('; ');
+    let snippet = '';
+    try {
+      snippet = (await response.text()).replace(/\s+/g, ' ').slice(0, 200);
+    } catch {
+      // Body unavailable; the status and headers are still reported.
+    }
+    throw new Error(
+      `Failed to fetch ${url}: HTTP ${response.status}${statusText}` +
+        (details ? ` [${details}]` : '') +
+        (snippet ? ` body: ${snippet}` : ''),
+    );
   }
   return await response.text();
 }
