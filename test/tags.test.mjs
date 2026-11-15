@@ -35,6 +35,7 @@ describe('computeTags on realistic lines', () => {
     [ch({ category: 'Quests', text: 'Fixed a bug preventing Jom-jom from continuing his escape on “Jom-jom’s Escape”.' }), ['bugfix', 'quests']],
     [ch({ category: 'Quests', text: 'On "A Quick Grocery Run", Skonk\'s list can be read by everyone.' }), ['quests']],
     [ch({ category: 'Quests and World', group: 'Darkshire', text: 'Stitches is once again hostile.' }), ['quests', 'world']],
+    [ch({ category: 'Enemies and NPCs', text: 'Durotar - Fixed an issue where Yarrog Baneshadow was respawning more slowly than intended.' }), ['bugfix', 'world']],
     [ch({ category: 'Items', text: 'Fixed an issue where trade supply vendors on Zephras Isle didn\'t sell apprentice tradeskill bags.' }), ['bugfix', 'items']],
     [ch({ category: 'Items', text: 'Channeler\'s Ring now has Spell Power (was Spirit).', subjects: [subj('Channeler\'s Ring', 'item', null)],
       notes: ['Developers’ notes: Until raids open, this exchange will be the first item on the vendor list.'] }), ['items']],

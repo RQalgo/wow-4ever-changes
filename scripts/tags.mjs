@@ -100,7 +100,8 @@ const TEXT_RULES = [
 ];
 
 /** Lines that start like a bug fix get "bugfix" in addition to their other tags. */
-const BUGFIX_START_RE = /^\s*(?:fixed|resolved|corrected|addressed)\b/i;
+// An optional "Zone Name - " prefix is skipped ("Durotar - Fixed an issue ...").
+const BUGFIX_START_RE = /^\s*(?:[^.:]{1,40}?\s[-–—]\s+)?(?:fixed|resolved|corrected|addressed)\b/i;
 
 /** "talent" text rule: the word, or a talent row ("Row 4"). */
 const TALENT_TEXT_RE = /\btalents?\b|\bRow \d/i;
