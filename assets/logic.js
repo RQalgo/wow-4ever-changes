@@ -376,47 +376,105 @@ export function highlightSegments(text, terms) {
 /* ======================= 4. Filtering ======================= */
 
 /**
- * Create the default (unfiltered) UI state.
- * @returns {{cls: string, spec: string, q: string, general: boolean, kind: 'all'|'hotfix'|'patch'}}
+ * Create the default (unfiltered) UI state. `cats` is the list of ENABLED
+ * category chips, or null meaning "all on" (the default). Using null rather
+ * than a full list keeps categories that appear in later data switched on.
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'}}
  */
 export function defaultState() {
-  return { cls: '', spec: '', q: '', general: true, kind: 'all' };
+  return { cls: '', spec: '', q: '', cats: null, kind: 'all' };
 }
 
 /**
- * Class/talent-tree filter for one *class-scope* change.
- *  - no class chosen: everything passes
- *  - lines with class null ("All classes") always pass
- *  - class chosen: only that class passes (every spec)
- *  - spec also chosen: that spec's lines, plus the class's lines with
- *    spec null (they apply to the spec as well)
- * @param {object} ch class-scope change
+ * Is one category chip switched on in this state?
+ * @param {{cats?: string[]|null}} state
+ * @param {string} slug category tag
+ * @returns {boolean}
+ */
+export function isCategoryOn(state, slug) {
+  return !state.cats || state.cats.includes(slug);
+}
+
+/**
+ * Canonical form of a category selection: null when every available category
+ * is on (so "all" has exactly one representation), otherwise the enabled
+ * slugs in chip order.
+ * @param {string[]|null} cats enabled slugs, or null for all
+ * @param {{slug: string}[]} available chips offered for the loaded data
+ * @returns {string[]|null}
+ */
+export function normalizeCats(cats, available) {
+  if (!cats) return null;
+  const on = available.map((c) => c.slug).filter((s) => cats.includes(s));
+  return on.length === available.length ? null : on;
+}
+
+/**
+ * Flip one category chip and return the new canonical `cats` value.
+ * @param {string[]|null} cats current selection (null = all on)
+ * @param {string} slug chip to flip
+ * @param {{slug: string}[]} available chips offered for the loaded data
+ * @returns {string[]|null}
+ */
+export function toggleCategory(cats, slug, available) {
+  const current = cats || available.map((c) => c.slug); // null = every chip on
+  const next = current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug];
+  return normalizeCats(next, available);
+}
+
+/**
+ * Class/talent-tree filter for one change, driven by its tags
+ * (docs/SCHEMA.md "Filter semantics used by the app").
+ *  - no class chosen, or the change has no `class:` tag (an all-class line or
+ *    a non-class line): it passes here (the category chips decide the latter)
+ *  - class chosen: the change must be tagged `class:<cls>`; a line tagged with
+ *    several classes matches each of them
+ *  - tree also chosen: the change must be tagged `spec:<cls>/<tree>`, or have
+ *    no `spec:<cls>/...` tag at all (a class-wide line applies to every tree)
+ * @param {object} ch change
  * @param {{cls: string, spec: string}} state
  * @returns {boolean}
  */
 export function matchesClassFilter(ch, state) {
   if (!state.cls) return true;
-  if (!ch.class) return true;
-  if (ch.class !== state.cls) return false;
+  const classes = classTagsOf(ch);
+  if (!classes.length) return true;
+  if (!classes.includes(state.cls)) return false;
   if (!state.spec) return true;
-  return !ch.spec || ch.spec === state.spec;
+  const prefix = `spec:${state.cls}/`;
+  const trees = effectiveTags(ch).filter((t) => t.startsWith(prefix));
+  return !trees.length || trees.includes(prefix + state.spec);
 }
 
 /**
- * Full filter for one change: General toggle, class/spec and (when present)
- * the search text. General changes ignore the class filter but obey the
- * General toggle; class-scope changes ignore the toggle.
+ * Class and category part of the filter for one change:
+ *  - tagged with a class: the class/tree filter decides, the category chips
+ *    are ignored ("class-tagged changes are always shown")
+ *  - no class tag but category tags: shown when at least one of them is on
+ *  - neither (an all-class line): always shown
+ * Lines without a class tag keep their old behaviour of ignoring the class
+ * choice, so picking Paladin still shows e.g. the Items and Quests lines
+ * whose chips are on.
+ * @param {object} ch
+ * @param {object} state
+ * @returns {boolean}
+ */
+export function matchesClassAndCategory(ch, state) {
+  if (classTagsOf(ch).length) return matchesClassFilter(ch, state);
+  const cats = categoryTagsOf(ch);
+  if (!cats.length) return true; // all-class line
+  return cats.some((c) => isCategoryOn(state, c));
+}
+
+/**
+ * Full filter for one change: class/tree + category chips (all via tags) and
+ * the search text when present.
  * @param {object} ch
  * @param {object} state
  * @returns {boolean}
  */
 export function matchesState(ch, state) {
-  if (ch.scope === 'general') {
-    if (!state.general) return false;
-  } else if (!matchesClassFilter(ch, state)) {
-    return false;
-  }
-  return matchesQuery(ch, state.q);
+  return matchesClassAndCategory(ch, state) && matchesQuery(ch, state.q);
 }
 
 /**
@@ -492,7 +550,7 @@ export function glyphKey(ch) {
 /**
  * Build search-box suggestions from `subjects[].name` across the data.
  *
- * - Only changes passing the kind, class/spec filters and the General toggle count
+ * - Only changes passing the kind, class/spec filters and the category chips count
  *   (the search text itself is ignored here, otherwise the list would shrink
  *   to the thing already typed).
  * - Ranked by how many changes mention the subject (most frequent first),
@@ -502,7 +560,7 @@ export function glyphKey(ch) {
  *   substring matches, each group keeping the frequency order.
  *
  * @param {{days: object[]}} data
- * @param {object} state current UI state (cls/spec/general/kind used)
+ * @param {object} state current UI state (cls/spec/cats/kind used)
  * @param {string} query text currently typed
  * @param {number} [limit] max suggestions
  * @returns {{name: string, icon: string, type: string, count: number}[]}
@@ -559,10 +617,12 @@ export function sanitizeSelection(cls, spec) {
 }
 
 /**
- * Encode the state as a hash such as "#class=paladin&spec=retribution&q=judgement&general=0&kind=patch".
+ * Encode the state as a hash such as "#class=paladin&spec=retribution&q=judgement&cats=items,quests&kind=patch".
  * Default values are omitted (kind=all is never written); the default state
- * encodes to "" (no hash).
- * @param {{cls: string, spec: string, q: string, general: boolean, kind?: string}} state
+ * encodes to "" (no hash). `cats` lists the ENABLED categories and is written
+ * only when not all are on: "cats=none" means every chip is off. The slugs
+ * are written in chip order, so one selection has one URL.
+ * @param {{cls: string, spec: string, q: string, cats?: string[]|null, kind?: string}} state
  * @returns {string} "" or a string starting with "#"
  */
 export function encodeHash(state) {
@@ -570,19 +630,45 @@ export function encodeHash(state) {
   if (state.cls) p.set('class', state.cls);
   if (state.cls && state.spec) p.set('spec', state.spec);
   if (state.q) p.set('q', state.q);
-  if (!state.general) p.set('general', '0');
+  let catsValue = null;
+  if (state.cats) {
+    const known = CATEGORIES.map((c) => c.slug).filter((s) => state.cats.includes(s));
+    catsValue = known.length ? known.join(',') : 'none';
+  }
   const kind = sanitizeKindFilter(state.kind);
   if (kind !== 'all') p.set('kind', kind);
-  const str = p.toString();
+  // Commas are legal in a fragment and far more readable than %2C.
+  const parts = [p.toString(), catsValue ? `cats=${catsValue}` : ''].filter(Boolean);
+  const str = parts.join('&');
   return str ? `#${str}` : '';
 }
 
 /**
+ * Parse the `cats` hash parameter (untrusted).
+ *  - "none"            -> [] (every chip off)
+ *  - "items,quests"    -> those known slugs
+ *  - missing / junk    -> null (all on)
+ * `generalOff` is the old `general=0` parameter, kept working: it means "no
+ * category chips" when `cats` itself is absent.
+ * @param {string|null} raw value of `cats`
+ * @param {boolean} generalOff true when the hash had general=0
+ * @returns {string[]|null}
+ */
+export function decodeCats(raw, generalOff = false) {
+  if (raw == null) return generalOff ? [] : null;
+  if (raw.trim().toLowerCase() === 'none') return [];
+  const known = new Set(CATEGORIES.map((c) => c.slug));
+  const slugs = raw.split(',').map((x) => x.trim().toLowerCase()).filter((x) => known.has(x));
+  return slugs.length ? CATEGORIES.map((c) => c.slug).filter((x) => slugs.includes(x)) : null;
+}
+
+/**
  * Decode a location hash back into a state. Unknown/invalid values fall back
- * to defaults, so a hand-edited URL can never break the page.
- * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
+ * to defaults, so a hand-edited URL can never break the page. The legacy
+ * `general=0` (the old "Show General changes" switch) decodes to `cats: []`.
  * An unknown `kind` value is ignored (treated as "all").
- * @returns {{cls: string, spec: string, q: string, general: boolean, kind: 'all'|'hotfix'|'patch'}}
+ * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'}}
  */
 export function decodeHash(hash) {
   const p = new URLSearchParams(String(hash || '').replace(/^#/, ''));
@@ -591,7 +677,7 @@ export function decodeHash(hash) {
     cls,
     spec,
     q: (p.get('q') || '').slice(0, 100),
-    general: p.get('general') !== '0',
+    cats: decodeCats(p.get('cats'), p.get('general') === '0'),
     kind: sanitizeKindFilter(p.get('kind')),
   };
 }

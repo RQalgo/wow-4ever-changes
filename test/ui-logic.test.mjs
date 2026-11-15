@@ -87,17 +87,6 @@ test('specsForClass merges vanilla trees with trees seen in data', () => {
   assert.deepEqual(L.specsForClass(data, ''), []);
 });
 
-/* ---------- filtering: General toggle ---------- */
-test('General toggle hides every general change but keeps class lines', () => {
-  const off = L.visibleDays(data, { ...L.defaultState(), general: false });
-  const all = off.flatMap((d) => d.changes);
-  assert.ok(all.length > 0);
-  assert.ok(all.every((c) => c.scope === 'class'));
-  // General lines are not affected by the class filter.
-  const on = L.visibleDays(data, { ...L.defaultState(), cls: 'druid' }).flatMap((d) => d.changes);
-  assert.ok(on.some((c) => c.scope === 'general'));
-});
-
 /* ---------- icons ---------- */
 test('iconUrl builds the Wowhead URL and rejects odd names', () => {
   assert.equal(L.iconUrl('inv_mace_13'), 'https://wow.zamimg.com/images/wow/icons/medium/inv_mace_13.jpg');
@@ -170,15 +159,15 @@ test('typing narrows: prefix matches first, then substring; items allowed', () =
 /* ---------- hash state ---------- */
 test('encodeHash omits defaults and round-trips', () => {
   assert.equal(L.encodeHash(L.defaultState()), '');
-  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', general: false, kind: 'all' };
+  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', cats: [], kind: 'all' };
   const h = L.encodeHash(st);
-  assert.match(h, /^#class=paladin&spec=retribution&q=judgement\+of&general=0$/); // kind=all is omitted
+  assert.match(h, /^#class=paladin&spec=retribution&q=judgement\+of&cats=none$/); // kind=all is omitted
   assert.deepEqual(L.decodeHash(h), st);
 });
 
 test('decodeHash accepts the documented example and rejects junk', () => {
   assert.deepEqual(L.decodeHash('#class=paladin&spec=retribution&q=judgement&general=0'),
-    { cls: 'paladin', spec: 'retribution', q: 'judgement', general: false, kind: 'all' });
+    { cls: 'paladin', spec: 'retribution', q: 'judgement', cats: [], kind: 'all' }); // legacy general=0
   assert.deepEqual(L.decodeHash('#class=notaclass&spec=holy'), L.defaultState()); // spec needs a valid class
   assert.equal(L.decodeHash('#class=mage&spec=<script>').spec, '');
   assert.deepEqual(L.decodeHash(''), L.defaultState());
@@ -223,19 +212,19 @@ test('kind filter: hotfix / patch / all', () => {
   assert.equal(L.matchesKind({}, 'hotfix'), true);
 });
 
-test('kind filter combines with class, General toggle and search', () => {
+test('kind filter combines with class, category chips and search', () => {
   const ids = (st) => L.visibleDays(data, { ...L.defaultState(), ...st }).flatMap((v) => v.changes.map((c) => c.id));
-  assert.deepEqual(ids({ kind: 'patch', cls: 'druid', general: false }), ['2026-11-13-p000']);
+  assert.deepEqual(ids({ kind: 'patch', cls: 'druid', cats: [] }), ['2026-11-13-p000']);
   assert.deepEqual(ids({ kind: 'patch', q: 'gnome' }), ['2026-11-14-p002']);
   assert.deepEqual(ids({ kind: 'hotfix', q: 'gnome' }), []); // empty -> UI shows the empty state
-  assert.deepEqual(ids({ kind: 'patch', general: false, cls: 'paladin' }), []);
+  assert.deepEqual(ids({ kind: 'patch', cats: [], cls: 'paladin' }), []);
   // Patch-only categories survive and group like any other General category.
   const patch = L.visibleDays(data, { ...L.defaultState(), kind: 'patch' }).find((v) => v.day.date === '2026-11-14');
   assert.deepEqual(L.groupChanges(patch.changes).general.map((c) => c.category), ['Bugfixes', 'Races']);
 });
 
 test('per-day counts follow the visible lines', () => {
-  const v = L.visibleDays(data, { ...L.defaultState(), kind: 'patch', general: false });
+  const v = L.visibleDays(data, { ...L.defaultState(), kind: 'patch', cats: [] });
   assert.deepEqual(v.map((d) => [L.dayKey(d.day), L.groupChanges(d.changes).count]), [['2026-11-14|patch', 1], ['2026-11-13|patch', 1]]);
 });
 
@@ -256,8 +245,8 @@ test('kind hash: encode omits all, decode ignores unknown values, round-trips', 
   assert.equal(L.decodeHash('#kind=patch').kind, 'patch');
   assert.equal(L.decodeHash('#kind=nonsense').kind, 'all');
   assert.equal(L.decodeHash('#kind=ALL').kind, 'all');
-  assert.equal(L.decodeHash('#class=mage&kind=hotfix&general=0').kind, 'hotfix');
-  const st = { cls: 'mage', spec: 'fire', q: 'fire', general: false, kind: 'patch' };
+  assert.equal(L.decodeHash('#class=mage&kind=hotfix&cats=none').kind, 'hotfix');
+  const st = { cls: 'mage', spec: 'fire', q: 'fire', cats: ['items', 'quests'], kind: 'patch' };
   assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });
 
@@ -326,4 +315,104 @@ test('availableCategories lists only tags present in the data, in chip order', (
   assert.deepEqual(L.availableCategories({ days: [] }), []);
   // A line with only a class has no category, so it adds no chip.
   assert.deepEqual(L.availableCategories({ days: [{ changes: [mk({ class: 'mage' })] }] }), []);
+});
+
+/* ---------- filter semantics via tags ---------- */
+/** Ids visible for a state (all days, all kinds). */
+const idsFor = (st) => L.visibleDays(data, { ...L.defaultState(), ...st }).flatMap((v) => v.changes.map((c) => c.id));
+
+test('class filter uses class: tags, so a line matches every class it is tagged with', () => {
+  // 2026-11-15-000 is published under Shaman but tagged warrior + rogue too.
+  for (const cls of ['shaman', 'warrior', 'rogue']) assert.ok(idsFor({ cls }).includes('2026-11-15-000'), cls);
+  assert.ok(!idsFor({ cls: 'paladin' }).includes('2026-11-15-000'));
+  // An Items line tagged class:shaman is found under Shaman, not under Paladin.
+  assert.ok(idsFor({ cls: 'shaman' }).includes('2026-11-15-001'));
+  assert.ok(!idsFor({ cls: 'paladin' }).includes('2026-11-15-001'));
+  // All-class lines (no class tag, no category tag) pass every class filter.
+  assert.ok(idsFor({ cls: 'rogue' }).includes('2026-11-13-000'));
+});
+
+test('tree filter: spec: tag, or class tag without any spec: tag of that class', () => {
+  const ret = idsFor({ cls: 'paladin', spec: 'retribution' });
+  assert.ok(ret.includes('2026-11-15-002')); // tagged spec:paladin/retribution
+  assert.ok(ret.includes('2026-11-13-002')); // class:paladin, no spec tag (class-wide)
+  assert.ok(ret.includes('2026-11-13-000')); // all-class
+  assert.ok(!idsFor({ cls: 'paladin', spec: 'holy' }).includes('2026-11-15-002'));
+  // Frost line is hidden for Mage > Fire, shown for Mage > Frost.
+  assert.ok(!idsFor({ cls: 'mage', spec: 'fire' }).includes('2026-11-15-003'));
+  assert.ok(idsFor({ cls: 'mage', spec: 'frost' }).includes('2026-11-15-003'));
+  // Multi-class line with no spec tag of the chosen class stays visible under a tree of that class.
+  assert.ok(idsFor({ cls: 'warrior', spec: 'arms' }).includes('2026-11-15-000'));
+});
+
+test('category chips: a line without class tags shows when one of its categories is on', () => {
+  const noClass = (ch) => L.categoryTagsOf(ch).length > 0 && L.classTagsOf(ch).length === 0;
+  const onlyQuests = L.visibleDays(data, { ...L.defaultState(), cats: ['quests'] }).flatMap((v) => v.changes).filter(noClass);
+  assert.deepEqual(onlyQuests.map((c) => c.id), ['2026-11-15-004', '2026-11-11-002']);
+  // quests+world line is visible with only "world" on.
+  assert.ok(idsFor({ cats: ['world'] }).includes('2026-11-15-004'));
+  assert.ok(!idsFor({ cats: ['items'] }).includes('2026-11-15-004'));
+  // Old-shape general line (derived tag) follows its chip too.
+  assert.ok(idsFor({ cats: ['dungeons'] }).includes('2026-11-13-003'));
+  assert.ok(!idsFor({ cats: ['items'] }).includes('2026-11-13-003'));
+});
+
+test('category chips never hide class-tagged lines or all-class lines', () => {
+  const none = idsFor({ cats: [] });
+  assert.ok(none.includes('2026-11-15-000')); // class-tagged
+  assert.ok(none.includes('2026-11-15-001')); // an Items line tagged class:shaman
+  assert.ok(none.includes('2026-11-13-000')); // all-class line
+  assert.ok(!none.includes('2026-11-13-004')); // plain Items line: hidden
+  assert.ok(none.every((id) => !['2026-11-14-p001', '2026-11-15-005'].includes(id))); // bug fix / known issue hidden
+  // With a class chosen, non-class lines still follow the chips (old General behaviour).
+  assert.ok(idsFor({ cls: 'druid' }).includes('2026-11-13-004'));
+  assert.ok(!idsFor({ cls: 'druid', cats: [] }).includes('2026-11-13-004'));
+});
+
+test('default state shows every change; cats null means all on', () => {
+  const total = data.days.reduce((n, d) => n + d.changes.length, 0);
+  assert.equal(idsFor({}).length, total);
+  assert.equal(L.isCategoryOn(L.defaultState(), 'anything'), true);
+  assert.equal(L.isCategoryOn({ cats: ['items'] }, 'items'), true);
+  assert.equal(L.isCategoryOn({ cats: ['items'] }, 'quests'), false);
+});
+
+test('toggleCategory / normalizeCats keep one canonical form', () => {
+  const avail = L.availableCategories(data); // items, quests, dungeons, world, races, bugfix, known-issue
+  const all = avail.map((c) => c.slug);
+  assert.equal(L.normalizeCats(all, avail), null);
+  assert.equal(L.normalizeCats(null, avail), null);
+  assert.deepEqual(L.normalizeCats(['races', 'items'], avail), ['items', 'races']); // chip order
+  const off = L.toggleCategory(null, 'quests', avail); // first click turns one off
+  assert.deepEqual(off, all.filter((s) => s !== 'quests'));
+  assert.equal(L.toggleCategory(off, 'quests', avail), null); // turning it back on = all on again
+  assert.deepEqual(L.toggleCategory([], 'items', avail), ['items']);
+});
+
+test('suggestions respect the category chips', () => {
+  const extra = { days: [{ changes: [
+    mk({ scope: 'general', category: 'Items', subjects: [{ name: 'Gizmo', type: 'item', icon: 'g' }] }),
+    mk({ scope: 'general', category: 'Quests', subjects: [{ name: 'Quillboar', type: 'item', icon: 'q' }] }),
+  ] }] };
+  const names = (cats) => L.buildSuggestions(extra, { ...L.defaultState(), cats }, 'g', 50).map((s) => s.name);
+  assert.deepEqual(names(null), ['Gizmo']);
+  assert.deepEqual(L.buildSuggestions(extra, { ...L.defaultState(), cats: ['quests'] }, 'g', 50).map((s) => s.name), []);
+  assert.deepEqual(L.buildSuggestions(extra, { ...L.defaultState(), cats: ['quests'] }, 'quill', 50).map((s) => s.name), ['Quillboar']);
+});
+
+/* ---------- hash: category chips ---------- */
+test('cats hash: only enabled categories, none, and general=0 compatibility', () => {
+  assert.equal(L.encodeHash({ ...L.defaultState(), cats: ['quests', 'items'] }), '#cats=items,quests');
+  assert.equal(L.encodeHash({ ...L.defaultState(), cats: [] }), '#cats=none');
+  assert.equal(L.encodeHash({ ...L.defaultState(), cats: null }), '');
+  assert.equal(L.encodeHash({ ...L.defaultState(), cls: 'mage', cats: ['pvp'] }), '#class=mage&cats=pvp');
+  assert.deepEqual(L.decodeHash('#cats=items,quests').cats, ['items', 'quests']);
+  assert.deepEqual(L.decodeHash('#cats=none').cats, []);
+  assert.equal(L.decodeHash('#cats=bogus').cats, null); // junk -> all on
+  assert.deepEqual(L.decodeHash('#cats=quests,bogus').cats, ['quests']);
+  assert.deepEqual(L.decodeHash('#general=0').cats, []); // legacy
+  assert.equal(L.decodeHash('#general=1').cats, null);
+  assert.deepEqual(L.decodeHash('#general=0&cats=items').cats, ['items']); // cats wins
+  const st = { cls: 'rogue', spec: '', q: 'x', cats: ['ui', 'world'], kind: 'hotfix' };
+  assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });
