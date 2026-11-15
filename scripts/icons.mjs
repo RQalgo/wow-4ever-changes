@@ -331,8 +331,7 @@ function pickResult(results, name, { preferType, classSlug } = {}) {
     const wantClass = String(classSlug).toLowerCase();
     const byClass = spells.find((e) =>
       JSON.stringify([e.raw.pinDescription, e.raw.pinBreadcrumb]).toLowerCase().includes(wantClass));
-    if (byClass) chosen = byClass;
-    else if (chosen.type !== 'spell') chosen = spells[0];
+    if (byClass) chosen = byClass; // otherwise keep the first exact match
   }
   return { name: chosen.raw.name, type: chosen.type, icon: chosen.raw.icon };
 }
