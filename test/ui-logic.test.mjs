@@ -656,7 +656,7 @@ test('No classes + no categories shows nothing, and the empty state says why', (
 
 test('emptyMessage: generic text names the kind filter and hidden class changes', () => {
   assert.deepEqual(L.emptyMessage(L.defaultState()),
-    { title: 'Nothing matches', detail: 'No changes match the current filters.', action: 'Clear filters', impossible: false });
+    { title: 'Nothing matches', detail: 'No changes match the current filters.', action: 'Clear filters', impossible: false, reset: 'all' });
   assert.match(L.emptyMessage({ ...L.defaultState(), kind: 'patch' }).detail, /Only patch notes are being shown/);
   const h = L.emptyMessage(hidden({ q: 'zzz', kind: 'hotfix' }));
   assert.equal(h.impossible, false);
@@ -1162,4 +1162,42 @@ test('date range hash: from/to encoded, decoded, swapped, junk ignored, round-tr
     { ...L.defaultState(), cls: 'paladin', spec: 'holy', q: 'light', cats: [], from: '2026-10-01', to: '2026-10-31' },
     hidden({ from: '2026-11-13', to: '2026-11-13' }),
   ]) assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
+});
+
+test('date range: counts as one active filter and is named in the summary', () => {
+  const real = { min: '2026-09-12', max: '2026-11-14' };
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), from: '2026-11-04' }), 1);
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), from: '2026-11-04', to: '2026-11-10' }), 1); // both ends: one filter
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), to: '2026-11-10', kind: 'patch', cls: 'mage' }), 3);
+  assert.equal(L.filterSummary({ ...L.defaultState(), from: '2026-11-04' }, L.CATEGORIES, real), 'Nov 4 – Nov 14');
+  assert.equal(L.filterSummary({ ...L.defaultState(), cls: 'paladin', kind: 'patch', from: '2026-10-01', to: '2026-10-31', cats: ['items', 'pvp'] },
+    L.CATEGORIES, real), 'Paladin · Patches · Oct 1 – Oct 31 · 2 categories');
+  assert.equal(L.filterSummary({ ...L.defaultState(), from: '2026-11-04' }), 'From Nov 4'); // bounds unknown
+  assert.equal(L.filterSummary(L.defaultState(), L.CATEGORIES, real), '');
+});
+
+test('emptyMessage: the date range is named when it is the reason, with a reset of the range only', () => {
+  const bounds = L.dateBounds(data);
+  // Patches exist (Nov 13, 14), but not on Nov 15.
+  const st = { ...L.defaultState(), from: '2026-11-15', kind: 'patch' };
+  assert.deepEqual(L.visibleDays(data, st), []);
+  const msg = L.emptyMessage(st, { data, bounds });
+  assert.equal(msg.title, 'Nothing in this date range');
+  assert.equal(msg.reset, 'dates');
+  assert.equal(msg.action, 'Show all dates');
+  assert.equal(msg.detail, 'No changes match the current filters in Nov 15, 2026. '
+    + '6 matching changes are outside it; the nearest date is November 14, 2026.');
+  // A gap in the data (no day on Nov 12): nearest date on either side, the later one on a tie.
+  const gap = L.emptyMessage({ ...L.defaultState(), from: '2026-11-12', to: '2026-11-12' }, { data, bounds });
+  assert.match(gap.detail, /in Nov 12, 2026\. 26 matching changes are outside it; the nearest date is November 13, 2026\.$/);
+  // The range is NOT the reason (the search matches nothing anywhere): generic text, full reset, no range note.
+  const other = L.emptyMessage({ ...L.defaultState(), from: '2026-11-13', q: 'zzzz' }, { data, bounds });
+  assert.equal(other.title, 'Nothing matches');
+  assert.equal(other.reset, 'all');
+  assert.doesNotMatch(other.detail, /Nov/);
+  // Without the data the range cannot be ruled out, so it is mentioned.
+  assert.match(L.emptyMessage({ ...L.defaultState(), from: '2026-11-13' }, { bounds }).detail,
+    /Only changes in Nov 13 – Nov 15, 2026 are being shown\.$/);
+  // The impossible case still wins.
+  assert.equal(L.emptyMessage(hidden({ cats: [], from: '2026-11-13' }), { data, bounds }).impossible, true);
 });

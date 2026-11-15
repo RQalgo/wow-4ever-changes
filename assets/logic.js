@@ -1157,10 +1157,10 @@ export function iconSlots(ch, max = MAX_ICONS) {
 
 /**
  * How many filters differ from the defaults: class (or "No classes"), tree,
- * kind and categories each count once. The search text is not counted (it
- * is visible in the search box itself). Used for the badge on the mobile
- * filter button.
- * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null, hideClasses?: boolean}} state
+ * kind, date range (either end or both) and categories each count once. The
+ * search text is not counted (it is visible in the search box itself). Used
+ * for the badge on the mobile filter button.
+ * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null, hideClasses?: boolean, from?: string, to?: string}} state
  * @returns {number}
  */
 export function activeFilterCount(state) {
@@ -1168,20 +1168,23 @@ export function activeFilterCount(state) {
   if (classChoice(state) !== 'all') n += 1;
   if (state.cls && state.spec) n += 1;
   if (sanitizeKindFilter(state.kind) !== 'all') n += 1;
+  if (hasDateRange(state)) n += 1;
   if (state.cats) n += 1;
   return n;
 }
 
 /**
  * One-line summary of the active filters for the closed mobile bar, e.g.
- * "Paladin › Retribution · Patches · 3 categories" or "No class changes ·
- * Patches". Empty string when nothing is filtered. A single enabled category
- * is named; several are counted; none says "No categories".
+ * "Paladin › Retribution · Patches · Nov 4 – Nov 14 · 3 categories" or "No
+ * class changes · Patches". Empty string when nothing is filtered. A single
+ * enabled category is named; several are counted; none says "No categories".
+ * The date range uses dateRangeSummary (open ends resolved to `bounds`).
  * @param {object} state
  * @param {{slug: string, label: string}[]} [available] category chips of the loaded data
+ * @param {{min: string, max: string}|null} [bounds] date bounds of the loaded data
  * @returns {string}
  */
-export function filterSummary(state, available = CATEGORIES) {
+export function filterSummary(state, available = CATEGORIES, bounds = null) {
   const parts = [];
   const choice = classChoice(state);
   if (choice === 'none') parts.push('No class changes');
@@ -1190,6 +1193,8 @@ export function filterSummary(state, available = CATEGORIES) {
   }
   const kind = sanitizeKindFilter(state.kind);
   if (kind !== 'all') parts.push(kindFilterLabel(kind));
+  const dates = dateRangeSummary(state, bounds);
+  if (dates) parts.push(dates);
   if (state.cats) {
     if (!state.cats.length) parts.push('No categories');
     else if (state.cats.length === 1) {
@@ -1204,13 +1209,21 @@ export function filterSummary(state, available = CATEGORIES) {
  * Text of the empty state shown when no change matches the filters.
  *  - "No classes" with every category off can never show anything: say so
  *    plainly (`impossible: true`) and offer to show everything again.
+ *  - the date range is the reason (`ctx.data` given, and the same filters
+ *    WITHOUT the range would show something): "Nothing in this date range",
+ *    naming the range, how many matching changes lie outside it and the
+ *    nearest date that has some; the action then resets only the range
+ *    (`reset: 'dates'`, label "Show all dates"), keeping the other filters.
  *  - otherwise a generic "Nothing matches", naming the filters that are
- *    easiest to forget: the kind switch and hidden class changes.
- * The action always resets to defaultState(); only its label differs.
+ *    easiest to forget: the kind switch, hidden class changes and, when it
+ *    cannot be ruled out as the reason (no `ctx.data`), the date range.
+ * The action resets to defaultState() (`reset: 'all'`) except in the date
+ * case above.
  * @param {object} state
- * @returns {{title: string, detail: string, action: string, impossible: boolean}}
+ * @param {{data?: {days: object[]}, bounds?: {min: string, max: string}|null}} [ctx] loaded data and its date bounds
+ * @returns {{title: string, detail: string, action: string, impossible: boolean, reset: 'all'|'dates'}}
  */
-export function emptyMessage(state) {
+export function emptyMessage(state, ctx = {}) {
   const hidden = classChoice(state) === 'none';
   if (hidden && Array.isArray(state.cats) && state.cats.length === 0) {
     return {
@@ -1219,7 +1232,28 @@ export function emptyMessage(state) {
         + 'Choose a class or "All classes", or switch a category back on.',
       action: 'Show all changes',
       impossible: true,
+      reset: 'all',
     };
+  }
+  const bounds = ctx.bounds || null;
+  const range = hasDateRange(state) ? dateRangeText(state, bounds) : '';
+  if (range && ctx.data) {
+    const outside = visibleDays(ctx.data, { ...state, from: '', to: '' });
+    if (outside.length) {
+      const n = outside.reduce((sum, v) => sum + v.changes.length, 0);
+      // Nearest day with matching changes, measured to the closer end of the range.
+      const { from, to } = effectiveRange(state, bounds);
+      const gap = (d) => (from && d < from ? daysBetween(d, from) : to && d > to ? daysBetween(to, d) : 0);
+      const nearest = outside.map((v) => v.day.date).sort((a, b) => gap(a) - gap(b) || (a < b ? 1 : -1))[0];
+      return {
+        title: 'Nothing in this date range',
+        detail: `No changes match the current filters in ${range}. `
+          + `${n} matching ${n === 1 ? 'change is' : 'changes are'} outside it; the nearest date is ${formatDateLong(nearest)}.`,
+        action: 'Show all dates',
+        impossible: false,
+        reset: 'dates',
+      };
+    }
   }
   const notes = ['No changes match the current filters.'];
   const kind = sanitizeKindFilter(state.kind);
@@ -1227,7 +1261,8 @@ export function emptyMessage(state) {
   const shown = { patch: 'patch notes', hotfix: 'hotfixes', dev: 'dev posts' }[kind];
   if (kind !== 'all') notes.push(`Only ${shown} are being shown; try "All" to include every kind.`);
   if (hidden) notes.push('Class changes are hidden; choose "All classes" to include them.');
-  return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false };
+  if (range && !ctx.data) notes.push(`Only changes in ${range} are being shown.`);
+  return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false, reset: 'all' };
 }
 
 /**
