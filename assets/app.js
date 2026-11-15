@@ -340,7 +340,10 @@ function renderResults() {
   const total = days.reduce((n, d) => n + d.changes.length, 0);
   $('live').textContent = `${total} ${total === 1 ? 'change' : 'changes'} shown`;
   if (!days.length) {
-    showStatus('Nothing matches', 'No changes match the current filters.', {
+    // Name the kind filter when it is active: it is the easiest one to forget.
+    const kindNote = state.kind === 'all' ? ''
+      : ` Only ${state.kind === 'patch' ? 'patch notes' : 'hotfixes'} are being shown; try "All" to include both.`;
+    showStatus('Nothing matches', `No changes match the current filters.${kindNote}`, {
       label: 'Clear filters', onClick: () => setState(defaultState()),
     });
     return;
