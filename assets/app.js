@@ -336,6 +336,18 @@ function renderClassChips() {
       () => setState({ ...state, cls: state.cls === c.slug ? '' : c.slug, spec: '' }), c.color));
   }
   row.replaceChildren(...chips);
+  scrollPressedIntoView(row);
+}
+
+/**
+ * Horizontally scroll a chip row so its selected chip is visible (matters on
+ * phones, where the row scrolls). Adjusts only the row, never the page.
+ * @param {HTMLElement} row
+ */
+function scrollPressedIntoView(row) {
+  const on = row.querySelector('[aria-pressed="true"]');
+  if (!on || row.scrollWidth <= row.clientWidth) return;
+  row.scrollLeft = Math.max(0, on.offsetLeft - row.offsetLeft - 16);
 }
 
 /**
@@ -370,7 +382,7 @@ function buildSearch() {
   const input = el('input', 'search-input');
   input.id = 'search';
   input.type = 'search';
-  input.placeholder = 'Search skills, items, text…';
+  input.placeholder = 'Search skills…';
   input.autocomplete = 'off';
   input.spellcheck = false;
   input.enterKeyHint = 'search';
@@ -521,7 +533,9 @@ function buildFilters() {
   const clear = el('button', 'btn-clear');
   clear.type = 'button';
   clear.id = 'clear-filters';
-  clear.append('Clear', el('span', 'opt', ' filters'));
+  const clearLabel = el('span');
+  clearLabel.append('Clear', el('span', 'opt', ' filters'));
+  clear.append(clearLabel);
   clear.addEventListener('click', () => setState(defaultState()));
   tools.append(buildSearch(), gen, clear);
 

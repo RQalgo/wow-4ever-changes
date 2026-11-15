@@ -185,8 +185,9 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .icon-fallback { color: var(--text); background: color-mix(in srgb, var(--muted) 18%, var(--surface-2)); }
 .icon-fallback.icon-class { background: color-mix(in srgb, var(--cc) 30%, var(--surface-2)); border-color: var(--cc); }
 
-/* Search box */
-.search { position: relative; flex: 1 1 200px; min-width: 0; }
+/* Search box. On phones the dropdown spans the whole bar (the wrapper is static so
+   the sticky .filters is the containing block); desktop re-anchors it to the input. */
+.search { position: static; flex: 1 1 200px; min-width: 0; }
 .search-input {
   width: 100%; min-height: 44px; padding: 0 .9rem; background: var(--surface); color: var(--text);
   border: 1px solid var(--border); border-radius: 8px; font: 1rem var(--sans);
@@ -206,7 +207,7 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 
 /* Suggestion dropdown (combobox listbox) */
 .suggest {
-  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30; margin: 0; padding: .25rem; list-style: none;
+  position: absolute; left: 1rem; right: 1rem; z-index: 30; margin-top: 4px; padding: .25rem; list-style: none;
   max-height: min(55vh, 22rem); overflow-y: auto; overscroll-behavior: contain;
   background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35);
 }
@@ -216,7 +217,9 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .suggest-item[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
 .suggest-item[aria-selected="true"] .suggest-count { color: inherit; }
 .suggest-icon { flex: none; width: 28px; height: 28px; border-radius: 5px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; display: grid; place-items: center; }
-.suggest-icon img { width: 26px; height: 26px; display: block; }
+.suggest-icon::before { content: "\25C6"; position: absolute; color: var(--muted); font-size: .7rem; }
+.suggest-icon { position: relative; }
+.suggest-icon img { position: relative; width: 26px; height: 26px; display: block; }
 .suggest-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .suggest-count { font-size: .75rem; color: var(--muted); }
 .suggest-item[aria-selected="true"] mark { background: var(--accent-ink); color: var(--accent); }
@@ -243,7 +246,8 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
     display: flex; flex-direction: column; gap: .6rem;
   }
   .tools { flex-direction: column; align-items: stretch; margin: 0; }
-  .tools .search { flex: none; }
+  .tools .search { flex: none; position: relative; }
+  .suggest { left: 0; right: 0; }
   .toggle, .btn-clear { justify-content: flex-start; }
   .chip-row { flex-wrap: wrap; overflow: visible; }
   .chip { min-height: 44px; }
