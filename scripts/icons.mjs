@@ -2,41 +2,56 @@
 //
 // PURPOSE
 //   Icon / subject resolver for the "WoW: Forever changes" pipeline (step 3 in
-//   docs/PLAN.md). For every change line in the days structure described in
-//   docs/SCHEMA.md it finds the skills and items named in `text` and fills
-//   `change.subjects` with `{ name, type: 'spell' | 'item', icon }` entries.
-//   The first subject supplies the line's icon in the web app; with no subjects
-//   the app falls back to a class / category icon.
+//   docs/PLAN.md). For every change in the days structure described in
+//   docs/SCHEMA.md (version 3) it finds the skills, talents and items named in
+//   `text` and then in `notes`, and fills `change.subjects` with
+//   `{ name, type, kind, class, tree, icon, source, verified? }` entries
+//   (at most 8). The first subject supplies the line's icon in the web app;
+//   with no subjects the app falls back to a class / category icon.
 //
 // DESIGN
-//   1. extractCandidates(text)  - purely textual heuristic. Finds runs of
-//      Capitalised Words that look like proper names, minus quotes, parentheses,
-//      rank suffixes, zone prefixes and a stoplist of filler / generic terms.
-//   2. lookupName(name, ...)    - asks Wowhead's search-suggestions endpoint and
-//      accepts only an exact (case-insensitive) Spell or Item match with an icon.
-//   3. addSubjects(days, ...)   - glues 1 and 2 together, with an on-disk cache.
+//   1. extractCandidateGroups / extractCandidates - purely textual heuristics.
+//      Runs of Capitalised Words that look like proper names, minus quotes,
+//      parentheses, rank suffixes, zone prefixes, patch-note lead-ins ("New
+//      Talent", "Added:"), "Name: description" tails, possessive tails, trailing
+//      "Removed" / "in Row 4" and a stoplist of filler / generic terms. "A and B"
+//      lists become separate names.
+//   2. lookupName(name, ...)  - asks Wowhead's search-suggestions endpoint and
+//      accepts only an exact (case-insensitive) Spell or Item match with an
+//      icon; several matches are ranked (see pickResult). Result:
+//      `{ name, type, kind, class, icon }`, kind/class from the breadcrumb.
+//   3. addSubjects(days, ...) - glues them together. SOURCE ORDER per name:
+//      overrides ("override"), then the optional game-client index `gameIndex`
+//      ("client": primary, free, knows talents / trees), then Wowhead
+//      ("wowhead": budgeted fallback and cross-check). When a client-resolved
+//      name also has a Wowhead answer, `verified` says whether the icons agree.
 //
 //   Everything that touches the network goes through an injectable `fetchImpl`,
 //   so the unit tests use stubs and never need the internet.
 //
 // CACHE  (data/icon-cache.json)
 //   Keyed by the lower-cased name (curly apostrophes normalised to straight).
-//   A hit is stored as `{ name, type, icon }`, a definitive miss as `null`, so
-//   nothing is ever looked up twice. Network / HTTP / JSON errors are NOT cached
-//   (the answer is "unknown for now"; the next run tries again).
+//   A hit is stored as `{ name, type, kind, class, icon }`, a definitive miss as
+//   `null`, so nothing is ever looked up twice. Network / HTTP / JSON errors are
+//   NOT cached (the answer is "unknown for now"; the next run tries again).
+//   Entries written before v3 are `{ name, type, icon }`: they keep working
+//   (kind "spell"/"item", class null); old SPELL hits are re-looked-up when
+//   budget allows and rewritten, old ITEM hits need no network call.
 //
 // OVERRIDES  (data/icon-overrides.json)  -- hand-edited
-//   Same shape as the cache: `{ "<lower-cased name>": { name, type, icon } | null }`.
-//   An override WINS over both the cache and the network. Use an entry to fix a
-//   wrong icon, to supply an icon for something Wowhead does not list, or set the
-//   value to `null` to stop a name from ever being resolved (a false positive).
+//   `{ "<lower-cased name>": { name, type, icon, kind?, class?, tree? } | null }`.
+//   `kind` ("talent" | "ability" | "spell" | "item"), `class` (slug) and `tree`
+//   (talent-tree slug) are optional; kind defaults to "spell" / "item" by type.
+//   An override WINS over the client index, the cache and the network. Use an
+//   entry to fix a wrong icon, to supply one nobody lists, or set the value to
+//   `null` to stop a name from ever being resolved (a false positive).
 //   The file is never written by this script. Plain JSON has no comments, so
 //   this header is the documentation.
 //
 // POLITENESS
 //   Requests are strictly sequential, separated by `delayMs`, carry an honest
 //   User-Agent, time out after 15 s, and are capped at `maxLookups` new network
-//   calls per run. After 5 consecutive failures the run stops calling the network.
+//   calls per run (250 by default, 1.5 s apart). After 5 consecutive failures the run stops calling the network.
 //   The resolver never throws because of the network; the site simply falls back
 //   to class icons for lines that stay unresolved.
 //
