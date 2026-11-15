@@ -321,6 +321,14 @@ function collectNoteTexts(lists, out = []) {
 }
 
 /**
+ * Separator between nested group headings in a change's `group`
+ * ("The Drowned City › Deathless Marrow"): U+203A with a space on each side,
+ * the same separator the web app uses for breadcrumbs, so stored data and the
+ * UI never mix " > " and " › ".
+ */
+export const GROUP_SEPARATOR = ' \u203A ';
+
+/**
  * Build a change object (without its id, assigned per day later).
  * @param {object} ctx Walker context (see walkList).
  * @param {string} text
@@ -333,7 +341,7 @@ function makeChange(ctx, text) {
     category: ctx.category ?? FALLBACK_CATEGORY,
     class: ctx.inClasses ? ctx.class : null,
     spec: ctx.inClasses ? ctx.spec : null,
-    group: ctx.group.length ? ctx.group.join(' > ') : null,
+    group: ctx.group.length ? ctx.group.join(GROUP_SEPARATOR) : null,
     text,
     notes: [],
     subjects: [],
@@ -380,7 +388,7 @@ export function talentTreeSlug(classSlug, heading) {
  * Inside Classes the first heading level is the class, the second the spec
  * (only if it is a real talent tree of that class, see TALENT_TREES);
  * anything else, and every heading level in other categories, is appended
- * to `group` (joined later as "A > B").
+ * to `group` (joined later as "A › B", see GROUP_SEPARATOR).
  * @param {object} ctx
  * @param {string} heading
  */

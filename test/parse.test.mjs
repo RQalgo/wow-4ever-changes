@@ -12,6 +12,7 @@ import { readFileSync } from 'node:fs';
 import { parse as parseDom } from 'node-html-parser';
 import {
   cleanText, slugify, parseDateLabel, parseHotfixHtml, isDeveloperNote, findArticleHtmlInScripts,
+  GROUP_SEPARATOR,
 } from '../scripts/parse.mjs';
 
 const FIXTURE = readFileSync(new URL('./fixtures/hotfixes-sample.html', import.meta.url), 'utf8');
@@ -133,16 +134,18 @@ describe('list walker', () => {
     ]);
   });
 
-  test('nested bold headings in general categories join into "A > B"', () => {
+  test('nested bold headings in general categories join into "A › B"', () => {
     const html = day('Dungeons', `<ul>
       <li><strong>Blackrock Depths</strong><ul>
         <li><strong>Lyceum</strong><ul><li>Fewer adds.</li></ul></li>
         <li>Door fixed.</li>
       </ul></li></ul>`);
     assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.scope, c.class, c.group, c.text]), [
-      ['general', null, 'Blackrock Depths > Lyceum', 'Fewer adds.'],
+      ['general', null, 'Blackrock Depths › Lyceum', 'Fewer adds.'],
       ['general', null, 'Blackrock Depths', 'Door fixed.'],
     ]);
+    // The separator is U+203A with spaces, as in the UI; never " > ".
+    assert.equal(GROUP_SEPARATOR, ' \u203A ');
   });
 
   test('a bold-only item without a nested list is a change', () => {
