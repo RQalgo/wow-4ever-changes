@@ -60,6 +60,9 @@ const MAX_CONSECUTIVE_FAILURES = 5;
 /** Maximum number of candidate names kept per change line (or note). */
 const MAX_CANDIDATES = 6;
 
+/** Maximum number of subjects (and candidate names) per change, text plus notes. */
+const MAX_SUBJECTS = 8;
+
 // ---------------------------------------------------------------------------
 // STOPLISTS  (all entries are compared lower-cased; keep them in this block)
 // ---------------------------------------------------------------------------
@@ -496,56 +499,151 @@ export function extractCandidates(text, opts = {}) {
 // LOOKUP (Wowhead search suggestions)
 // ---------------------------------------------------------------------------
 
+/** The nine class slugs (docs/SCHEMA.md); used to read a class off a result. */
+const CLASS_SLUGS = ['druid', 'hunter', 'mage', 'paladin', 'priest', 'rogue', 'shaman', 'warlock', 'warrior'];
+
+/**
+ * The breadcrumb of a suggestion result as an array of strings. The endpoint
+ * returns an array (["Talents", "Paladin"]); a bare string is tolerated.
+ * @param {object} r  one result
+ * @returns {string[]}
+ */
+function crumbsOf(r) {
+  const b = r.pinBreadcrumb;
+  if (Array.isArray(b)) return b.filter((c) => typeof c === 'string');
+  return typeof b === 'string' && b ? [b] : [];
+}
+
+/**
+ * The class a result belongs to: the first breadcrumb element naming one of the
+ * nine classes, else "Requires <Class>" in `pinDescription`, else null.
+ * @param {object} r  one result
+ * @returns {string|null} lower-case class slug
+ */
+function classOfResult(r) {
+  for (const c of crumbsOf(r)) {
+    const n = normalizeName(c);
+    if (CLASS_SLUGS.includes(n)) return n;
+  }
+  const m = new RegExp(`Requires\\s+(${CLASS_SLUGS.join('|')})\\b`, 'i').exec(String(r.pinDescription ?? ''));
+  return m ? m[1].toLowerCase() : null;
+}
+
+/**
+ * The subject `kind` of a result (docs/SCHEMA.md v3): items are "item", the
+ * "Talents" / "Abilities" breadcrumb roots are "talent" / "ability", any other
+ * spell is "spell".
+ * @param {object} r  one result
+ * @param {'spell'|'item'} type
+ * @returns {'talent'|'ability'|'item'|'spell'}
+ */
+function kindOfResult(r, type) {
+  if (type === 'item') return 'item';
+  const root = crumbsOf(r)[0];
+  if (root === 'Talents') return 'talent';
+  if (root === 'Abilities') return 'ability';
+  return 'spell';
+}
+
+/**
+ * Fill in the v3 fields of a stored hit (cache or override). Old cache entries
+ * are `{ name, type, icon }`; they become kind "spell" / "item" and class null.
+ * @param {{ name: string, type: string, icon: string, kind?: string, class?: string|null }|null} entry
+ * @returns {{ name: string, type: 'spell'|'item', kind: string, class: string|null, icon: string }|null}
+ */
+function normalizeHit(entry) {
+  if (!entry) return null;
+  return {
+    name: entry.name,
+    type: entry.type,
+    kind: entry.kind ?? (entry.type === 'item' ? 'item' : 'spell'),
+    class: entry.class ?? null,
+    icon: entry.icon,
+  };
+}
+
+/**
+ * True for a cache entry written before schema v3: a spell hit without `kind`.
+ * Such entries keep working (kind "spell", class null) but are re-looked-up
+ * when the budget allows, to learn their kind and class. Old ITEM hits need no
+ * network call (their kind is always "item").
+ * @param {object|null|undefined} entry
+ * @returns {boolean}
+ */
+export function isStaleEntry(entry) {
+  return !!entry && !Object.hasOwn(entry, 'kind') && entry.type === 'spell';
+}
+
 /**
  * Pick the accepted result from a suggestions response.
  *
  * Acceptance rule: `name` equals the candidate (case-insensitive, curly and
- * straight apostrophes equivalent), `typeName` is "Spell" or "Item", and an
- * `icon` is present. Among accepted results:
+ * straight apostrophes equivalent), `typeName` is "Spell" or "Item" (quests,
+ * guides, NPCs are ignored), and an `icon` is present. Among accepted results:
  *   1. results of `preferType` win when there are any, else any type;
- *   2. when several Spell results remain and `classSlug` is known, the first one
- *      whose `pinDescription` / `pinBreadcrumb` mentions that class wins;
- *   3. otherwise the first.
+ *   2. the pool is ranked (lowest rank wins, ties keep response order):
+ *        1  Talents / Abilities of the asking line's class
+ *        2  Talents / Abilities of any class
+ *        3  other spells of the asking line's class (e.g. Uncategorized/Paladin)
+ *        4  every other spell, and items
+ *        5  "NPC Abilities" (only when nothing else matched)
+ *      Within ranks 1 and 2 a talent beats an ability: when "Holy Shield" is
+ *      both, a change about it is usually about the talent.
  *
  * @param {object[]} results  the `results` array from the endpoint
  * @param {string} name       candidate name
  * @param {{ preferType?: 'spell'|'item'|null, classSlug?: string|null }} [opts]
- * @returns {{ name: string, type: 'spell'|'item', icon: string } | null}
+ * @returns {{ name: string, type: 'spell'|'item', kind: string, class: string|null, icon: string } | null}
  */
 function pickResult(results, name, { preferType, classSlug } = {}) {
   const want = normalizeName(name);
+  const wantClass = classSlug ? String(classSlug).toLowerCase() : null;
   const exact = results
     .filter((r) => r && typeof r === 'object'
       && (r.typeName === 'Spell' || r.typeName === 'Item')
       && typeof r.icon === 'string' && r.icon !== ''
       && typeof r.name === 'string' && normalizeName(r.name) === want)
-    .map((r) => ({ raw: r, type: r.typeName === 'Spell' ? 'spell' : 'item' }));
+    .map((raw, index) => {
+      const type = raw.typeName === 'Spell' ? 'spell' : 'item';
+      return { raw, index, type, kind: kindOfResult(raw, type), class: classOfResult(raw) };
+    });
   if (exact.length === 0) return null;
 
   const preferred = preferType ? exact.filter((e) => e.type === preferType) : [];
   const pool = preferred.length ? preferred : exact;
 
-  let chosen = pool[0];
-  const spells = pool.filter((e) => e.type === 'spell');
-  if (classSlug && spells.length > 1) {
-    // pinDescription / pinBreadcrumb may be strings or structures; stringify both.
-    const wantClass = String(classSlug).toLowerCase();
-    const byClass = spells.find((e) =>
-      JSON.stringify([e.raw.pinDescription, e.raw.pinBreadcrumb]).toLowerCase().includes(wantClass));
-    if (byClass) chosen = byClass; // otherwise keep the first exact match
-  }
-  return { name: chosen.raw.name, type: chosen.type, icon: chosen.raw.icon };
+  /** Rank of one candidate result, see the table above. */
+  const rank = (e) => {
+    if (e.type === 'item') return 4;
+    if (crumbsOf(e.raw)[0] === 'NPC Abilities') return 5;
+    const skill = e.kind === 'talent' || e.kind === 'ability';
+    if (skill && wantClass && e.class === wantClass) return 1;
+    if (skill) return 2;
+    if (wantClass && e.class === wantClass) return 3;
+    return 4;
+  };
+  // Talent before ability, but only inside the skill ranks.
+  const talentFirst = (e) => (rank(e) <= 2 && e.kind === 'talent' ? 0 : 1);
+  const [chosen] = [...pool].sort((x, y) =>
+    rank(x) - rank(y) || talentFirst(x) - talentFirst(y) || x.index - y.index);
+  return { name: chosen.raw.name, type: chosen.type, kind: chosen.kind, class: chosen.class, icon: chosen.raw.icon };
 }
 
 /**
  * Shared per-run network budget and circuit breaker, so that many lookupName
  * calls (one run of addSubjects) honour the same limits.
  *
+ * Defaults: 250 lookups, 1.5 s apart. Wowhead answered ~270 lookups at 0.4 s
+ * spacing and then returned HTTP 403; 150 at 1.2 s worked twice. 250 at 1.5 s
+ * is about 6 minutes per run, which clears the ~650-name backlog (and the
+ * stale-entry refreshes) within a few 6-hourly runs while staying slower and
+ * smaller than the call pattern that was blocked.
+ *
  * @param {{ maxLookups?: number, delayMs?: number, log?: Function }} [opts]
  * @returns {{ maxLookups: number, delayMs: number, log: Function, calls: number,
  *   failures: number, stopped: boolean, warnedCap: boolean }}
  */
-export function createLimits({ maxLookups = 150, delayMs = 1200, log = console.error } = {}) {
+export function createLimits({ maxLookups = 250, delayMs = 1500, log = console.error } = {}) {
   return { maxLookups, delayMs, log, calls: 0, failures: 0, stopped: false, warnedCap: false };
 }
 
@@ -571,41 +669,53 @@ async function fetchSuggestions(name, fetchImpl) {
 }
 
 /**
- * Resolve one name to `{ name, type, icon }` or `null`.
+ * Resolve one name to `{ name, type, kind, class, icon }` or `null`.
  *
  * Order of consultation: overrides, then the in-memory cache, then the network.
  * Definitive answers (hit or miss) are written to `cache` under the normalised
- * name. Errors, an exhausted `maxLookups` budget and an open circuit breaker all
- * return `null` WITHOUT touching the cache ("unknown for now").
- * Never throws because of the network.
+ * name in the v3 shape. Errors, an exhausted `maxLookups` budget and an open
+ * circuit breaker all return `null` WITHOUT touching the cache ("unknown for
+ * now"). Never throws because of the network.
+ *
+ * Old-shape cache hits are returned normalised (kind "spell"/"item", class
+ * null). With `force: true` the cache is skipped and the entry is re-fetched
+ * (the stale-entry refresh): a failed or exhausted refresh returns the old
+ * entry untouched, a definitive miss rewrites the old entry in the new shape
+ * instead of losing the icon.
+ *
+ * The cache is keyed by name only, so the first asking line's class decides
+ * between several same-named spells; later lines (of any class) reuse that pick.
  *
  * @param {string} name
  * @param {object} [opts]
  * @param {typeof fetch} [opts.fetchImpl]  defaults to global fetch
  * @param {Record<string, object|null>} [opts.cache]  mutated in place
  * @param {'spell'|'item'|null} [opts.preferType]
- * @param {string|null} [opts.classSlug]   used to disambiguate several spells
+ * @param {string|null} [opts.classSlug]   the asking line's class
  * @param {Record<string, object|null>} [opts.overrides]  hand-edited, win over all
+ * @param {boolean} [opts.force]  refresh a stored entry from the network
  * @param {ReturnType<typeof createLimits>} [opts.limits]  shared budget; a fresh
  *   unlimited-delay one is created per call when omitted
- * @returns {Promise<{ name: string, type: 'spell'|'item', icon: string } | null>}
+ * @returns {Promise<{ name: string, type: 'spell'|'item', kind: string, class: string|null, icon: string } | null>}
  */
 export async function lookupName(name, {
   fetchImpl = globalThis.fetch, cache = {}, preferType, classSlug, overrides = {},
-  limits = createLimits({ delayMs: 0 }),
+  force = false, limits = createLimits({ delayMs: 0 }),
 } = {}) {
   const key = normalizeName(name);
-  if (Object.hasOwn(overrides, key)) return overrides[key];
-  if (Object.hasOwn(cache, key)) return cache[key];
+  if (Object.hasOwn(overrides, key)) return normalizeHit(overrides[key]);
+  const stored = Object.hasOwn(cache, key) ? cache[key] : undefined;
+  if (stored !== undefined && !force) return normalizeHit(stored);
+  const fallback = normalizeHit(stored); // what to return if the refresh cannot happen
 
   // Budget / breaker checks: leave the name uncached so a later run retries.
-  if (limits.stopped) return null;
+  if (limits.stopped) return fallback;
   if (limits.calls >= limits.maxLookups) {
     if (!limits.warnedCap) {
       limits.log(`icons: lookup budget of ${limits.maxLookups} reached; the rest waits for the next run`);
       limits.warnedCap = true;
     }
-    return null;
+    return fallback;
   }
 
   if (limits.calls > 0) await sleep(limits.delayMs); // be polite between calls
@@ -620,18 +730,49 @@ export async function lookupName(name, {
       limits.stopped = true;
       limits.log(`icons: ${MAX_CONSECUTIVE_FAILURES} consecutive failures; no more network calls this run`);
     }
-    return null;
+    return fallback;
   }
   limits.failures = 0;
 
   const hit = pickResult(results, name, { preferType, classSlug });
-  cache[key] = hit; // hit, or null for a definitive miss
-  return hit;
+  // A refresh that finds nothing now keeps the old icon, in the new shape.
+  cache[key] = hit ?? (force ? fallback : null);
+  return hit ?? fallback;
 }
 
 // ---------------------------------------------------------------------------
 // ADDING SUBJECTS TO THE DAYS STRUCTURE
 // ---------------------------------------------------------------------------
+
+/**
+ * Candidate groups of a whole change: the groups of its text first, then those
+ * of each note, de-duplicated by name (a name found in the text is not looked
+ * up again for the notes) and capped at MAX_SUBJECTS names in total.
+ *
+ * @param {{ text?: string, notes?: string[] }} change
+ * @returns {import('./icons.mjs').CandidateGroup[]}
+ */
+export function changeCandidateGroups(change) {
+  const sources = [change.text ?? '', ...(Array.isArray(change.notes) ? change.notes : [])];
+  const seen = new Set();
+  const out = [];
+  let count = 0;
+  for (const src of sources) {
+    for (const g of extractCandidateGroups(src)) {
+      const fresh = g.parts.filter((n) => !seen.has(normalizeName(n)));
+      if (!fresh.length && !g.whole) continue;
+      if (g.whole && seen.has(normalizeName(g.whole))) continue;
+      const room = MAX_SUBJECTS - count;
+      if (room <= 0) return out;
+      const parts = fresh.slice(0, room);
+      parts.forEach((n) => seen.add(normalizeName(n)));
+      if (g.whole) seen.add(normalizeName(g.whole));
+      count += parts.length;
+      out.push({ whole: parts.length === g.parts.length ? g.whole : null, parts });
+    }
+  }
+  return out;
+}
 
 /**
  * Lookup variants for one candidate, in the order they are tried:
@@ -723,13 +864,17 @@ function preferTypeFor(change) {
 }
 
 /**
- * Fill `subjects` on every change of every day (see docs/SCHEMA.md).
+ * Fill `subjects` on every change of every day (see docs/SCHEMA.md, v3).
  *
- * Loads the cache and the hand-edited overrides, resolves each change's
- * candidates sequentially (with fallback variants, see lookupVariants), and
- * writes the cache back (sorted keys, 2-space JSON) at the end. Changes that
- * already have subjects are simply recomputed; the cache makes that free.
- * Never throws because of the network.
+ * Subjects come from the change text first, then from its notes. Steps:
+ *   1. RESOLVE: walk the changes in priority order (class lines before general
+ *      lines, newest day first) and look every unknown candidate up, spending
+ *      the per-run budget on never-looked-up names first;
+ *   2. REFRESH: spend what is left of the budget re-looking-up stale cache
+ *      entries (v2-shape spell hits) to learn their kind and class;
+ *   3. ASSEMBLE: build each change's `subjects` from the cache alone.
+ * Finally the cache is written back (sorted keys, 2-space JSON). Never throws
+ * because of the network.
  *
  * @param {{ changes: object[] }[]} days  mutated in place
  * @param {object} [opts]
@@ -737,48 +882,86 @@ function preferTypeFor(change) {
  * @param {string} [opts.overridesPath]
  * @param {typeof fetch} [opts.fetchImpl]
  * @param {number} [opts.delayMs]    pause between network calls
- * @param {number} [opts.maxLookups] cap on new network calls this run
+ * @param {number} [opts.maxLookups] cap on network calls this run
  * @param {Function} [opts.log]      one-line logger
  * @returns {Promise<object[]>} the same `days`
  */
-// Defaults are deliberately gentle: in the first real run Wowhead answered
-// ~270 lookups at 400 ms spacing and then started returning HTTP 403 (rate
-// limiting). 150 lookups per run at 1.2 s spacing stays well below that; the
-// cache means later runs only look up names that are new or still unknown.
 export async function addSubjects(days, {
   cachePath = 'data/icon-cache.json',
   overridesPath = 'data/icon-overrides.json',
   fetchImpl = globalThis.fetch,
-  delayMs = 1200,
-  maxLookups = 150,
+  delayMs = 1500,
+  maxLookups = 250,
   log = console.error,
 } = {}) {
   const cache = await readJsonObject(cachePath, log);
   const overrides = await readJsonObject(overridesPath, log);
   const limits = createLimits({ maxLookups, delayMs, log });
+  // A limits object that never touches the network: assembly reads the cache only.
+  const offline = createLimits({ maxLookups: 0, delayMs: 0, log: () => {} });
+  offline.stopped = true;
 
-  for (const day of days) {
-    for (const change of day.changes ?? []) {
-      const classSlug = change.class ?? null;
-      const preferType = preferTypeFor(change);
-      const subjects = [];
-      const taken = new Set();
-      for (const candidate of extractCandidates(change.text, { classSlug })) {
-        for (const variant of lookupVariants(candidate)) {
-          const hit = await lookupName(variant, { fetchImpl, cache, preferType, classSlug, overrides, limits });
-          if (hit) {
-            const id = `${hit.type}:${normalizeName(hit.name)}`;
-            if (!taken.has(id)) { taken.add(id); subjects.push({ name: hit.name, type: hit.type, icon: hit.icon }); }
-            break; // first variant that resolves wins for this candidate
-          }
+  // Priority order: class lines first, then general; `days` is newest-first and
+  // Array.sort is stable, so within each group newer days stay first.
+  const refs = days.flatMap((day) => (day.changes ?? []).map((change) => ({ day, change })));
+  const ordered = [...refs].sort((a, b) =>
+    (a.change.scope === 'class' ? 0 : 1) - (b.change.scope === 'class' ? 0 : 1)
+    || (a.day.date < b.day.date ? 1 : a.day.date > b.day.date ? -1 : 0));
+
+  /**
+   * Resolve one change's groups into subjects using `lim` (real or offline
+   * limits). `stale` (optional Map) collects v2-shape spell entries that were
+   * used, with the context to refresh them.
+   */
+  const resolveChange = async (change, lim, stale) => {
+    const classSlug = change.class ?? null;
+    const preferType = preferTypeFor(change);
+    const subjects = [];
+    const taken = new Set();
+    const take = (hit) => {
+      const id = `${hit.type}:${normalizeName(hit.name)}`;
+      if (taken.has(id) || subjects.length >= MAX_SUBJECTS) return;
+      taken.add(id);
+      subjects.push({ name: hit.name, type: hit.type, kind: hit.kind, class: hit.class, icon: hit.icon });
+      const key = normalizeName(hit.name);
+      if (stale && !Object.hasOwn(overrides, key) && isStaleEntry(cache[key]) && !stale.has(key)) {
+        stale.set(key, { name: hit.name, classSlug, preferType });
+      }
+    };
+    const ask = (name) => lookupName(name, { fetchImpl, cache, preferType, classSlug, overrides, limits: lim });
+    for (const group of changeCandidateGroups(change)) {
+      if (group.whole) {
+        const whole = await ask(group.whole);
+        if (whole) { take(whole); continue; } // a real "A and B" name: parts are not needed
+      }
+      for (const part of group.parts) {
+        for (const variant of lookupVariants(part)) {
+          const hit = await ask(variant);
+          if (hit) { take(hit); break; } // first variant that resolves wins for this candidate
           const key = normalizeName(variant);
           const answered = Object.hasOwn(cache, key) || Object.hasOwn(overrides, key);
           if (!answered) break; // inconclusive (error / budget): do not burn more calls on this candidate
         }
       }
-      change.subjects = subjects;
     }
+    return subjects;
+  };
+
+  // 1. Resolve unknown names, most valuable lines first.
+  for (const { change } of ordered) await resolveChange(change, limits);
+  const lookedUp = limits.calls;
+
+  // 2. Refresh stale entries with whatever budget is left.
+  const stale = new Map();
+  for (const { change } of ordered) await resolveChange(change, offline, stale);
+  for (const [, ctx] of stale) {
+    if (limits.stopped || limits.calls >= limits.maxLookups) break;
+    await lookupName(ctx.name, { fetchImpl, cache, preferType: ctx.preferType, classSlug: ctx.classSlug, overrides, force: true, limits });
   }
+  log(`icons: ${lookedUp} new lookups, ${limits.calls - lookedUp} stale refreshes, ${stale.size} stale entries were in use`);
+
+  // 3. Assemble from the cache.
+  for (const { change } of refs) change.subjects = await resolveChange(change, offline);
 
   // Write the cache back with sorted keys so diffs stay minimal and stable.
   const sorted = Object.fromEntries(Object.keys(cache).sort().map((k) => [k, cache[k]]));

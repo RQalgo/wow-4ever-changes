@@ -159,7 +159,7 @@ describe('lookupName', () => {
   test('accepts an exact name match, case-insensitively and with curly apostrophes', async () => {
     const f = stubFetch(() => [spell("Hunter's Mark", 'ability_hunter_snipershot')]);
     const r = await lookupName('hunter’s mark', { fetchImpl: f, cache: {} });
-    assert.deepEqual(r, { name: "Hunter's Mark", type: 'spell', icon: 'ability_hunter_snipershot' });
+    assert.deepEqual(r, { name: "Hunter's Mark", type: 'spell', kind: 'spell', class: null, icon: 'ability_hunter_snipershot' });
   });
 
   test('rejects partial matches, other types and results without icon', async () => {
@@ -202,7 +202,8 @@ describe('lookupName', () => {
   test('classSlug prefers the spell whose pin text mentions the class, else the first', async () => {
     const results = [
       spell('Judgement', 'icon_warrior', { pinBreadcrumb: 'Warrior' }),
-      spell('Judgement', 'icon_paladin', { pinDescription: 'Paladin ability' }),
+      // v3: the class is read from "Requires <Class>" (or a breadcrumb element).
+      spell('Judgement', 'icon_paladin', { pinDescription: 'Requires Paladin' }),
     ];
     const pal = await lookupName('Judgement', { fetchImpl: stubFetch(() => results), cache: {}, preferType: 'spell', classSlug: 'paladin' });
     assert.equal(pal.icon, 'icon_paladin');
@@ -217,7 +218,7 @@ describe('lookupName', () => {
     const b = await lookupName('SAP', { fetchImpl: f, cache });
     assert.deepEqual(a, b);
     assert.equal(f.calls.length, 1);
-    assert.deepEqual(cache.sap, { name: 'Sap', type: 'spell', icon: 'ability_sap' });
+    assert.deepEqual(cache.sap, { name: 'Sap', type: 'spell', kind: 'spell', class: null, icon: 'ability_sap' });
     assert.equal(await lookupName('Nothing Here', { fetchImpl: f, cache }), null);
     assert.equal(await lookupName('nothing here', { fetchImpl: f, cache }), null);
     assert.equal(f.calls.length, 2);
@@ -325,8 +326,8 @@ describe('addSubjects', () => {
       const days = makeDays();
       const out = await addSubjects(days, { cachePath, overridesPath, fetchImpl: f, delayMs: 0, log: quiet });
       assert.equal(out, days); // mutated and returned
-      assert.deepEqual(days[0].changes[0].subjects, [{ name: 'Judgement of Command', type: 'spell', icon: 'ability_warrior_innerrage' }]);
-      assert.deepEqual(days[0].changes[1].subjects, [{ name: 'Taran Icebreaker', type: 'item', icon: 'inv_mace_13' }]);
+      assert.deepEqual(days[0].changes[0].subjects, [{ name: 'Judgement of Command', type: 'spell', kind: 'spell', class: null, icon: 'ability_warrior_innerrage' }]);
+      assert.deepEqual(days[0].changes[1].subjects, [{ name: 'Taran Icebreaker', type: 'item', kind: 'item', class: null, icon: 'inv_mace_13' }]);
       assert.deepEqual(days[0].changes[2].subjects, []);
       // Misses for "Lesser Rock Elemental" and its shrunk variants were tried once each.
       const queried = f.calls.map((c) => c.q);
@@ -419,5 +420,89 @@ describe('addSubjects', () => {
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 4. v3: kind / class from breadcrumbs and the match preference
+// ---------------------------------------------------------------------------
+
+/** Spell result with a breadcrumb, as the real endpoint returns them. */
+const crumb = (name, icon, pinBreadcrumb, extra = {}) => spell(name, icon, { pinBreadcrumb, ...extra });
+
+describe('lookupName: kind and class from the breadcrumb', () => {
+  const one = async (result, opts = {}) =>
+    lookupName(result.name, { fetchImpl: stubFetch(() => [result]), cache: {}, ...opts });
+
+  test('Talents -> talent, Abilities -> ability, Uncategorized -> spell, class lower-cased', async () => {
+    assert.deepEqual(await one(crumb('Oath of Light', 'i1', ['Talents', 'Paladin'])),
+      { name: 'Oath of Light', type: 'spell', kind: 'talent', class: 'paladin', icon: 'i1' });
+    assert.deepEqual(await one(crumb('Smite', 'i2', ['Abilities', 'Priest'])),
+      { name: 'Smite', type: 'spell', kind: 'ability', class: 'priest', icon: 'i2' });
+    assert.deepEqual(await one(crumb('Odd', 'i3', ['Uncategorized'])),
+      { name: 'Odd', type: 'spell', kind: 'spell', class: null, icon: 'i3' });
+    assert.deepEqual(await one(crumb('Odd2', 'i4', ['Uncategorized', 'Warlock'])),
+      { name: 'Odd2', type: 'spell', kind: 'spell', class: 'warlock', icon: 'i4' });
+  });
+
+  test('items are kind "item"; a class can come from "Requires <Class>" in pinDescription', async () => {
+    assert.deepEqual(await one(item('Ring', 'r')), { name: 'Ring', type: 'item', kind: 'item', class: null, icon: 'r' });
+    const r = await one(spell('Thing', 't', { pinDescription: 'Requires Rogue. Does things.' }));
+    assert.equal(r.class, 'rogue');
+    assert.equal(r.kind, 'spell');
+  });
+});
+
+describe('lookupName: choosing among several exact matches', () => {
+  /** The three "Judgement" matches seen on the real endpoint. */
+  const judgement = [
+    crumb('Judgement', 'ability_pal', ['Abilities', 'Paladin']),
+    crumb('Judgement', 'unc1', ['Uncategorized', 'Paladin']),
+    crumb('Judgement', 'unc2', ['Uncategorized']),
+  ];
+  /** "Holy Shield" is both a talent and an ability of the paladin. */
+  const holyShield = [
+    crumb('Holy Shield', 'abil', ['Abilities', 'Paladin']),
+    crumb('Holy Shield', 'tal', ['Talents', 'Paladin']),
+  ];
+  const pick = (results, name, opts) => lookupName(name, { fetchImpl: stubFetch(() => results), cache: {}, ...opts });
+
+  test('Judgement: the Abilities/Paladin match wins for any asking class', async () => {
+    assert.equal((await pick(judgement, 'Judgement', { classSlug: 'paladin' })).icon, 'ability_pal');
+    assert.equal((await pick(judgement, 'Judgement', { classSlug: 'rogue' })).icon, 'ability_pal');
+    assert.equal((await pick(judgement, 'Judgement')).kind, 'ability');
+  });
+
+  test('Holy Shield: the talent beats the ability and keeps kind "talent"', async () => {
+    const r = await pick(holyShield, 'Holy Shield', { classSlug: 'paladin' });
+    assert.deepEqual([r.kind, r.icon], ['talent', 'tal']);
+    assert.equal((await pick(holyShield, 'Holy Shield')).kind, 'talent');
+  });
+
+  test('rank 1 (own class) beats rank 2 (other class)', async () => {
+    const results = [crumb('Strike', 'war', ['Abilities', 'Warrior']), crumb('Strike', 'rog', ['Abilities', 'Rogue'])];
+    assert.equal((await pick(results, 'Strike', { classSlug: 'rogue' })).icon, 'rog');
+    assert.equal((await pick(results, 'Strike', { classSlug: 'mage' })).icon, 'war'); // no own class: first
+  });
+
+  test('rank 3: an own-class Uncategorized spell beats a generic one', async () => {
+    const results = [crumb('Zap', 'gen', ['Uncategorized']), crumb('Zap', 'mine', ['Uncategorized', 'Mage'])];
+    assert.equal((await pick(results, 'Zap', { classSlug: 'mage' })).icon, 'mine');
+    assert.equal((await pick(results, 'Zap')).icon, 'gen');
+  });
+
+  test('NPC Abilities only win when nothing else matches; quests and guides never', async () => {
+    const npc = crumb('Bite', 'npc', ['NPC Abilities']);
+    assert.equal((await pick([npc, crumb('Bite', 'unc', ['Uncategorized'])], 'Bite')).icon, 'unc');
+    assert.equal((await pick([npc], 'Bite')).icon, 'npc');
+    const quest = { type: 5, id: 9, name: 'Bite', typeName: 'Quest', icon: 'q', pinBreadcrumb: ['Dungeons'] };
+    const guide = { type: 9, id: 8, name: 'Bite', typeName: 'Guide' };
+    assert.equal(await pick([quest, guide], 'Bite'), null);
+  });
+
+  test('preferType still filters before ranking', async () => {
+    const results = [crumb('Sap', 'tal', ['Talents', 'Rogue']), item('Sap', 'it')];
+    assert.equal((await pick(results, 'Sap', { preferType: 'item' })).type, 'item');
+    assert.equal((await pick(results, 'Sap', { preferType: 'spell' })).type, 'spell');
   });
 });
