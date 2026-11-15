@@ -24,7 +24,7 @@ import {
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
   availableCategories, toggleCategory, normalizeCats, isCategoryOn,
   activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
-  classChoice, withClassChoice, normalizeClassState,
+  classChoice, withClassChoice, normalizeClassState, emptyMessage,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, enabled categories (null = all), kind filter, hideClasses ("No classes"). */
@@ -408,12 +408,11 @@ function renderResults() {
   shownCount = total;
   renderFilterBar();
   if (!days.length) {
-    // Name the kind filter when it is active: it is the easiest one to forget.
-    const kindNote = state.kind === 'all' ? ''
-      : ` Only ${state.kind === 'patch' ? 'patch notes' : 'hotfixes'} are being shown; try "All" to include both.`;
-    showStatus('Nothing matches', `No changes match the current filters.${kindNote}`, {
-      label: 'Clear filters', onClick: () => setState(defaultState()),
-    });
+    // emptyMessage names the filters that are easy to forget (kind, hidden
+    // class changes) and spells out the impossible "No classes + no
+    // categories" case; its one button always resets every filter.
+    const msg = emptyMessage(state);
+    showStatus(msg.title, msg.detail, { label: msg.action, onClick: () => setState(defaultState()) });
     return;
   }
   $('results').replaceChildren(...days.map(({ day, changes }) => renderDay(day, changes)));
