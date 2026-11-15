@@ -99,3 +99,11 @@ test('fetchPost gives up on an endless chain of in-page redirects', async () => 
   const impl = async () => new Response(`<meta http-equiv="refresh" content="1;url=/hop${++n}">`, { status: 307 });
   await assert.rejects(fetchPost('https://news.example.test/a', { fetchImpl: impl }), /too many in-page redirects/);
 });
+
+test('metaRefreshTarget also reads a Next.js NEXT_REDIRECT digest', () => {
+  const body = '<script>self.__next_f.push([1,"E{\\"digest\\":\\"NEXT_REDIRECT;replace;/en-us/article/1/slug;307;\\"}"])</script>';
+  assert.equal(
+    metaRefreshTarget(body, 'https://news.example.test/en-us/article/1'),
+    'https://news.example.test/en-us/article/1/slug',
+  );
+});

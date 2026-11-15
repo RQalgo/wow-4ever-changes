@@ -76,11 +76,14 @@ export function metaRefreshTarget(html, baseUrl) {
   // Match <meta … http-equiv="refresh" … content="<seconds>;url=<target>" …>
   // with the two attributes in either order.
   const tag = /<meta\b[^>]*http-equiv=["']?refresh["']?[^>]*>/i.exec(html ?? '');
-  if (!tag) return null;
-  const content = /content=["']\s*\d*\s*;\s*url=([^"']+)["']/i.exec(tag[0]);
-  if (!content) return null;
+  const content = tag && /content=["']\s*\d*\s*;\s*url=([^"']+)["']/i.exec(tag[0]);
+  // Next.js can also describe the redirect only inside its serialised error
+  // payload, as the digest "NEXT_REDIRECT;<replace|push>;<url>;<status>;".
+  const digest = /NEXT_REDIRECT;(?:replace|push);([^;"\\<\s]+);30\d;/.exec(html ?? '');
+  const raw = content?.[1] ?? digest?.[1];
+  if (!raw) return null;
   try {
-    const target = new URL(content[1].trim().replace(/&amp;/g, '&'), baseUrl);
+    const target = new URL(raw.trim().replace(/&amp;/g, '&'), baseUrl);
     const base = new URL(baseUrl);
     if (!/^https?:$/.test(target.protocol) || target.host !== base.host) return null;
     return target.href;
@@ -106,7 +109,11 @@ function httpError(url, response, body) {
     .filter((name) => h(name))
     .map((name) => `${name}=${h(name)}`)
     .join('; ');
-  const snippet = (body ?? '').replace(/\s+/g, ' ').slice(0, 200);
+  let snippet = (body ?? '').replace(/\s+/g, ' ').slice(0, 200);
+  // For redirect answers, also show the text around any redirect hint in the
+  // body, since that is where this site puts the target.
+  const hint = /.{0,80}(?:NEXT_REDIRECT|http-equiv|url=).{0,160}/i.exec(body ?? '');
+  if (hint) snippet += ` … hint: ${hint[0].replace(/\s+/g, ' ')}`;
   return new Error(
     `Failed to fetch ${url}: HTTP ${response.status}${statusText}` +
       (details ? ` [${details}]` : '') +
