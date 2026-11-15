@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, stat, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { mergeDays, sameContent, runUpdate, dayKind } from '../scripts/update.mjs';
+import { mergeDays, sameContent, runUpdate, dayKind, normalizeGroupSeparators } from '../scripts/update.mjs';
 
 /**
  * Build a minimal schema-shaped day with n changes.
@@ -76,6 +76,35 @@ test('mergeDays orders newest date first, and patch before hotfix on the same da
     '2026-11-13 patch', '2026-11-13 hotfix', '2026-11-02 patch', '2026-11-01 hotfix',
   ]);
   assert.equal(dayKind({}), 'hotfix');
+});
+
+test('normalizeGroupSeparators rewrites " > " to " › " in stored groups only', () => {
+  const days = [{ date: '2026-11-09', changes: [
+    { id: 'a', group: 'The Drowned City > Deathless Marrow', text: 'Lowered X > Y.' },
+    { id: 'b', group: 'A > B > C' },
+    { id: 'c', group: null },
+    { id: 'd' },
+    { id: 'e', group: 'Already › fine' },
+  ] }];
+  assert.equal(normalizeGroupSeparators(days), days);
+  assert.deepEqual(days[0].changes.map((c) => c.group), [
+    'The Drowned City › Deathless Marrow', 'A › B › C', null, undefined, 'Already › fine',
+  ]);
+  assert.equal(days[0].changes[0].text, 'Lowered X > Y.'); // text is never touched
+});
+
+test('runUpdate normalises the separator of stored days no source returns any more', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    const stored = { ...day('2026-10-01'), kind: 'hotfix' };
+    stored.changes[0].group = 'Old Dungeon > Boss';
+    await writeFile(out, JSON.stringify({ generatedAt: 'x', days: [stored] }));
+    await runUpdate({ outPath: out, deps: stubDeps([day('2026-11-13')]), now: fixedNow, log: quiet });
+    const data = JSON.parse(await readFile(out, 'utf8'));
+    assert.equal(data.days.find((d) => d.date === '2026-10-01').changes[0].group, 'Old Dungeon › Boss');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test('sameContent ignores generatedAt but not other differences', () => {

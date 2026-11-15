@@ -6,7 +6,9 @@
 // (sources -> fetch -> parse -> merge -> icons -> tags -> write) and holds the small
 // pieces of logic that belong to no single stage: merging fresh days into
 // the previously published data, change detection, and the safety checks
-// that stop a broken source from wiping good data. The stages themselves
+// that stop a broken source from wiping good data, and a one-line data
+// normalisation of stored days (the group separator, see
+// normalizeGroupSeparators). The stages themselves
 // (scripts/sources.mjs, fetch.mjs, parse.mjs, icons.mjs) are injected through
 // `deps`, so the tests can use stubs and this file can be imported even when
 // the real modules are not present.
@@ -73,6 +75,29 @@ export function mergeDays(previousDays, freshDays) {
   for (const day of previousDays ?? []) byKey.set(key(day), day);
   for (const day of freshDays ?? []) byKey.set(key(day), day);
   return [...byKey.values()].sort(compareDays);
+}
+
+/**
+ * Rewrite the old group separator " > " to " › " (U+203A with spaces, the
+ * parser's GROUP_SEPARATOR and the UI's breadcrumb) in the `group` of every
+ * change. Why here and not only in the parser: days that a source still
+ * returns are re-parsed on every run and come out with " › " anyway, but
+ * stored days whose source no longer returns them (dropped from the hotfix
+ * post, an old patch topic) are never re-parsed and would keep " > " forever.
+ * Mutates and returns `days`; changes without a group are untouched.
+ *
+ * @param {Array<{changes?: Array<{group?: string|null}>}>} days
+ * @returns {Array<object>} the same `days`
+ */
+export function normalizeGroupSeparators(days) {
+  for (const day of days ?? []) {
+    for (const change of day.changes ?? []) {
+      // Only the exact " > " (a ">" with a space on each side) is a separator;
+      // a ">" inside a name without spaces is left alone.
+      if (typeof change.group === 'string') change.group = change.group.replaceAll(' > ', ' \u203A ');
+    }
+  }
+  return days;
 }
 
 /**
@@ -296,7 +321,7 @@ export async function runUpdate({
 
   // 4. Merge with what we already had, then resolve icons for everything.
   //    Icon lookups are cached, so re-processing old days is cheap.
-  const merged = mergeDays(previousDays, freshDays);
+  const merged = normalizeGroupSeparators(mergeDays(previousDays, freshDays));
   const gameIndex = await loadIndexSafely(d, log);
   const withSubjects = await d.addSubjects(merged, { gameIndex });
   // Tags are recomputed for ALL days, including stored days no source has any
