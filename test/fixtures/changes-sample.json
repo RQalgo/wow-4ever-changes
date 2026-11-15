@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-11-15T00:00:00Z",
+  "source": { "title": "WoW: Forever Hotfixes", "url": "https://news.blizzard.com/en-us/article/24315281" },
+  "days": [
+    { "date": "2026-11-13", "label": "November 13, 2026", "changes": [
+      { "id": "2026-11-13-000", "scope": "class", "category": "Classes", "class": null, "spec": null, "group": null, "text": "Fixed a bug with diminishing returns on creature stuns.", "notes": [], "subjects": [] },
+      { "id": "2026-11-13-001", "scope": "class", "category": "Classes", "class": "druid", "spec": "restoration", "group": null, "text": "Wild Growth healing coefficient increased to 6.6% (was 3.3%).", "notes": [], "subjects": [ { "name": "Wild Growth", "type": "spell", "icon": "ability_druid_flourish" } ] },
+      { "id": "2026-11-13-002", "scope": "class", "category": "Classes", "class": "paladin", "spec": null, "group": null, "text": "Judgement of Command now counts as a melee attack.", "notes": ["Developers’ notes: Other judgements stay ranged."], "subjects": [ { "name": "Judgement of Command", "type": "spell", "icon": "ability_warrior_innerrage" } ] },
+      { "id": "2026-11-13-003", "scope": "general", "category": "Dungeons", "class": null, "spec": null, "group": "The Deadmines", "text": "Sneed now ejects properly when the Shredder is stunned.", "notes": [], "subjects": [] },
+      { "id": "2026-11-13-004", "scope": "general", "category": "Items", "class": null, "spec": null, "group": null, "text": "Taran Icebreaker now behaves as a 2-handed Mace (was 1-handed).", "notes": [], "subjects": [ { "name": "Taran Icebreaker", "type": "item", "icon": "inv_mace_13" } ] }
+    ] },
+    { "date": "2026-11-11", "label": "November 11, 2026", "changes": [
+      { "id": "2026-11-11-000", "scope": "class", "category": "Classes", "class": "paladin", "spec": null, "group": null, "text": "Judgement is now considered a Ranged Attack.", "notes": [], "subjects": [ { "name": "Judgement", "type": "spell", "icon": "spell_holy_righteousfury" } ] },
+      { "id": "2026-11-11-001", "scope": "class", "category": "Classes", "class": "paladin", "spec": "retribution", "group": null, "text": "Unsealed Fury no longer generates echoes from Windfury Totem attacks.", "notes": [], "subjects": [ { "name": "Unsealed Fury", "type": "spell", "icon": "spell_holy_sealofmight" }, { "name": "Windfury Totem", "type": "spell", "icon": "spell_nature_windfury" } ] },
+      { "id": "2026-11-11-002", "scope": "general", "category": "Quests", "class": null, "spec": null, "group": null, "text": "Fixed an issue with the quest \"Helping Hands.\"", "notes": [], "subjects": [] }
+    ] }
+  ]
+}
