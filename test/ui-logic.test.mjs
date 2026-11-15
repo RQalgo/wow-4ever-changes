@@ -162,7 +162,7 @@ test('typing narrows: prefix matches first, then substring; items allowed', () =
 /* ---------- hash state ---------- */
 test('encodeHash omits defaults and round-trips', () => {
   assert.equal(L.encodeHash(L.defaultState()), '');
-  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', cats: [], kind: 'all', hideClasses: false };
+  const st = { cls: 'paladin', spec: 'retribution', q: 'judgement of', cats: [], kind: 'all', hideClasses: false, from: '', to: '' };
   const h = L.encodeHash(st);
   assert.match(h, /^#class=paladin&spec=retribution&q=judgement\+of&cats=none$/); // kind=all is omitted
   assert.deepEqual(L.decodeHash(h), st);
@@ -170,7 +170,7 @@ test('encodeHash omits defaults and round-trips', () => {
 
 test('decodeHash accepts the documented example and rejects junk', () => {
   assert.deepEqual(L.decodeHash('#class=paladin&spec=retribution&q=judgement&general=0'),
-    { cls: 'paladin', spec: 'retribution', q: 'judgement', cats: [], kind: 'all', hideClasses: false }); // legacy general=0
+    { cls: 'paladin', spec: 'retribution', q: 'judgement', cats: [], kind: 'all', hideClasses: false, from: '', to: '' }); // legacy general=0
   assert.deepEqual(L.decodeHash('#class=notaclass&spec=holy'), L.defaultState()); // spec needs a valid class
   assert.equal(L.decodeHash('#class=mage&spec=<script>').spec, '');
   assert.deepEqual(L.decodeHash(''), L.defaultState());
@@ -251,7 +251,7 @@ test('kind hash: encode omits all, decode ignores unknown values, round-trips', 
   assert.equal(L.decodeHash('#kind=nonsense').kind, 'all');
   assert.equal(L.decodeHash('#kind=ALL').kind, 'all');
   assert.equal(L.decodeHash('#class=mage&kind=hotfix&cats=none').kind, 'hotfix');
-  const st = { cls: 'mage', spec: 'fire', q: 'fire', cats: ['items', 'quests'], kind: 'patch', hideClasses: false };
+  const st = { cls: 'mage', spec: 'fire', q: 'fire', cats: ['items', 'quests'], kind: 'patch', hideClasses: false, from: '', to: '' };
   assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });
 
@@ -418,7 +418,7 @@ test('cats hash: only enabled categories, none, and general=0 compatibility', ()
   assert.deepEqual(L.decodeHash('#general=0').cats, []); // legacy
   assert.equal(L.decodeHash('#general=1').cats, null);
   assert.deepEqual(L.decodeHash('#general=0&cats=items').cats, ['items']); // cats wins
-  const st = { cls: 'rogue', spec: '', q: 'x', cats: ['ui', 'world'], kind: 'hotfix', hideClasses: false };
+  const st = { cls: 'rogue', spec: '', q: 'x', cats: ['ui', 'world'], kind: 'hotfix', hideClasses: false, from: '', to: '' };
   assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });
 
@@ -616,7 +616,7 @@ test('classChoice / withClassChoice: all, none or one class, mutually exclusive'
 test('normalizeClassState: a class turns hiding off; no class means no tree', () => {
   assert.deepEqual(L.normalizeClassState({ ...L.defaultState(), cls: 'rogue', hideClasses: true }), { ...L.defaultState(), cls: 'rogue' });
   assert.deepEqual(L.normalizeClassState({ ...L.defaultState(), spec: 'arms', hideClasses: true }), hidden());
-  const legacy = { cls: '', spec: '', q: '', cats: null, kind: 'all' }; // no hideClasses field at all
+  const legacy = { cls: '', spec: '', q: '', cats: null, kind: 'all', from: '', to: '' }; // no hideClasses field at all
   assert.deepEqual(L.normalizeClassState(legacy), L.defaultState());
 });
 
@@ -656,7 +656,7 @@ test('No classes + no categories shows nothing, and the empty state says why', (
 
 test('emptyMessage: generic text names the kind filter and hidden class changes', () => {
   assert.deepEqual(L.emptyMessage(L.defaultState()),
-    { title: 'Nothing matches', detail: 'No changes match the current filters.', action: 'Clear filters', impossible: false });
+    { title: 'Nothing matches', detail: 'No changes match the current filters.', action: 'Clear filters', impossible: false, reset: 'all' });
   assert.match(L.emptyMessage({ ...L.defaultState(), kind: 'patch' }).detail, /Only patch notes are being shown/);
   const h = L.emptyMessage(hidden({ q: 'zzz', kind: 'hotfix' }));
   assert.equal(h.impossible, false);
@@ -964,4 +964,240 @@ test('glyphKey: dev posts get the speech bubble', () => {
   assert.equal(L.glyphKey(devPost()), 'bubble');
   assert.equal(L.glyphKey(byId('2026-11-13-d000')), 'bubble');
   assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Items' })), 'gem'); // unchanged
+});
+
+/* ---------- date range (section 11) ---------- */
+// The fixture's dates: 2026-11-11, -13, -14 and -15 (no day on the 12th).
+const fxBounds = { min: '2026-11-11', max: '2026-11-15' };
+const fxDates = ['2026-11-11', '2026-11-13', '2026-11-14', '2026-11-15'];
+
+test('date helpers: strict ISO validation, day arithmetic across months and years', () => {
+  assert.equal(L.isIsoDate('2026-11-04'), true);
+  for (const bad of ['2026-02-30', '2026-1-5', '2026-11-04T10:00', '20261104', '', null, 20261104, 'garbage']) {
+    assert.equal(L.isIsoDate(bad), false, String(bad));
+    assert.equal(L.sanitizeIsoDate(bad), '');
+  }
+  assert.equal(L.isIsoDate('2028-02-29'), true); // leap year
+  assert.equal(L.addDays('2026-11-14', -6), '2026-11-08');
+  assert.equal(L.addDays('2026-10-31', 1), '2026-11-01');
+  assert.equal(L.addDays('2026-12-31', 1), '2027-01-01');
+  assert.equal(L.addDays('2026-11-01', 0), '2026-11-01'); // DST weekend in the US: UTC days are not affected
+  assert.equal(L.daysBetween('2026-09-12', '2026-11-14'), 63);
+  assert.equal(L.daysBetween('2026-11-14', '2026-11-04'), -10);
+  assert.ok(Number.isNaN(L.daysBetween('x', '2026-11-04')));
+});
+
+test('date texts: long (aria-valuetext) and short forms', () => {
+  assert.equal(L.formatDateLong('2026-11-02'), 'November 2, 2026');
+  assert.equal(L.formatDateLong('2026-09-12'), 'September 12, 2026');
+  assert.equal(L.formatDateShort('2026-11-02'), 'Nov 2');
+  assert.equal(L.formatDateShort('2026-11-02', true), 'Nov 2, 2026');
+  assert.equal(L.formatDateLong('nope'), '');
+});
+
+test('dataDates / dateBounds: distinct dates oldest first, shared dates once', () => {
+  assert.deepEqual(L.dataDates(data), fxDates);
+  assert.deepEqual(L.dateBounds(data), fxBounds);
+  assert.equal(L.dateBounds({ days: [] }), null);
+  assert.deepEqual(L.dataDates({ days: [{ date: 'bad' }, { date: '2026-11-02' }] }), ['2026-11-02']);
+});
+
+test('normalizeDateRange: invalid ignored, from > to swapped, clamped, ends on a bound open', () => {
+  const n = (from, to) => L.normalizeDateRange({ from, to }, fxBounds);
+  assert.deepEqual(n('', ''), { from: '', to: '' });
+  assert.deepEqual(n('2026-11-13', '2026-11-14'), { from: '2026-11-13', to: '2026-11-14' });
+  assert.deepEqual(n('2026-11-11', '2026-11-15'), { from: '', to: '' }); // both on the bounds: open
+  assert.deepEqual(n('2026-11-14', '2026-11-13'), { from: '2026-11-13', to: '2026-11-14' }); // swapped
+  assert.deepEqual(n('2026-01-01', '2027-01-01'), { from: '', to: '' }); // clamped, then open
+  assert.deepEqual(n('2027-01-01', ''), { from: '2026-11-15', to: '' }); // after the newest: the newest day
+  assert.deepEqual(n('', '2026-01-01'), { from: '', to: '2026-11-11' }); // before the oldest: the oldest day
+  assert.deepEqual(n('2026-02-30', 'tomorrow'), { from: '', to: '' }); // junk
+  assert.deepEqual(n('2026-11-12', ''), { from: '2026-11-12', to: '' }); // a date without data is kept
+  assert.deepEqual(L.normalizeDateRange({ from: '2026-11-13' }, null), { from: '', to: '' }); // no data
+});
+
+test('effectiveRange / hasDateRange / matchesDateRange (inclusive, ISO compare)', () => {
+  assert.deepEqual(L.effectiveRange({ from: '', to: '' }, fxBounds), { from: '2026-11-11', to: '2026-11-15' });
+  assert.deepEqual(L.effectiveRange({ from: '2026-11-13', to: '' }, fxBounds), { from: '2026-11-13', to: '2026-11-15' });
+  assert.equal(L.hasDateRange(L.defaultState()), false);
+  assert.equal(L.hasDateRange({ from: '', to: '2026-11-13' }), true);
+  const day = { date: '2026-11-13' };
+  assert.equal(L.matchesDateRange(day, { from: '2026-11-13', to: '2026-11-13' }), true); // both ends inclusive
+  assert.equal(L.matchesDateRange(day, { from: '2026-11-14', to: '' }), false);
+  assert.equal(L.matchesDateRange(day, { from: '', to: '2026-11-12' }), false);
+  assert.equal(L.matchesDateRange(day, { from: '', to: '' }), true);
+});
+
+test('presets: Last 7 / 30 days count back from the newest date in the data, not from today', () => {
+  const real = { min: '2026-09-12', max: '2026-11-14' };
+  assert.deepEqual(L.presetRange('last7', real), { from: '2026-11-08', to: '' }); // Nov 8 .. Nov 14 = 7 days
+  assert.deepEqual(L.presetRange('last30', real), { from: '2026-10-16', to: '' });
+  assert.deepEqual(L.presetRange('launch', real), { from: '2026-11-04', to: '' });
+  assert.deepEqual(L.presetRange('all', real), { from: '', to: '' });
+  // A quiet month later: still the last week WITH data, so the view is never empty.
+  const quiet = { min: '2026-09-12', max: '2026-12-20' };
+  assert.deepEqual(L.presetRange('last7', quiet), { from: '2026-12-14', to: '' });
+  // A preset reaching past the oldest date clamps to an open start (= All).
+  assert.deepEqual(L.presetRange('last7', fxBounds), { from: '', to: '' });
+  assert.deepEqual(L.presetRange('bogus', real), { from: '', to: '' });
+  assert.equal(L.LAUNCH_DATE, '2026-11-04');
+  assert.deepEqual(L.DATE_PRESETS.map((p) => p.label), ['Last 7 days', 'Last 30 days', 'Since launch', 'All']);
+});
+
+test('activePreset / presetTitle: pressed chip and tooltip', () => {
+  const real = { min: '2026-09-12', max: '2026-11-14' };
+  assert.equal(L.activePreset({ from: '', to: '' }, real), 'all');
+  assert.equal(L.activePreset({ from: '2026-11-08', to: '' }, real), 'last7');
+  assert.equal(L.activePreset({ from: '2026-11-04', to: '' }, real), 'launch');
+  assert.equal(L.activePreset({ from: '2026-11-04', to: '2026-11-10' }, real), null); // a closed end is no preset
+  assert.equal(L.activePreset({ from: '', to: '' }, fxBounds), 'all'); // last7 = All here, but All wins
+  assert.equal(L.presetTitle('last7', real), 'Nov 8 – Nov 14, 2026: the 7 days up to the newest change (not counted from today)');
+  assert.match(L.presetTitle('launch', real), /^Nov 4 – Nov 14, 2026: from the launch day, November 4, 2026, on$/);
+  assert.equal(L.presetTitle('all', real), 'Sep 12 – Nov 14, 2026: every date');
+});
+
+test('dateRangeText / dateRangeSummary: "All dates", one day, same year, across a new year', () => {
+  const real = { min: '2026-09-12', max: '2026-11-14' };
+  assert.equal(L.dateRangeText({ from: '', to: '' }, real), 'All dates');
+  assert.equal(L.dateRangeText({ from: '', to: '' }, real, true), 'Sep 12 – Nov 14, 2026');
+  assert.equal(L.dateRangeText({ from: '2026-11-04', to: '' }, real), 'Nov 4 – Nov 14, 2026');
+  assert.equal(L.dateRangeText({ from: '2026-11-04', to: '2026-11-04' }, real), 'Nov 4, 2026');
+  const ny = { min: '2026-12-01', max: '2027-01-10' };
+  assert.equal(L.dateRangeText({ from: '2026-12-30', to: '2027-01-02' }, ny), 'Dec 30, 2026 – Jan 2, 2027');
+  assert.equal(L.dateRangeText({ from: '2026-11-04', to: '' }, null), 'From Nov 4, 2026'); // no bounds known
+  assert.equal(L.dateRangeText({ from: '', to: '2026-10-31' }, null), 'Until Oct 31, 2026');
+
+  assert.equal(L.dateRangeSummary({ from: '', to: '' }, real), '');
+  assert.equal(L.dateRangeSummary({ from: '2026-11-04', to: '' }, real), 'Nov 4 – Nov 14');
+  assert.equal(L.dateRangeSummary({ from: '2026-11-04', to: '2026-11-04' }, real), 'Nov 4');
+  assert.equal(L.dateRangeSummary({ from: '', to: '2026-10-31' }, real), 'Sep 12 – Oct 31');
+  assert.equal(L.dateRangeSummary({ from: '2026-12-30', to: '' }, ny), 'Dec 30, 2026 – Jan 10, 2027');
+  assert.equal(L.dateRangeSummary({ from: '2026-11-04', to: '' }, null), 'From Nov 4');
+});
+
+test('slider: positions snap to the dates with data and never cross; positions map back to a range', () => {
+  assert.deepEqual(L.sliderPositions({ from: '', to: '' }, fxDates), { start: 0, end: 3 });
+  assert.deepEqual(L.sliderPositions({ from: '2026-11-13', to: '2026-11-14' }, fxDates), { start: 1, end: 2 });
+  // A typed date between stops: start on the first stop inside, end on the last stop inside.
+  assert.deepEqual(L.sliderPositions({ from: '2026-11-12', to: '' }, fxDates), { start: 1, end: 3 });
+  assert.deepEqual(L.sliderPositions({ from: '', to: '2026-11-12' }, fxDates), { start: 0, end: 0 });
+  // No stop inside the range: both handles on one stop (start <= end).
+  assert.deepEqual(L.sliderPositions({ from: '2026-11-12', to: '2026-11-12' }, fxDates), { start: 1, end: 1 });
+  assert.deepEqual(L.sliderPositions({}, []), { start: 0, end: 0 });
+
+  assert.deepEqual(L.rangeFromPositions(0, 3, fxDates), { from: '', to: '' });
+  assert.deepEqual(L.rangeFromPositions(1, 2, fxDates), { from: '2026-11-13', to: '2026-11-14' });
+  assert.deepEqual(L.rangeFromPositions(1, 3, fxDates), { from: '2026-11-13', to: '' }); // end handle at the newest: open
+  assert.deepEqual(L.rangeFromPositions(2, 1, fxDates), { from: '2026-11-13', to: '2026-11-14' }); // ordered
+  assert.deepEqual(L.rangeFromPositions(-5, 99, fxDates), { from: '', to: '' }); // clamped
+  assert.deepEqual(L.rangeFromPositions('2', '2', fxDates), { from: '2026-11-14', to: '2026-11-14' }); // input values are strings
+  // Round trip for every pair of stops.
+  for (let a = 0; a < fxDates.length; a += 1) {
+    for (let b = a; b < fxDates.length; b += 1) {
+      assert.deepEqual(L.sliderPositions(L.rangeFromPositions(a, b, fxDates), fxDates), { start: a, end: b });
+    }
+  }
+});
+
+test('monthTicks: one label per month at its first stop, overlapping labels dropped', () => {
+  const dates = ['2026-09-12', '2026-09-30', '2026-10-01', '2026-10-15', '2026-11-02', '2026-11-14'];
+  assert.deepEqual(L.monthTicks(dates), [{ at: 0, label: 'Sep' }, { at: 0.4, label: 'Oct' }, { at: 0.8, label: 'Nov' }]);
+  assert.deepEqual(L.monthTicks(['2026-10-31', '2026-11-01', ...Array.from({ length: 8 }, (_, i) => `2026-11-1${i}`)]),
+    [{ at: 0, label: 'Oct' }]); // Nov would sit right next to Oct
+  assert.deepEqual(L.monthTicks(['2026-11-04']), []);
+});
+
+test('open ends follow the data: a range ending at the newest date shows days added later', () => {
+  // The end handle on the newest date is stored as an open end ...
+  const saved = L.normalizeDateRange({ from: '2026-11-13', to: '2026-11-15' }, fxBounds);
+  assert.deepEqual(saved, { from: '2026-11-13', to: '' });
+  assert.equal(L.encodeHash({ ...L.defaultState(), ...saved }), '#from=2026-11-13');
+  // ... so when a newer day arrives it is included, while an explicit `to` keeps cutting it off.
+  const grown = { days: [{ date: '2026-11-16', kind: 'hotfix', changes: [mk({ id: 'new' })] }, ...data.days] };
+  assert.ok(L.visibleDays(grown, { ...L.defaultState(), ...saved }).some((v) => v.day.date === '2026-11-16'));
+  assert.ok(!L.visibleDays(grown, { ...L.defaultState(), from: '2026-11-13', to: '2026-11-15' })
+    .some((v) => v.day.date === '2026-11-16'));
+  // Likewise an open start keeps older days that a later backfill adds.
+  assert.deepEqual(L.normalizeDateRange({ from: '2026-11-11', to: '2026-11-13' }, fxBounds), { from: '', to: '2026-11-13' });
+});
+
+test('date range filter: inclusive, combines with kind, class and search; counts and suggestions follow', () => {
+  const keys = (st) => L.visibleDays(data, { ...L.defaultState(), ...st }).map((v) => L.dayKey(v.day));
+  assert.deepEqual(keys({ from: '2026-11-13', to: '2026-11-14' }),
+    ['2026-11-14|patch', '2026-11-14|dev', '2026-11-13|patch', '2026-11-13|hotfix', '2026-11-13|dev']);
+  assert.deepEqual(keys({ from: '2026-11-13', to: '2026-11-13' }), ['2026-11-13|patch', '2026-11-13|hotfix', '2026-11-13|dev']);
+  assert.deepEqual(keys({ from: '2026-11-12', to: '2026-11-12' }), []); // no day on the 12th
+  assert.deepEqual(keys({ to: '2026-11-11' }), ['2026-11-11|hotfix']);
+  // Combines with the kind switch and the class filter.
+  assert.deepEqual(keys({ from: '2026-11-13', kind: 'dev' }), ['2026-11-14|dev', '2026-11-13|dev']);
+  const ids = (st) => L.visibleDays(data, { ...L.defaultState(), ...st }).flatMap((v) => v.changes.map((c) => c.id));
+  assert.ok(ids({ cls: 'paladin' }).includes('2026-11-11-001'));
+  assert.ok(!ids({ cls: 'paladin', from: '2026-11-13' }).includes('2026-11-11-001'));
+  assert.deepEqual(ids({ q: 'kaivax', to: '2026-11-13' }), ['2026-11-13-d000']);
+  // Per-day counts are the filtered lines; the total is their sum.
+  const v = L.visibleDays(data, { ...L.defaultState(), from: '2026-11-14', to: '2026-11-14' });
+  assert.deepEqual(v.map((d) => d.changes.length), [4, 3]);
+  // Suggestions only come from days in the range.
+  const names = (st) => L.buildSuggestions(data, { ...L.defaultState(), ...st }, '', 50).map((s) => s.name);
+  assert.ok(names({}).includes('Fire Blast'));
+  assert.ok(!names({ to: '2026-11-13' }).includes('Fire Blast')); // only the Nov 14 Fire reply mentions it
+});
+
+test('date range hash: from/to encoded, decoded, swapped, junk ignored, round-trip', () => {
+  assert.equal(L.encodeHash({ ...L.defaultState(), from: '2026-11-04', to: '2026-11-14' }), '#from=2026-11-04&to=2026-11-14');
+  assert.equal(L.encodeHash({ ...L.defaultState(), from: '2026-11-04' }), '#from=2026-11-04');
+  assert.equal(L.encodeHash({ ...L.defaultState(), to: '2026-10-31' }), '#to=2026-10-31');
+  assert.equal(L.encodeHash({ ...L.defaultState(), from: 'bogus', to: '' }), '');
+  assert.equal(L.encodeHash({ ...L.defaultState(), cls: 'mage', kind: 'patch', from: '2026-10-01', to: '2026-10-31', cats: ['items'] }),
+    '#class=mage&kind=patch&from=2026-10-01&to=2026-10-31&cats=items');
+  assert.deepEqual(L.decodeHash('#from=2026-11-04&to=2026-11-14'), { ...L.defaultState(), from: '2026-11-04', to: '2026-11-14' });
+  assert.deepEqual(L.decodeHash('#from=2026-11-14&to=2026-11-04'), { ...L.defaultState(), from: '2026-11-04', to: '2026-11-14' }); // swapped
+  assert.deepEqual(L.decodeHash('#from=2026-02-30&to=soon'), L.defaultState()); // invalid: open
+  assert.deepEqual(L.decodeHash('#from=2026-11-4'), L.defaultState()); // not zero-padded
+  assert.equal(L.decodeHash('#to=2026-10-31').to, '2026-10-31');
+  assert.deepEqual(L.decodeHash('#from=2026-11-04&filters=open'), { ...L.defaultState(), from: '2026-11-04' });
+  for (const st of [
+    { ...L.defaultState(), from: '2026-11-04' },
+    { ...L.defaultState(), to: '2026-10-31', kind: 'patch' },
+    { ...L.defaultState(), cls: 'paladin', spec: 'holy', q: 'light', cats: [], from: '2026-10-01', to: '2026-10-31' },
+    hidden({ from: '2026-11-13', to: '2026-11-13' }),
+  ]) assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
+});
+
+test('date range: counts as one active filter and is named in the summary', () => {
+  const real = { min: '2026-09-12', max: '2026-11-14' };
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), from: '2026-11-04' }), 1);
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), from: '2026-11-04', to: '2026-11-10' }), 1); // both ends: one filter
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), to: '2026-11-10', kind: 'patch', cls: 'mage' }), 3);
+  assert.equal(L.filterSummary({ ...L.defaultState(), from: '2026-11-04' }, L.CATEGORIES, real), 'Nov 4 – Nov 14');
+  assert.equal(L.filterSummary({ ...L.defaultState(), cls: 'paladin', kind: 'patch', from: '2026-10-01', to: '2026-10-31', cats: ['items', 'pvp'] },
+    L.CATEGORIES, real), 'Paladin · Patches · Oct 1 – Oct 31 · 2 categories');
+  assert.equal(L.filterSummary({ ...L.defaultState(), from: '2026-11-04' }), 'From Nov 4'); // bounds unknown
+  assert.equal(L.filterSummary(L.defaultState(), L.CATEGORIES, real), '');
+});
+
+test('emptyMessage: the date range is named when it is the reason, with a reset of the range only', () => {
+  const bounds = L.dateBounds(data);
+  // Patches exist (Nov 13, 14), but not on Nov 15.
+  const st = { ...L.defaultState(), from: '2026-11-15', kind: 'patch' };
+  assert.deepEqual(L.visibleDays(data, st), []);
+  const msg = L.emptyMessage(st, { data, bounds });
+  assert.equal(msg.title, 'Nothing in this date range');
+  assert.equal(msg.reset, 'dates');
+  assert.equal(msg.action, 'Show all dates');
+  assert.equal(msg.detail, 'No changes match the current filters in the selected dates (Nov 15, 2026). '
+    + '6 matching changes are outside them; the nearest date is November 14, 2026.');
+  // A gap in the data (no day on Nov 12): nearest date on either side, the later one on a tie.
+  const gap = L.emptyMessage({ ...L.defaultState(), from: '2026-11-12', to: '2026-11-12' }, { data, bounds });
+  assert.match(gap.detail, /dates \(Nov 12, 2026\)\. 26 matching changes are outside them; the nearest date is November 13, 2026\.$/);
+  // The range is NOT the reason (the search matches nothing anywhere): generic text, full reset, no range note.
+  const other = L.emptyMessage({ ...L.defaultState(), from: '2026-11-13', q: 'zzzz' }, { data, bounds });
+  assert.equal(other.title, 'Nothing matches');
+  assert.equal(other.reset, 'all');
+  assert.doesNotMatch(other.detail, /Nov/);
+  // Without the data the range cannot be ruled out, so it is mentioned.
+  assert.match(L.emptyMessage({ ...L.defaultState(), from: '2026-11-13' }, { bounds }).detail,
+    /Only changes in the selected dates \(Nov 13 – Nov 15, 2026\) are being shown\.$/);
+  // The impossible case still wins.
+  assert.equal(L.emptyMessage(hidden({ cats: [], from: '2026-11-13' }), { data, bounds }).impossible, true);
 });

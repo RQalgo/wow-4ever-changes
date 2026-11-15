@@ -167,6 +167,21 @@ Filter semantics used by the app:
   race lines, for example. They stay visible, still showing their class chip.
   Consequence: "All classes" + no categories and "No classes" + all
   categories overlap in those lines; the two views are not exact complements.
+- Date range (`from` / `to`, hash `from=YYYY-MM-DD&to=YYYY-MM-DD`): a day is
+  shown when `from <= date <= to` (inclusive, plain ISO string comparison of
+  the day's US Pacific `date`); it applies to whole days, like the kind
+  filter, and combines with every other filter. An empty end is open (no
+  limit). The app normalises every range against the loaded data: invalid
+  dates are ignored, `from > to` is swapped, dates outside the data are
+  clamped to its first / last date, and an end equal to the first / last date
+  becomes open and is omitted from the hash, so a saved range ending at the
+  newest date still includes days added later. The slider's stops are the
+  distinct dates that have data (not every calendar day); the date fields
+  accept any date. Presets: "Last 7 days" / "Last 30 days" = the 7 / 30
+  calendar days ending at the newest date in the data (not today); "Since
+  launch" = from 2026-11-04; "All" = no limit. The range is kept in the URL
+  only, not in localStorage. Search suggestions, per-day counts, the "N
+  changes shown" total and the mobile summary only count days in the range.
 
 ### Version 3 addendum: two icon sources
 

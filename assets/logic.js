@@ -18,6 +18,8 @@
  *                       kind filter and badge labels
  *   9. Line decoration: extra tag chips and the icon cluster of one line
  *  10. Filter panel   : active-filter count/summary and the #filters=open flag (mobile)
+ *  11. Date range     : dates of the data, from/to range (open ends), presets,
+ *                       slider positions, date texts
  *
  * Filtering never reads `scope`/`class`/`category` directly any more: every
  * filter goes through effectiveTags(), which returns the schema v3 `tags` when
@@ -533,10 +535,12 @@ export function highlightSegments(text, terms) {
  * `hideClasses` is the "No classes" choice of the class row: true hides every
  * class change (see isClassChange); it is only ever true while `cls` is empty
  * (see normalizeClassState).
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean}}
+ * `from` / `to` are the date range (ISO dates, inclusive); "" is an open end,
+ * so the default is every date (see section 11, normalizeDateRange).
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean, from: string, to: string}}
  */
 export function defaultState() {
-  return { cls: '', spec: '', q: '', cats: null, kind: 'all', hideClasses: false };
+  return { cls: '', spec: '', q: '', cats: null, kind: 'all', hideClasses: false, from: '', to: '' };
 }
 
 /**
@@ -729,8 +733,8 @@ export function matchesState(ch, state) {
 export function visibleDays(data, state) {
   const out = [];
   for (const day of data.days || []) {
-    // Kind filter first: it is per day, so skip the day's lines entirely.
-    if (!matchesKind(day, state.kind)) continue;
+    // Kind and date range first: both are per day, so skip the day's lines entirely.
+    if (!matchesKind(day, state.kind) || !matchesDateRange(day, state)) continue;
     const changes = (day.changes || []).filter((c) => matchesState(c, state));
     if (changes.length) out.push({ day, changes });
   }
@@ -793,7 +797,7 @@ export function glyphKey(ch) {
 /**
  * Build search-box suggestions from `subjects[].name` across the data.
  *
- * - Only changes passing the kind, class/spec filters and the category chips count
+ * - Only changes passing the kind, date range, class/spec filters and the category chips count
  *   (the search text itself is ignored here, otherwise the list would shrink
  *   to the thing already typed).
  * - Ranked by how many changes mention the subject (most frequent first),
@@ -803,7 +807,7 @@ export function glyphKey(ch) {
  *   substring matches, each group keeping the frequency order.
  *
  * @param {{days: object[]}} data
- * @param {object} state current UI state (cls/spec/cats/kind used)
+ * @param {object} state current UI state (cls/spec/cats/kind/from/to used)
  * @param {string} query text currently typed
  * @param {number} [limit] max suggestions
  * @returns {{name: string, alias: string|null, label: string, icon: string, type: string, count: number}[]}
@@ -815,7 +819,8 @@ export function buildSuggestions(data, state, query, limit = 8) {
   const tally = new Map(); // lower-cased name -> suggestion
 
   for (const day of data.days || []) {
-    if (!matchesKind(day, state.kind)) continue; // hidden kind: no suggestions from it
+    // Hidden kind or a day outside the date range: no suggestions from it.
+    if (!matchesKind(day, state.kind) || !matchesDateRange(day, state)) continue;
     for (const ch of day.changes || []) {
       if (!matchesState(ch, filterState)) continue;
       const seen = new Set(); // count a subject once per change
@@ -870,8 +875,11 @@ export function sanitizeSelection(cls, spec) {
  * encodes to "" (no hash). `cats` lists the ENABLED categories and is written
  * only when not all are on: "cats=none" means every chip is off. The slugs
  * are written in chip order, so one selection has one URL. Hidden class
- * changes ("No classes") are written as "class=none".
- * @param {{cls: string, spec: string, q: string, cats?: string[]|null, kind?: string, hideClasses?: boolean}} state
+ * changes ("No classes") are written as "class=none". The date range is
+ * written as "from=2026-11-04&to=2026-11-14", each end only when it is not
+ * open (the app normalises the range first, so an end on the data's bound is
+ * open and omitted; see normalizeDateRange).
+ * @param {{cls: string, spec: string, q: string, cats?: string[]|null, kind?: string, hideClasses?: boolean, from?: string, to?: string}} state
  * @returns {string} "" or a string starting with "#"
  */
 export function encodeHash(state) {
@@ -888,6 +896,10 @@ export function encodeHash(state) {
   }
   const kind = sanitizeKindFilter(state.kind);
   if (kind !== 'all') p.set('kind', kind);
+  const from = sanitizeIsoDate(state.from);
+  const to = sanitizeIsoDate(state.to);
+  if (from) p.set('from', from);
+  if (to) p.set('to', to);
   // Commas are legal in a fragment and far more readable than %2C.
   const parts = [p.toString(), catsValue ? `cats=${catsValue}` : ''].filter(Boolean);
   const str = parts.join('&');
@@ -920,12 +932,18 @@ export function decodeCats(raw, generalOff = false) {
  * An unknown `kind` value is ignored (treated as "all"). `class=none` (exact,
  * lower-case, like class slugs) hides class changes; a `spec` next to it is
  * ignored because a tree needs a class.
+ * `from` / `to` must be valid ISO dates (anything else is an open end) and
+ * are swapped when from > to. Clamping to the data's bounds needs the data,
+ * so it happens in the app (normalizeDateRange), not here.
  * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean}}
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean, from: string, to: string}}
  */
 export function decodeHash(hash) {
   const p = new URLSearchParams(String(hash || '').replace(/^#/, ''));
   const { cls, spec } = sanitizeSelection(p.get('class'), p.get('spec'));
+  let from = sanitizeIsoDate(p.get('from'));
+  let to = sanitizeIsoDate(p.get('to'));
+  if (from && to && from > to) [from, to] = [to, from];
   return {
     cls,
     spec,
@@ -933,6 +951,8 @@ export function decodeHash(hash) {
     cats: decodeCats(p.get('cats'), p.get('general') === '0'),
     kind: sanitizeKindFilter(p.get('kind')),
     hideClasses: p.get('class') === 'none',
+    from,
+    to,
   };
 }
 
@@ -1137,10 +1157,10 @@ export function iconSlots(ch, max = MAX_ICONS) {
 
 /**
  * How many filters differ from the defaults: class (or "No classes"), tree,
- * kind and categories each count once. The search text is not counted (it
- * is visible in the search box itself). Used for the badge on the mobile
- * filter button.
- * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null, hideClasses?: boolean}} state
+ * kind, date range (either end or both) and categories each count once. The
+ * search text is not counted (it is visible in the search box itself). Used
+ * for the badge on the mobile filter button.
+ * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null, hideClasses?: boolean, from?: string, to?: string}} state
  * @returns {number}
  */
 export function activeFilterCount(state) {
@@ -1148,20 +1168,23 @@ export function activeFilterCount(state) {
   if (classChoice(state) !== 'all') n += 1;
   if (state.cls && state.spec) n += 1;
   if (sanitizeKindFilter(state.kind) !== 'all') n += 1;
+  if (hasDateRange(state)) n += 1;
   if (state.cats) n += 1;
   return n;
 }
 
 /**
  * One-line summary of the active filters for the closed mobile bar, e.g.
- * "Paladin › Retribution · Patches · 3 categories" or "No class changes ·
- * Patches". Empty string when nothing is filtered. A single enabled category
- * is named; several are counted; none says "No categories".
+ * "Paladin › Retribution · Patches · Nov 4 – Nov 14 · 3 categories" or "No
+ * class changes · Patches". Empty string when nothing is filtered. A single
+ * enabled category is named; several are counted; none says "No categories".
+ * The date range uses dateRangeSummary (open ends resolved to `bounds`).
  * @param {object} state
  * @param {{slug: string, label: string}[]} [available] category chips of the loaded data
+ * @param {{min: string, max: string}|null} [bounds] date bounds of the loaded data
  * @returns {string}
  */
-export function filterSummary(state, available = CATEGORIES) {
+export function filterSummary(state, available = CATEGORIES, bounds = null) {
   const parts = [];
   const choice = classChoice(state);
   if (choice === 'none') parts.push('No class changes');
@@ -1170,6 +1193,8 @@ export function filterSummary(state, available = CATEGORIES) {
   }
   const kind = sanitizeKindFilter(state.kind);
   if (kind !== 'all') parts.push(kindFilterLabel(kind));
+  const dates = dateRangeSummary(state, bounds);
+  if (dates) parts.push(dates);
   if (state.cats) {
     if (!state.cats.length) parts.push('No categories');
     else if (state.cats.length === 1) {
@@ -1184,13 +1209,21 @@ export function filterSummary(state, available = CATEGORIES) {
  * Text of the empty state shown when no change matches the filters.
  *  - "No classes" with every category off can never show anything: say so
  *    plainly (`impossible: true`) and offer to show everything again.
+ *  - the date range is the reason (`ctx.data` given, and the same filters
+ *    WITHOUT the range would show something): "Nothing in this date range",
+ *    naming the range, how many matching changes lie outside it and the
+ *    nearest date that has some; the action then resets only the range
+ *    (`reset: 'dates'`, label "Show all dates"), keeping the other filters.
  *  - otherwise a generic "Nothing matches", naming the filters that are
- *    easiest to forget: the kind switch and hidden class changes.
- * The action always resets to defaultState(); only its label differs.
+ *    easiest to forget: the kind switch, hidden class changes and, when it
+ *    cannot be ruled out as the reason (no `ctx.data`), the date range.
+ * The action resets to defaultState() (`reset: 'all'`) except in the date
+ * case above.
  * @param {object} state
- * @returns {{title: string, detail: string, action: string, impossible: boolean}}
+ * @param {{data?: {days: object[]}, bounds?: {min: string, max: string}|null}} [ctx] loaded data and its date bounds
+ * @returns {{title: string, detail: string, action: string, impossible: boolean, reset: 'all'|'dates'}}
  */
-export function emptyMessage(state) {
+export function emptyMessage(state, ctx = {}) {
   const hidden = classChoice(state) === 'none';
   if (hidden && Array.isArray(state.cats) && state.cats.length === 0) {
     return {
@@ -1199,7 +1232,28 @@ export function emptyMessage(state) {
         + 'Choose a class or "All classes", or switch a category back on.',
       action: 'Show all changes',
       impossible: true,
+      reset: 'all',
     };
+  }
+  const bounds = ctx.bounds || null;
+  const range = hasDateRange(state) ? dateRangeText(state, bounds) : '';
+  if (range && ctx.data) {
+    const outside = visibleDays(ctx.data, { ...state, from: '', to: '' });
+    if (outside.length) {
+      const n = outside.reduce((sum, v) => sum + v.changes.length, 0);
+      // Nearest day with matching changes, measured to the closer end of the range.
+      const { from, to } = effectiveRange(state, bounds);
+      const gap = (d) => (from && d < from ? daysBetween(d, from) : to && d > to ? daysBetween(to, d) : 0);
+      const nearest = outside.map((v) => v.day.date).sort((a, b) => gap(a) - gap(b) || (a < b ? 1 : -1))[0];
+      return {
+        title: 'Nothing in this date range',
+        detail: `No changes match the current filters in the selected dates (${range}). `
+          + `${n} matching ${n === 1 ? 'change is' : 'changes are'} outside them; the nearest date is ${formatDateLong(nearest)}.`,
+        action: 'Show all dates',
+        impossible: false,
+        reset: 'dates',
+      };
+    }
   }
   const notes = ['No changes match the current filters.'];
   const kind = sanitizeKindFilter(state.kind);
@@ -1207,7 +1261,8 @@ export function emptyMessage(state) {
   const shown = { patch: 'patch notes', hotfix: 'hotfixes', dev: 'dev posts' }[kind];
   if (kind !== 'all') notes.push(`Only ${shown} are being shown; try "All" to include every kind.`);
   if (hidden) notes.push('Class changes are hidden; choose "All classes" to include them.');
-  return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false };
+  if (range && !ctx.data) notes.push(`Only changes in the selected dates (${range}) are being shown.`);
+  return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false, reset: 'all' };
 }
 
 /**
@@ -1230,4 +1285,382 @@ export function hasPanelFlag(hash) {
 export function withPanelFlag(hash, open) {
   if (!open) return hash;
   return hash ? `${hash}&filters=open` : '#filters=open';
+}
+
+/* ======================= 11. Date range ======================= */
+
+/*
+ * The date range filter: a two-handle slider over the dates of the loaded
+ * data, two exact-date inputs and a few presets. Every day has an ISO
+ * calendar date (`YYYY-MM-DD`, a US Pacific date, see docs/SCHEMA.md), so all
+ * comparisons here are plain string comparisons and all arithmetic is done on
+ * UTC midnights: nothing depends on the viewer's clock or time zone.
+ *
+ * The state carries `from` and `to` (ISO dates). An EMPTY value means "open":
+ * no lower / upper limit. A range end that sits on the data's own bound is
+ * stored as open (normalizeDateRange), so a saved or shared view whose end
+ * handle is at the newest date keeps showing new days when the data grows,
+ * instead of silently cutting them off at the old newest date.
+ */
+
+/** Launch day of WoW: Forever (US Pacific date); the "Since launch" preset starts here. */
+export const LAUNCH_DATE = '2026-11-04';
+
+/** Month names for the date texts (fixed English, like the rest of the UI). */
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+  'October', 'November', 'December'];
+
+/** One calendar day in milliseconds (UTC days have no DST jumps). */
+const DAY_MS = 86400000;
+
+/**
+ * Split an ISO date into numbers, or null when it is not a real calendar
+ * date in the exact form YYYY-MM-DD ("2026-02-30", "2026-1-5" and
+ * "2026-11-04T10:00" are rejected).
+ * @param {unknown} iso
+ * @returns {{y: number, m: number, d: number}|null} month 1-12
+ */
+function isoParts(iso) {
+  const m = typeof iso === 'string' ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso) : null;
+  if (!m) return null;
+  const y = +m[1];
+  const mo = +m[2];
+  const d = +m[3];
+  // Round-trip through Date.UTC: an impossible day (Feb 30) comes back as another date.
+  const t = new Date(Date.UTC(y, mo - 1, d));
+  if (t.getUTCFullYear() !== y || t.getUTCMonth() !== mo - 1 || t.getUTCDate() !== d) return null;
+  return { y, m: mo, d };
+}
+
+/**
+ * Is this a valid ISO calendar date (YYYY-MM-DD)?
+ * @param {unknown} v
+ * @returns {boolean}
+ */
+export function isIsoDate(v) {
+  return isoParts(v) !== null;
+}
+
+/**
+ * Validate a date from untrusted input (URL hash, a date input): the date
+ * itself when valid, else "" (open).
+ * @param {unknown} v
+ * @returns {string} "" or YYYY-MM-DD
+ */
+export function sanitizeIsoDate(v) {
+  return isIsoDate(v) ? v : '';
+}
+
+/**
+ * Add whole calendar days to an ISO date (negative goes back).
+ * @param {string} iso valid YYYY-MM-DD
+ * @param {number} n days
+ * @returns {string} YYYY-MM-DD
+ */
+export function addDays(iso, n) {
+  const p = isoParts(iso);
+  if (!p) return '';
+  return new Date(Date.UTC(p.y, p.m - 1, p.d) + n * DAY_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Number of calendar days from `a` to `b` (positive when b is later).
+ * @param {string} a YYYY-MM-DD
+ * @param {string} b YYYY-MM-DD
+ * @returns {number}
+ */
+export function daysBetween(a, b) {
+  const pa = isoParts(a);
+  const pb = isoParts(b);
+  if (!pa || !pb) return NaN;
+  return Math.round((Date.UTC(pb.y, pb.m - 1, pb.d) - Date.UTC(pa.y, pa.m - 1, pa.d)) / DAY_MS);
+}
+
+/**
+ * Long human date, as screen readers announce a slider handle
+ * (aria-valuetext) and as the data's own day labels read: "November 2, 2026".
+ * @param {string} iso YYYY-MM-DD
+ * @returns {string} "" for an invalid date
+ */
+export function formatDateLong(iso) {
+  const p = isoParts(iso);
+  return p ? `${MONTHS[p.m - 1]} ${p.d}, ${p.y}` : '';
+}
+
+/**
+ * Short human date without the year: "Nov 2". With `withYear`: "Nov 2, 2026".
+ * @param {string} iso YYYY-MM-DD
+ * @param {boolean} [withYear]
+ * @returns {string} "" for an invalid date
+ */
+export function formatDateShort(iso, withYear = false) {
+  const p = isoParts(iso);
+  if (!p) return '';
+  const s = `${MONTHS[p.m - 1].slice(0, 3)} ${p.d}`;
+  return withYear ? `${s}, ${p.y}` : s;
+}
+
+/**
+ * The distinct dates that have data, oldest first: the stops of the date
+ * slider. A date shared by several days (patch + hotfix + dev) appears once;
+ * days with an invalid date are ignored.
+ * @param {{days: object[]}} data
+ * @returns {string[]} sorted YYYY-MM-DD
+ */
+export function dataDates(data) {
+  const set = new Set();
+  for (const day of (data && data.days) || []) if (isIsoDate(day.date)) set.add(day.date);
+  return [...set].sort();
+}
+
+/**
+ * Earliest and latest date of the loaded data, or null when it has no dated
+ * day. Open range ends resolve to these.
+ * @param {{days: object[]}} data
+ * @returns {{min: string, max: string}|null}
+ */
+export function dateBounds(data) {
+  const dates = dataDates(data);
+  return dates.length ? { min: dates[0], max: dates[dates.length - 1] } : null;
+}
+
+/**
+ * Canonical form of a range for the loaded data:
+ *  1. each end is validated (invalid -> open)
+ *  2. from > to -> the two are swapped (a hand-made or typed range is never
+ *     "inverted" and empty by accident)
+ *  3. both are clamped into the data's bounds (a date before the first day
+ *     or after the last one would only show the same as the bound)
+ *  4. an end that equals its bound becomes open (""), so the range follows
+ *     the data when new days arrive; the full range is { from: "", to: "" }
+ * Without bounds (no data) every range is open.
+ * @param {{from?: unknown, to?: unknown}} range
+ * @param {{min: string, max: string}|null} bounds from dateBounds
+ * @returns {{from: string, to: string}}
+ */
+export function normalizeDateRange(range, bounds) {
+  if (!bounds) return { from: '', to: '' };
+  let from = sanitizeIsoDate(range && range.from);
+  let to = sanitizeIsoDate(range && range.to);
+  if (from && to && from > to) [from, to] = [to, from];
+  // Clamping is monotone, so the order fixed above survives it.
+  const clamp = (d) => (d < bounds.min ? bounds.min : d > bounds.max ? bounds.max : d);
+  if (from) from = clamp(from);
+  if (to) to = clamp(to);
+  return { from: from === bounds.min ? '' : from, to: to === bounds.max ? '' : to };
+}
+
+/**
+ * The concrete first and last date a range covers, open ends resolved to the
+ * data's bounds. Without bounds an open end stays "".
+ * @param {{from?: string, to?: string}} range
+ * @param {{min: string, max: string}|null} bounds
+ * @returns {{from: string, to: string}}
+ */
+export function effectiveRange(range, bounds) {
+  return {
+    from: (range && range.from) || (bounds ? bounds.min : ''),
+    to: (range && range.to) || (bounds ? bounds.max : ''),
+  };
+}
+
+/**
+ * Is a date limit set (either end not open)?
+ * @param {{from?: string, to?: string}} state
+ * @returns {boolean}
+ */
+export function hasDateRange(state) {
+  return !!(state && (state.from || state.to));
+}
+
+/**
+ * Does a day pass the date range? Inclusive on both ends; plain ISO string
+ * comparison (YYYY-MM-DD sorts like the calendar). Open ends do not limit.
+ * @param {{date: string}} day
+ * @param {{from?: string, to?: string}} state
+ * @returns {boolean}
+ */
+export function matchesDateRange(day, state) {
+  const from = state && state.from;
+  const to = state && state.to;
+  if (from && !(day.date >= from)) return false;
+  if (to && !(day.date <= to)) return false;
+  return true;
+}
+
+/**
+ * The quick presets under the slider, in display order. "Last N days" counts
+ * N calendar days back from the NEWEST DATE IN THE DATA (inclusive), not from
+ * today: the data is refreshed every 3 hours, so the two are usually the same
+ * day, and when Blizzard is quiet for a while the preset still shows the
+ * latest changes instead of an empty page. The chips' tooltips say so.
+ * "Since launch" starts at LAUNCH_DATE; "All" is the full range.
+ */
+export const DATE_PRESETS = [
+  { id: 'last7', label: 'Last 7 days', days: 7 },
+  { id: 'last30', label: 'Last 30 days', days: 30 },
+  { id: 'launch', label: 'Since launch' },
+  { id: 'all', label: 'All' },
+];
+
+/**
+ * The (normalised) range a preset stands for with the loaded data. An
+ * unknown id is the full range.
+ * @param {string} id DATE_PRESETS id
+ * @param {{min: string, max: string}|null} bounds
+ * @returns {{from: string, to: string}}
+ */
+export function presetRange(id, bounds) {
+  if (!bounds) return { from: '', to: '' };
+  const preset = DATE_PRESETS.find((p) => p.id === id);
+  let from = '';
+  if (preset && preset.days) from = addDays(bounds.max, -(preset.days - 1)); // N days including the newest
+  else if (preset && preset.id === 'launch') from = LAUNCH_DATE;
+  return normalizeDateRange({ from, to: '' }, bounds);
+}
+
+/**
+ * Which preset (if any) the current range equals, for the pressed chip.
+ * When two presets give the same range with this data (e.g. the data starts
+ * after launch, so "Since launch" is "All"), the first in display order wins
+ * except that the full range is always "All".
+ * @param {{from?: string, to?: string}} range normalised range
+ * @param {{min: string, max: string}|null} bounds
+ * @returns {string|null} preset id
+ */
+export function activePreset(range, bounds) {
+  const cur = normalizeDateRange(range, bounds);
+  if (!cur.from && !cur.to) return 'all';
+  const hit = DATE_PRESETS.find((p) => {
+    const r = presetRange(p.id, bounds);
+    return r.from === cur.from && r.to === cur.to;
+  });
+  return hit ? hit.id : null;
+}
+
+/**
+ * Tooltip of a preset chip with the loaded data, e.g. "Nov 8 – Nov 14, 2026:
+ * the 7 days up to the newest change (not counted from today)".
+ * @param {string} id DATE_PRESETS id
+ * @param {{min: string, max: string}|null} bounds
+ * @returns {string}
+ */
+export function presetTitle(id, bounds) {
+  const preset = DATE_PRESETS.find((p) => p.id === id);
+  if (!preset || !bounds) return '';
+  const text = dateRangeText(presetRange(id, bounds), bounds, true);
+  if (preset.days) return `${text}: the ${preset.days} days up to the newest change (not counted from today)`;
+  if (preset.id === 'launch') return `${text}: from the launch day, ${formatDateLong(LAUNCH_DATE)}, on`;
+  return `${text}: every date`;
+}
+
+/**
+ * Text of a range, open ends resolved to the bounds:
+ *  - full range                 -> "All dates" (unless `concrete`)
+ *  - one day                    -> "Nov 4, 2026"
+ *  - same year                  -> "Sep 12 – Nov 14, 2026"
+ *  - across a new year          -> "Dec 30, 2026 – Jan 2, 2027"
+ * Without bounds an open end reads "From Nov 4, 2026" / "Until Oct 31, 2026".
+ * @param {{from?: string, to?: string}} range
+ * @param {{min: string, max: string}|null} bounds
+ * @param {boolean} [concrete] spell out the dates even for the full range
+ * @returns {string}
+ */
+export function dateRangeText(range, bounds, concrete = false) {
+  if (!concrete && !hasDateRange(range)) return 'All dates';
+  const { from, to } = effectiveRange(range, bounds);
+  if (!from && !to) return 'All dates';
+  if (!to) return `From ${formatDateShort(from, true)}`;
+  if (!from) return `Until ${formatDateShort(to, true)}`;
+  if (from === to) return formatDateShort(from, true);
+  if (from.slice(0, 4) === to.slice(0, 4)) return `${formatDateShort(from)} – ${formatDateShort(to, true)}`;
+  return `${formatDateShort(from, true)} – ${formatDateShort(to, true)}`;
+}
+
+/**
+ * Compact range text for the one-line filter summary on phones: "" when no
+ * limit is set, else "Nov 4 – Nov 14" (no year: the summary is short and the
+ * data covers one season), "Nov 4" for a single day, years only when the
+ * range crosses a new year. Without bounds: "From Nov 4" / "Until Oct 31".
+ * @param {{from?: string, to?: string}} range
+ * @param {{min: string, max: string}|null} bounds
+ * @returns {string}
+ */
+export function dateRangeSummary(range, bounds) {
+  if (!hasDateRange(range)) return '';
+  const { from, to } = effectiveRange(range, bounds);
+  if (!to) return `From ${formatDateShort(from)}`;
+  if (!from) return `Until ${formatDateShort(to)}`;
+  if (from === to) return formatDateShort(from);
+  const years = from.slice(0, 4) !== to.slice(0, 4);
+  return `${formatDateShort(from, years)} – ${formatDateShort(to, years)}`;
+}
+
+/**
+ * Slider handle positions (indexes into `dates`, the slider's stops) for a
+ * range. The slider snaps to the dates that have data, while a range typed in
+ * the date inputs may start or end between them: the start handle then sits
+ * on the first stop inside the range and the end handle on the last one. A
+ * range with no stop inside it at all puts both handles on the same stop.
+ * @param {{from?: string, to?: string}} range
+ * @param {string[]} dates from dataDates (oldest first)
+ * @returns {{start: number, end: number}}
+ */
+export function sliderPositions(range, dates) {
+  const last = dates.length - 1;
+  if (last < 0) return { start: 0, end: 0 };
+  let start = range && range.from ? dates.findIndex((d) => d >= range.from) : 0;
+  if (start < 0) start = last;
+  let end = last;
+  if (range && range.to) {
+    end = -1;
+    for (let i = last; i >= 0; i -= 1) if (dates[i] <= range.to) { end = i; break; }
+    if (end < 0) end = 0;
+  }
+  // Handles never cross: no stop inside the range -> both on the start stop.
+  if (end < start) end = start;
+  return { start, end };
+}
+
+/**
+ * The (normalised) range for two slider handle positions. The indexes are
+ * clamped to the stops and ordered (start <= end), so the handles can never
+ * produce an inverted range; a handle on the first / last stop is an open end.
+ * @param {number} start index of the start handle
+ * @param {number} end index of the end handle
+ * @param {string[]} dates from dataDates (oldest first)
+ * @returns {{from: string, to: string}}
+ */
+export function rangeFromPositions(start, end, dates) {
+  const last = dates.length - 1;
+  if (last < 0) return { from: '', to: '' };
+  const fix = (i) => Math.min(last, Math.max(0, Math.round(Number(i) || 0)));
+  let a = fix(start);
+  let b = fix(end);
+  if (a > b) [a, b] = [b, a];
+  return normalizeDateRange({ from: dates[a], to: dates[b] }, { min: dates[0], max: dates[last] });
+}
+
+/**
+ * Month labels under the slider track, at the first stop of each month
+ * ("Sep", "Oct", "Nov"), so the snapped (not time-proportional) track stays
+ * readable. `at` is the stop's position from 0 to 1. A label closer than
+ * `minGap` to the previous one is dropped so labels never overlap.
+ * @param {string[]} dates from dataDates (oldest first)
+ * @param {number} [minGap] minimum distance between two labels (0..1)
+ * @returns {{at: number, label: string}[]}
+ */
+export function monthTicks(dates, minGap = 0.14) {
+  const last = dates.length - 1;
+  if (last < 1) return [];
+  const out = [];
+  let month = '';
+  dates.forEach((d, i) => {
+    if (d.slice(0, 7) === month) return;
+    month = d.slice(0, 7);
+    const at = i / last;
+    if (out.length && at - out[out.length - 1].at < minGap) return;
+    out.push({ at, label: MONTHS[+d.slice(5, 7) - 1].slice(0, 3) });
+  });
+  return out;
 }
