@@ -768,3 +768,39 @@ describe('addSubjects: name aliases', () => {
     }
   });
 });
+
+// --- Found in the first real run with both sources ---------------------------
+
+test('addSubjects: Wowhead item beats a same-named client spell on an Items line; placeholder client icons give way', async () => {
+  const { mkdtemp, writeFile } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const dir = await mkdtemp(join(tmpdir(), 'icons-src-'));
+  const cachePath = join(dir, 'cache.json');
+  await writeFile(cachePath, JSON.stringify({
+    'gloves of holy might': { name: 'Gloves of Holy Might', type: 'item', kind: 'item', class: null, icon: 'inv_gauntlets_06' },
+    thunderclap: { name: 'Thunderclap', type: 'spell', kind: 'ability', class: 'warrior', icon: 'spell_nature_thunderclap' },
+    mangle: { name: 'Mangle', type: 'spell', kind: 'ability', class: 'druid', icon: 'ability_druid_mangle2' },
+  }));
+  const client = {
+    'gloves of holy might': { name: 'Gloves of Holy Might', type: 'spell', kind: 'spell', class: null, tree: null, icon: 'spell_holy_holysmite' },
+    thunderclap: { name: 'Thunderclap', type: 'spell', kind: 'ability', class: 'warrior', tree: null, icon: 'temp' },
+    mangle: { name: 'Mangle', type: 'spell', kind: 'talent', class: 'druid', tree: 'feral', icon: 'ability_druid_disembowel' },
+  };
+  const gameIndex = { lookup: (name) => client[name.toLowerCase()] ?? null };
+  const mk = (text, over = {}) => ({ id: 'x', scope: 'general', category: 'Items', class: null, spec: null, group: null, text, notes: [], subjects: [], ...over });
+  const days = [{ date: '2026-11-13', changes: [
+    mk('Gloves of Holy Might now have the correct text description.'),
+    mk('Thunderclap damage increased.', { scope: 'class', category: 'Classes', class: 'warrior' }),
+    mk('Mangle damage increased.', { scope: 'class', category: 'Classes', class: 'druid' }),
+  ] }];
+  await addSubjects(days, {
+    cachePath, overridesPath: join(dir, 'none.json'), aliasesPath: join(dir, 'none2.json'),
+    gameIndex, fetchImpl: async () => { throw new Error('no network expected'); }, delayMs: 0, maxLookups: 0, log: () => {},
+  });
+  const [gloves, thunder, mangle] = days[0].changes.map((c) => c.subjects[0]);
+  assert.deepEqual([gloves.type, gloves.icon, gloves.source], ['item', 'inv_gauntlets_06', 'wowhead']);
+  assert.deepEqual([thunder.icon, thunder.source], ['spell_nature_thunderclap', 'wowhead']);
+  // An ordinary disagreement still keeps the client icon and is marked unverified.
+  assert.deepEqual([mangle.icon, mangle.source, mangle.verified], ['ability_druid_disembowel', 'client', false]);
+});
