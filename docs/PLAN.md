@@ -52,3 +52,15 @@ filter state in the URL hash, light/dark.
 - Every file starts with a header comment explaining its purpose; non-obvious
   logic is commented inline.
 - Node 22, ES modules, `node --test`. Keep dependencies minimal.
+
+## Update: patch notes (second source)
+- `data/sources.json` lists the sources; `scripts/sources.mjs` turns each one
+  into days. `news-rolling` = the hotfix post; `discourse-topic` = a Blizzard
+  forum topic fetched as JSON, one patch day per staff post (empty posts and
+  "we updated the previous post" notices are skipped; dates are US Pacific).
+- `scripts/parse.mjs` gained `parsePatchPost` for the forum markup (categories
+  as bold list items or bold paragraphs, "Change Log" headings ignored).
+- Days carry `kind`, `title`, `sourceUrl` (docs/SCHEMA.md, version 2); days
+  are keyed by date + kind.
+- The UI shows a Hotfix/Patch badge on every date and an
+  All / Hotfixes / Patches filter.

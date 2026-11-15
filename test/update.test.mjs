@@ -1,16 +1,18 @@
 // test/update.test.mjs
 //
 // Unit tests for scripts/update.mjs (run with `node --test`).
-// The real fetch/parse/icons modules are replaced by in-memory stubs, so the
-// tests need no network and no other pipeline module. Each runUpdate test
-// writes into its own temp directory.
+// The real fetch/parse/icons stages are replaced by in-memory stubs, so the
+// tests need no network. The older tests use the pre-v2 stub style (one
+// SOURCE_URL + fetchPost/parseHotfixHtml), which runs through the real
+// scripts/sources.mjs; the multi-source tests stub fetchSourceDays directly.
+// Each runUpdate test writes into its own temp directory.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, stat, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { mergeDays, sameContent, runUpdate } from '../scripts/update.mjs';
+import { mergeDays, sameContent, runUpdate, dayKind } from '../scripts/update.mjs';
 
 /**
  * Build a minimal schema-shaped day with n changes.
@@ -51,6 +53,29 @@ test('mergeDays handles empty inputs and does not mutate them', () => {
   assert.deepEqual(mergeDays([], []), []);
   assert.deepEqual(mergeDays(prev, []).map((d) => d.date), ['2026-11-03', '2026-11-01']);
   assert.deepEqual(prev, copy);
+});
+
+test('mergeDays keys on date + kind: a patch and a hotfix on one date are two days', () => {
+  const patch = (date, text = 'p') => ({ ...day(date, 1, text), kind: 'patch' });
+  const hotfix = (date, text = 'h') => ({ ...day(date, 1, text), kind: 'hotfix' });
+  const merged = mergeDays(
+    [day('2026-11-02', 1, 'old hotfix, no kind'), patch('2026-11-02', 'old patch')],
+    [hotfix('2026-11-02', 'new hotfix')],
+  );
+  // The kind-less stored day counts as a hotfix, so the fresh hotfix replaces it.
+  assert.deepEqual(merged.map((d) => [d.date, d.kind, d.changes[0].text]), [
+    ['2026-11-02', 'patch', 'old patch'],
+    ['2026-11-02', 'hotfix', 'new hotfix'],
+  ]);
+});
+
+test('mergeDays orders newest date first, and patch before hotfix on the same date', () => {
+  const k = (date, kind) => ({ ...day(date), kind });
+  const merged = mergeDays([k('2026-11-01', 'hotfix'), k('2026-11-13', 'hotfix')], [k('2026-11-13', 'patch'), k('2026-11-02', 'patch')]);
+  assert.deepEqual(merged.map((d) => `${d.date} ${d.kind}`), [
+    '2026-11-13 patch', '2026-11-13 hotfix', '2026-11-02 patch', '2026-11-01 hotfix',
+  ]);
+  assert.equal(dayKind({}), 'hotfix');
 });
 
 test('sameContent ignores generatedAt but not other differences', () => {
@@ -169,6 +194,146 @@ test('runUpdate tolerates a corrupt existing file', async () => {
     const r = await runUpdate({ outPath: out, deps: stubDeps([day('2026-11-13')]), now: fixedNow, log: quiet });
     assert.equal(r.changed, true);
     assert.equal(JSON.parse(await readFile(out, 'utf8')).days.length, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+// --- Multiple sources (schema v2) -------------------------------------------
+
+const HOTFIX_SRC = { kind: 'hotfix', type: 'news-rolling', url: 'https://news.test/hotfixes' };
+const PATCH_SRC = { kind: 'patch', type: 'discourse-topic', url: 'https://forum.test/t/1', title: 'Beta build notes' };
+
+/**
+ * Stub deps for multi-source runs. `bySource` maps a source URL to the days
+ * it returns, or to an Error it throws. addSubjects is the identity.
+ */
+function multiDeps(bySource, sources = [HOTFIX_SRC, PATCH_SRC]) {
+  return {
+    sources,
+    fetchSourceDays: async (source) => {
+      const r = bySource[source.url];
+      if (r instanceof Error) throw r;
+      return structuredClone(r ?? []);
+    },
+    addSubjects: async (days) => days,
+  };
+}
+
+/** A v2 day of the given kind. */
+const vday = (date, kind, n = 1, text = 'x') => ({
+  ...day(date, n, text), kind, title: kind === 'patch' ? 'Beta build notes' : null,
+  sourceUrl: kind === 'patch' ? `${PATCH_SRC.url}/4` : HOTFIX_SRC.url,
+});
+
+test('runUpdate writes days from every source, ordered, plus a sources list', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    const deps = multiDeps({
+      [HOTFIX_SRC.url]: [vday('2026-11-13', 'hotfix', 2), vday('2026-11-02', 'hotfix')],
+      [PATCH_SRC.url]: [vday('2026-11-02', 'patch', 3)],
+    });
+    const lines = [];
+    const r = await runUpdate({ outPath: out, deps, now: fixedNow, log: (m) => lines.push(m) });
+    assert.deepEqual(r, { changed: true, days: 3, changes: 6 });
+    const data = JSON.parse(await readFile(out, 'utf8'));
+    assert.deepEqual(data.days.map((d) => `${d.date} ${d.kind}`), ['2026-11-13 hotfix', '2026-11-02 patch', '2026-11-02 hotfix']);
+    assert.deepEqual(data.source, { title: 'WoW: Forever Hotfixes', url: HOTFIX_SRC.url });
+    assert.deepEqual(data.sources, [
+      { kind: 'hotfix', title: null, url: HOTFIX_SRC.url },
+      { kind: 'patch', title: 'Beta build notes', url: PATCH_SRC.url },
+    ]);
+    assert.ok(lines.includes('Sources: 2/2 ok'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('runUpdate skips a failing source, keeps its stored days, writes the others', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    await runUpdate({
+      outPath: out, now: fixedNow, log: quiet,
+      deps: multiDeps({ [HOTFIX_SRC.url]: [vday('2026-11-01', 'hotfix')], [PATCH_SRC.url]: [vday('2026-09-24', 'patch', 2, 'old patch')] }),
+    });
+    const lines = [];
+    const r = await runUpdate({
+      outPath: out, now: fixedNow, log: (m) => lines.push(m),
+      deps: multiDeps({ [HOTFIX_SRC.url]: [vday('2026-11-13', 'hotfix')], [PATCH_SRC.url]: new Error('HTTP 503') }),
+    });
+    assert.equal(r.changed, true);
+    const data = JSON.parse(await readFile(out, 'utf8'));
+    assert.deepEqual(data.days.map((d) => `${d.date} ${d.kind}`), ['2026-11-13 hotfix', '2026-11-01 hotfix', '2026-09-24 patch']);
+    assert.equal(data.days[2].changes[0].text, 'old patch');
+    assert.ok(lines.some((l) => /Skipping patch source https:\/\/forum\.test\/t\/1 .*HTTP 503/.test(l)), lines.join('\n'));
+    assert.ok(lines.includes('Sources: 1/2 ok'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('runUpdate treats a source with zero days as failed but still writes the others', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    const r = await runUpdate({
+      outPath: out, now: fixedNow, log: quiet,
+      deps: multiDeps({ [HOTFIX_SRC.url]: [], [PATCH_SRC.url]: [vday('2026-11-02', 'patch')] }),
+    });
+    assert.equal(r.days, 1);
+    assert.deepEqual(JSON.parse(await readFile(out, 'utf8')).days.map((d) => d.kind), ['patch']);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('runUpdate refuses to overwrite when every source fails or is empty', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    await writeFile(out, '{"keep":"me","days":[]}\n');
+    await assert.rejects(
+      runUpdate({
+        outPath: out, now: fixedNow, log: quiet,
+        deps: multiDeps({ [HOTFIX_SRC.url]: new Error('Timed out'), [PATCH_SRC.url]: [vday('2026-11-02', 'patch', 0)] }),
+      }),
+      (err) => {
+        assert.match(err.message, /refusing to overwrite/);
+        assert.match(err.message, /Timed out/);
+        assert.match(err.message, /no days or no changes/);
+        return true;
+      },
+    );
+    assert.equal(await readFile(out, 'utf8'), '{"keep":"me","days":[]}\n');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('runUpdate upgrades stored pre-v2 days to kind "hotfix" with the hotfix link', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    await writeFile(out, JSON.stringify({ generatedAt: 'x', source: {}, days: [day('2026-10-01')] }));
+    await runUpdate({ outPath: out, now: fixedNow, log: quiet, deps: multiDeps({ [PATCH_SRC.url]: [vday('2026-11-02', 'patch')] }) });
+    const old = JSON.parse(await readFile(out, 'utf8')).days.find((d) => d.date === '2026-10-01');
+    assert.deepEqual(Object.keys(old).slice(0, 4), ['date', 'kind', 'title', 'sourceUrl']);
+    assert.deepEqual([old.kind, old.title, old.sourceUrl], ['hotfix', null, HOTFIX_SRC.url]);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('runUpdate loads sources through deps.loadSources with sourcesPath and passes stages through', async () => {
+  const [dir, out] = await tmpOut();
+  try {
+    const seen = {};
+    const deps = {
+      loadSources: async (path) => { seen.path = path; return [HOTFIX_SRC]; },
+      fetchSourceDays: async (source, stages) => { seen.stages = Object.keys(stages).sort(); return [vday('2026-11-13', 'hotfix')]; },
+      fetchPost: async () => '', fetchJson: async () => ({}), parseHotfixHtml: () => ({ days: [] }), parsePatchPost: () => ({}),
+      addSubjects: async (days) => days,
+    };
+    await runUpdate({ outPath: out, sourcesPath: '/x/sources.json', deps, now: fixedNow, log: quiet });
+    assert.equal(seen.path, '/x/sources.json');
+    assert.deepEqual(seen.stages, ['fetchJson', 'fetchPost', 'log', 'parseHotfixHtml', 'parsePatchPost']);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

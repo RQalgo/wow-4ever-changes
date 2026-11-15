@@ -36,6 +36,13 @@ icons, and commits `data/changes.json` when something changed. GitHub Pages
 (deploy from branch `main`, root) then republishes by itself. Days that
 Blizzard later drops from the post are kept.
 
+Sources are listed in `data/sources.json`. There are two today: the rolling
+hotfix post (`kind: "hotfix"`) and Blizzard's forum topic of build notes
+(`kind: "patch"`, one dated entry per Blizzard post). When Blizzard publishes a
+new patch-notes topic, add an entry like the existing `discourse-topic` one
+with its forum URL; it is not discovered automatically. If one source fails,
+the other still updates and the failed source's stored days are kept.
+
 Icon lookups are rate-limited on purpose (150 new names per run, 1.2 s apart)
 and cached in `data/icon-cache.json`; names that are still unknown are retried
 on later runs. Lines without an icon show a class or category tile.

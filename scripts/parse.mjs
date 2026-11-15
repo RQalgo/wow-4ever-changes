@@ -1,6 +1,7 @@
 /**
  * scripts/parse.mjs — turn the "WoW: Forever Hotfixes" post HTML into the
- * `{ days: [...] }` structure defined in docs/SCHEMA.md.
+ * `{ days: [...] }` structure defined in docs/SCHEMA.md, and (parsePatchPost)
+ * one forum patch-notes post into a single `kind: "patch"` day (schema v2).
  *
  * Step 2 of the pipeline (docs/PLAN.md). The icon resolver later fills each
  * change's `subjects`; this module always emits `subjects: []`.
@@ -23,6 +24,9 @@
  * - If the DOM has no date headings at all (e.g. the article is rendered
  *   client-side), we look inside `<script>` tags for a string value that holds
  *   the article HTML, JSON-unescape it, and parse that fragment instead.
+ * - Patch notes (Blizzard forum posts) reuse the same block collector and
+ *   list walker; they add <h2> headings, "Change Log" markers, categories
+ *   named by top-level bold <li>s, and loose bold headings (see walkList).
  * - Each pure helper is exported so it can be unit-tested on its own.
  */
 import { parse as parseDom, NodeType } from 'node-html-parser';
@@ -89,6 +93,26 @@ export function parseDateLabel(label) {
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
+/** Full month names, index 0 = January, for long US date labels. */
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+/**
+ * Format an ISO date as a long US label, the way the hotfix post writes its
+ * date headings: "2026-11-02" -> "November 2, 2026".
+ *
+ * @param {string} iso "YYYY-MM-DD"
+ * @returns {string}
+ * @throws {Error} if `iso` is not a valid calendar date.
+ */
+export function formatDateLabel(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? ''));
+  const label = m && `${MONTH_NAMES[Number(m[2]) - 1]} ${Number(m[3])}, ${Number(m[1])}`;
+  // Round-trip through parseDateLabel to reject e.g. "2026-02-30".
+  if (!label || parseDateLabel(label) !== iso) throw new Error(`Invalid ISO date: ${iso}`);
+  return label;
+}
+
 // ---------------------------------------------------------------------------
 // DOM helpers
 // ---------------------------------------------------------------------------
@@ -96,8 +120,36 @@ export function parseDateLabel(label) {
 /** Tags whose content is treated as bold for heading detection. */
 const BOLD_TAGS = new Set(['strong', 'b']);
 
-/** Tags that are always headings when they contain text. */
+/**
+ * Tags that are always headings when they contain text, in the hotfix post.
+ * <h2> is deliberately absent: the news page uses an <h2> for the article's
+ * own title ("Hotfixes"), which is not a category.
+ */
 const HEADING_TAGS = new Set(['h3', 'h4']);
+
+/**
+ * Heading tags for forum patch notes, where <h2> marks sections such as
+ * "Change Log" and "New to this build - Known Issues".
+ */
+const PATCH_HEADING_TAGS = new Set(['h2', 'h3', 'h4']);
+
+/**
+ * A section heading that only announces the list of changes ("Change Log",
+ * "CHANGE LOG", "Changelog"). It is not a category: it resets the current
+ * category so the following lists name their own categories.
+ */
+const CHANGE_LOG_RE = /^change\s*log:?$/i;
+
+/**
+ * True when a heading text is a "Change Log" marker (any case, with or
+ * without the space, optional trailing colon).
+ *
+ * @param {string} text Heading text.
+ * @returns {boolean}
+ */
+export function isChangeLogHeading(text) {
+  return CHANGE_LOG_RE.test(cleanText(text));
+}
 
 /** List container tags. */
 const LIST_TAGS = new Set(['ul', 'ol']);
@@ -158,14 +210,17 @@ function isOnly(nodes, tags) {
 }
 
 /**
- * If `el` is a heading-like block — <h3>/<h4>, or a <p> whose content is
- * only <strong>/<b> — return its text; otherwise null.
+ * If `el` is a heading-like block — one of `headingTags` (<h3>/<h4> by
+ * default), or a <p> whose content is only <strong>/<b> — return its text;
+ * otherwise null. Empty anchors inside a heading (Discourse's
+ * `<a class="anchor">`) contribute no text, so they need no special case.
  * @param {import('node-html-parser').HTMLElement} el
+ * @param {Set<string>} [headingTags=HEADING_TAGS]
  * @returns {string|null}
  */
-function headingText(el) {
+function headingText(el, headingTags = HEADING_TAGS) {
   const tag = tagOf(el);
-  if (HEADING_TAGS.has(tag)) return textOf(el.childNodes) || null;
+  if (headingTags.has(tag)) return textOf(el.childNodes) || null;
   if (tag === 'p' && isOnly(el.childNodes, BOLD_TAGS)) return textOf(el.childNodes);
   return null;
 }
@@ -176,8 +231,9 @@ function headingText(el) {
  * walker) or into headings.
  * @param {import('node-html-parser').Node} node
  * @param {Array<{type:'heading',text:string}|{type:'list',el:import('node-html-parser').HTMLElement}>} [out]
+ * @param {Set<string>} [headingTags=HEADING_TAGS] Tags treated as headings.
  */
-function collectBlocks(node, out = []) {
+function collectBlocks(node, out = [], headingTags = HEADING_TAGS) {
   for (const child of node.childNodes) {
     const tag = tagOf(child);
     if (!tag) continue;
@@ -185,14 +241,14 @@ function collectBlocks(node, out = []) {
       out.push({ type: 'list', el: child });
       continue;
     }
-    const text = headingText(child);
+    const text = headingText(child, headingTags);
     if (text !== null) {
       out.push({ type: 'heading', text });
       continue;
     }
     // <script>/<style> never contain article markup we can walk as DOM.
     if (tag === 'script' || tag === 'style') continue;
-    collectBlocks(child, out);
+    collectBlocks(child, out, headingTags);
   }
   return out;
 }
@@ -273,7 +329,8 @@ function makeChange(ctx, text) {
   return {
     id: '',
     scope: ctx.inClasses ? 'class' : 'general',
-    category: ctx.category,
+    // Plain items in a list with no category at all fall back to "General".
+    category: ctx.category ?? FALLBACK_CATEGORY,
     class: ctx.inClasses ? ctx.class : null,
     spec: ctx.inClasses ? ctx.spec : null,
     group: ctx.group.length ? ctx.group.join(' > ') : null,
@@ -287,11 +344,43 @@ function makeChange(ctx, text) {
 const KNOWN_CLASSES = new Set(['druid', 'hunter', 'mage', 'paladin', 'priest', 'rogue', 'shaman', 'warlock', 'warrior']);
 
 /**
+ * Talent trees of each class (WoW: Forever / Classic), as heading slugs.
+ * Maps a heading slug to the spec slug stored in the data; "Feral Combat",
+ * the tree's in-game name, is stored as "feral".
+ */
+const TALENT_TREES = {
+  druid: { balance: 'balance', feral: 'feral', 'feral-combat': 'feral', restoration: 'restoration' },
+  hunter: { 'beast-mastery': 'beast-mastery', marksmanship: 'marksmanship', survival: 'survival' },
+  mage: { arcane: 'arcane', fire: 'fire', frost: 'frost' },
+  paladin: { holy: 'holy', protection: 'protection', retribution: 'retribution' },
+  priest: { discipline: 'discipline', holy: 'holy', shadow: 'shadow' },
+  rogue: { assassination: 'assassination', combat: 'combat', subtlety: 'subtlety' },
+  shaman: { elemental: 'elemental', enhancement: 'enhancement', restoration: 'restoration' },
+  warlock: { affliction: 'affliction', demonology: 'demonology', destruction: 'destruction' },
+  warrior: { arms: 'arms', fury: 'fury', protection: 'protection' },
+};
+
+/**
+ * Spec slug for a sub-heading under a class, or null when the heading is not
+ * one of that class's talent trees.
+ *
+ * @param {string|null} classSlug e.g. "druid"
+ * @param {string} heading e.g. "Feral Combat"
+ * @returns {string|null} e.g. "feral"
+ */
+export function talentTreeSlug(classSlug, heading) {
+  const trees = classSlug ? TALENT_TREES[classSlug] : undefined;
+  if (!trees) return null;
+  return Object.hasOwn(trees, slugify(heading)) ? trees[slugify(heading)] : null;
+}
+
+/**
  * Return the context for the children of a bold heading `<li>`.
  *
  * Inside Classes the first heading level is the class, the second the spec
- * (talent tree); anything deeper, and every heading level in other
- * categories, is appended to `group` (joined later as "A > B").
+ * (only if it is a real talent tree of that class, see TALENT_TREES);
+ * anything else, and every heading level in other categories, is appended
+ * to `group` (joined later as "A > B").
  * @param {object} ctx
  * @param {string} heading
  */
@@ -305,15 +394,47 @@ function descend(ctx, heading) {
     if (ctx.group.length === 0 && KNOWN_CLASSES.has(slug)) return { ...ctx, class: slug };
     return { ...ctx, group: [...ctx.group, heading] };
   }
-  if (ctx.inClasses && ctx.spec === null) return { ...ctx, spec: slugify(heading) };
+  // The second level is a spec only when it names a real talent tree of that
+  // class and no group heading sits in between; anything else ("Pets", a race
+  // name, "Seals") is a group, so the spec filter never lists invented specs.
+  if (ctx.inClasses && ctx.spec === null && ctx.group.length === 0) {
+    const spec = talentTreeSlug(ctx.class, heading);
+    if (spec) return { ...ctx, spec };
+  }
   return { ...ctx, group: [...ctx.group, heading] };
+}
+
+/**
+ * True when an <li>'s own content is only bold text, i.e. it reads as a
+ * heading (class, spec, group or, with no category yet, a category).
+ * @param {import('node-html-parser').Node[]} own The item's non-list children.
+ */
+function isHeadingItem(own) {
+  return isOnly(own, BOLD_TAGS);
 }
 
 /**
  * Walk one list and append the changes it contains to `out`.
  *
+ * Item kinds, in the order they are tested:
+ * 1. Heading item: bold-only text plus a nested list. Its nested lists are
+ *    walked under the heading (see `headingContext`).
+ * 2. Bold-only item WITHOUT a nested list ("loose heading"). Forum patch
+ *    notes write `<li><strong>Tauren</strong></li><li>Cultivation…</li>` or
+ *    `<li><strong>Quests</strong></li><li><ul>…</ul></li>`: the heading
+ *    applies to the following sibling items of this list until the next
+ *    bold-only item. If the next sibling is itself bold-only, or there is no
+ *    next sibling, the item is just a change (the hotfix post's behaviour:
+ *    "<li><strong>Thunderfury is back.</strong></li>").
+ * 3. Wrapper item: no own text, only nested lists; walked with the current
+ *    context (so after a loose heading, under that heading).
+ * 4. Developer note sibling: attached to the previous change of this list.
+ * 5. Ordinary change, with any nested items as its notes.
+ *
  * @param {import('node-html-parser').HTMLElement} list <ul> or <ol>
- * @param {{category:string,inClasses:boolean,class:string|null,spec:string|null,group:string[]}} ctx
+ * @param {{category:string|null,inClasses:boolean,class:string|null,spec:string|null,group:string[]}} ctx
+ *   `category: null` means "no category yet" (patch notes after a
+ *   "Change Log" heading): top-level bold items then name the category.
  * @param {object[]} out Changes of the current day, in published order.
  */
 function walkList(list, ctx, out) {
@@ -322,44 +443,82 @@ function walkList(list, ctx, out) {
   // lists and is cleared after a heading item, so a note never jumps
   // across a heading.
   let previous = null;
-  for (const li of itemsOf(list)) {
-    const { own, nested } = splitListItem(li);
+  // Context for plain items: `ctx`, or a loose heading's context (kind 2).
+  let current = ctx;
+  const items = itemsOf(list).map((li) => splitListItem(li));
+  for (let i = 0; i < items.length; i++) {
+    const { own, nested } = items[i];
     const text = textOf(own);
 
-    // A heading item: only bold text plus a nested list -> class/spec/group.
+    // 1. Heading item with its own nested list -> class/spec/group/category.
     // `previous` is reset so a note after the heading's block never jumps
     // back over it to an earlier change; it is kept as a change instead.
-    if (nested.length && isOnly(own, BOLD_TAGS)) {
-      const inner = descend(ctx, text);
+    // A loose heading in effect ends here (the next heading replaces it).
+    if (nested.length && isHeadingItem(own)) {
+      const inner = headingContext(ctx, text);
       for (const sub of nested) walkList(sub, inner, out);
+      current = ctx;
       previous = null;
       continue;
     }
 
-    // A wrapper item with no text of its own: just walk its lists.
+    // 2. Loose heading: bold-only, no nested list. It heads the following
+    // siblings only if the next sibling is not itself a heading; otherwise
+    // (or when it is the last item) it is an ordinary change, below.
+    if (!nested.length && isHeadingItem(own)) {
+      const next = items[i + 1];
+      if (next && !isHeadingItem(next.own)) {
+        current = headingContext(ctx, text);
+        previous = null;
+        continue;
+      }
+      current = ctx; // a new bold-only item always ends a loose heading
+    }
+
+    // 3. A wrapper item with no text of its own: just walk its lists.
     if (!text) {
-      for (const sub of nested) walkList(sub, ctx, out);
+      for (const sub of nested) walkList(sub, current, out);
       if (nested.length) previous = null;
       continue;
     }
 
-    // Developer note as a sibling item: attach to the previous change. With
-    // no previous change in this list, keep it as a change so the text is
-    // never silently dropped.
+    // 4. Developer note as a sibling item: attach to the previous change.
+    // With no previous change in this list, keep it as a change so the text
+    // is never silently dropped.
     if (!nested.length && previous && isDeveloperNote(own)) {
       previous.notes.push(text);
       continue;
     }
 
-    // Ordinary change. (A bold-only item without a nested list also lands
-    // here and becomes a change with that text.) If the item has its own
-    // text *and* nested lists, the nested items are its notes, e.g. a
-    // developer note nested under the change it explains.
-    const change = makeChange(ctx, text);
+    // 5. Ordinary change. If the item has its own text *and* nested lists,
+    // the nested items are its notes, e.g. a developer note nested under
+    // the change it explains.
+    const change = makeChange(current, text);
     if (nested.length) change.notes.push(...collectNoteTexts(nested));
     out.push(change);
     previous = change;
   }
+}
+
+/**
+ * Context for the items under a heading item. With no category yet
+ * (`ctx.category === null`), the heading names the category and "Classes"
+ * switches class mode on; otherwise it descends to class/spec/group.
+ * @param {object} ctx Walker context of the list holding the heading.
+ * @param {string} heading Heading text.
+ */
+function headingContext(ctx, heading) {
+  if (ctx.category === null) return categoryContext(heading);
+  return descend(ctx, heading);
+}
+
+/**
+ * Fresh walker context for the start of a category.
+ * @param {string|null} category Category heading, or null for "none yet".
+ */
+function categoryContext(category) {
+  const inClasses = category !== null && category.toLowerCase() === CLASSES_CATEGORY;
+  return { category, inClasses, class: null, spec: null, group: [] };
 }
 
 // ---------------------------------------------------------------------------
@@ -525,19 +684,23 @@ function parseDays(root) {
     if (block.type === 'heading') {
       const iso = parseDateLabel(block.text);
       if (iso) {
-        if (!days.has(iso)) days.set(iso, { date: iso, label: block.text, changes: [] });
+        // kind/title/sourceUrl per docs/SCHEMA.md v2; the orchestrator
+        // (scripts/sources.mjs) fills in the source URL.
+        if (!days.has(iso)) days.set(iso, { date: iso, kind: 'hotfix', title: null, sourceUrl: null, label: block.text, changes: [] });
         day = days.get(iso);
         category = null;
       } else if (day) {
-        category = block.text;
+        // "Change Log" only introduces the lists; it is not a category.
+        category = isChangeLogHeading(block.text) ? null : block.text;
       }
       // Headings before the first date (e.g. intro text) are ignored.
       continue;
     }
     if (!day) continue; // lists before the first date are not hotfixes
-    const cat = category ?? FALLBACK_CATEGORY;
-    const inClasses = cat.toLowerCase() === CLASSES_CATEGORY;
-    walkList(block.el, { category: cat, inClasses, class: null, spec: null, group: [] }, day.changes);
+    // The hotfix post names categories with paragraphs, so a list with no
+    // category is walked as "General" (bold items in it stay groups, as
+    // before), unlike patch notes where such bold items name the category.
+    walkList(block.el, categoryContext(category ?? FALLBACK_CATEGORY), day.changes);
   }
   return [...days.values()];
 }
@@ -560,7 +723,7 @@ function finalizeDays(days) {
  * (without the top-level generatedAt/source, which the pipeline adds).
  *
  * @param {string} html Full page HTML or just the article fragment.
- * @returns {{days: Array<{date:string,label:string,changes:object[]}>}}
+ * @returns {{days: Array<{date:string,kind:'hotfix',title:null,sourceUrl:null,label:string,changes:object[]}>}}
  */
 export function parseHotfixHtml(html) {
   const root = parseDom(String(html ?? ''), { comment: false });
@@ -574,4 +737,56 @@ export function parseHotfixHtml(html) {
     }
   }
   return { days: finalizeDays(days) };
+}
+
+/**
+ * Parse one forum patch-notes post (a Discourse post's `cooked` HTML) into
+ * ONE day of changes, per docs/SCHEMA.md v2.
+ *
+ * Unlike the hotfix post there are no date headings: the caller supplies the
+ * date (the post's creation date in US Pacific time). Every list in the post
+ * is read, in document order:
+ * - <h2>/<h3>/<h4> and bold-only paragraphs are headings. "Change Log"
+ *   resets the category to "none"; any other heading is the category
+ *   (e.g. "Bug Fixes", "New to this build - Known Issues").
+ * - With no category, a top-level bold-only <li> names the category
+ *   (`<li><strong>Bugfixes</strong><ul>…</ul></li>`), and plain items fall
+ *   back to "General".
+ * - Paragraphs that are not headings (intro text, links) are ignored.
+ *
+ * @param {string} html The post's HTML.
+ * @param {object} options
+ * @param {string} options.date ISO date of the day, "YYYY-MM-DD".
+ * @param {string|null} [options.title=null] Short name of the patch/post.
+ * @param {string|null} [options.sourceUrl=null] Link to this post.
+ * @returns {{date:string,kind:'patch',title:string|null,sourceUrl:string|null,label:string,changes:object[]}}
+ *   Changes have ids "<date>-pNNN" (1-based, 3 digits) and `subjects: []`.
+ * @throws {Error} if `date` is not a valid ISO date.
+ */
+export function parsePatchPost(html, { date, title = null, sourceUrl = null } = {}) {
+  const label = formatDateLabel(date); // validates `date` before any work
+  const root = parseDom(String(html ?? ''), { comment: false });
+  const changes = [];
+  let category = null; // null = no category yet (start, or after "Change Log")
+  for (const block of collectBlocks(root, [], PATCH_HEADING_TAGS)) {
+    if (block.type === 'heading') {
+      category = isChangeLogHeading(block.text) ? null : block.text;
+      continue;
+    }
+    walkList(block.el, categoryContext(category), changes);
+  }
+  changes.forEach((c, i) => { c.id = patchChangeId(date, i); });
+  return { date, kind: 'patch', title, sourceUrl, label, changes };
+}
+
+/**
+ * Id of the i-th (0-based) change of a patch day: "<date>-pNNN", 1-based.
+ * Exported so callers that merge two posts into one day can renumber.
+ *
+ * @param {string} date ISO date.
+ * @param {number} index 0-based position within the day.
+ * @returns {string} e.g. "2026-11-02-p001"
+ */
+export function patchChangeId(date, index) {
+  return `${date}-p${String(index + 1).padStart(3, '0')}`;
 }

@@ -1,8 +1,10 @@
 /**
- * scripts/fetch.mjs — download Blizzard's rolling "WoW: Forever Hotfixes" post.
+ * scripts/fetch.mjs — download Blizzard source pages (hotfix post, forum patch notes).
  *
- * Step 1 of the pipeline described in docs/PLAN.md. It does one thing: fetch
- * the article page and return its HTML as a string for scripts/parse.mjs.
+ * Step 1 of the pipeline described in docs/PLAN.md. It downloads source
+ * pages: `fetchPost` returns the hotfix article's HTML for scripts/parse.mjs,
+ * and `fetchJson` returns parsed JSON, used for Blizzard forum (Discourse)
+ * topics holding patch notes (`discourseJsonUrl` builds their JSON URL).
  *
  * Design notes:
  * - The `fetch` implementation is injectable (`fetchImpl`) so tests can stub
@@ -126,10 +128,11 @@ function httpError(url, response, body) {
  * and timeouts into clear Errors. Does not judge the HTTP status.
  *
  * @param {string} url
- * @param {{fetchImpl: typeof fetch, timeoutMs: number}} options
+ * @param {{fetchImpl: typeof fetch, timeoutMs: number, accept?: string}} options
+ *   `accept` is the Accept header (HTML by default).
  * @returns {Promise<{response: Response, body: string}>}
  */
-async function requestOnce(url, { fetchImpl, timeoutMs }) {
+async function requestOnce(url, { fetchImpl, timeoutMs, accept = 'text/html,application/xhtml+xml' }) {
   let response;
   try {
     response = await fetchImpl(url, {
@@ -137,7 +140,7 @@ async function requestOnce(url, { fetchImpl, timeoutMs }) {
       signal: AbortSignal.timeout(timeoutMs),
       headers: {
         'User-Agent': USER_AGENT,
-        Accept: 'text/html,application/xhtml+xml',
+        Accept: accept,
       },
     });
   } catch (err) {
@@ -156,4 +159,61 @@ async function requestOnce(url, { fetchImpl, timeoutMs }) {
     // Body unavailable (e.g. connection dropped); status is still reported.
   }
   return { response, body };
+}
+
+/**
+ * Fetch a URL that answers JSON (e.g. a Discourse topic's `.json` view) and
+ * return the parsed value. Same honest User-Agent, timeout and error style
+ * as fetchPost; no in-body redirect handling (JSON APIs do not use it).
+ *
+ * @param {string} url URL to download.
+ * @param {object} [options]
+ * @param {typeof fetch} [options.fetchImpl=fetch] fetch implementation; tests
+ *   pass a stub here.
+ * @param {number} [options.timeoutMs=30000] Abort after this many ms.
+ * @returns {Promise<unknown>} The parsed JSON body.
+ * @throws {Error} On network failure, timeout, a non-2xx status, or a body
+ *   that is not valid JSON (the message names the URL and shows the start of
+ *   the body, which is usually an HTML error or login page).
+ */
+export async function fetchJson(url, { fetchImpl = fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+  const { response, body } = await requestOnce(url, { fetchImpl, timeoutMs, accept: 'application/json' });
+  if (!response.ok) throw httpError(url, response, body);
+  try {
+    return JSON.parse(body);
+  } catch (err) {
+    const snippet = (body ?? '').replace(/\s+/g, ' ').slice(0, 200);
+    throw new Error(`Invalid JSON from ${url}: ${err.message}` + (snippet ? ` body: ${snippet}` : ' (empty body)'), { cause: err });
+  }
+}
+
+/**
+ * JSON URL of a Discourse topic, from any link to it:
+ *
+ *   https://host/en/wow/t/2360696          -> https://host/en/wow/t/2360696.json
+ *   https://host/en/wow/t/2360696/9        -> https://host/en/wow/t/2360696.json  (post number dropped)
+ *   https://host/en/wow/t/some-slug/2360696/ -> https://host/en/wow/t/some-slug/2360696.json
+ *   https://host/en/wow/t/2360696.json     -> unchanged
+ *
+ * Query string and fragment are dropped. The topic JSON lists the topic's
+ * posts, so a post number in the link is not needed.
+ *
+ * @param {string} topicUrl Link to the topic or one of its posts.
+ * @returns {string}
+ * @throws {Error} if the URL is not http(s) or has no `/t/<id>` path.
+ */
+export function discourseJsonUrl(topicUrl) {
+  let u;
+  try {
+    u = new URL(topicUrl);
+  } catch {
+    throw new Error(`Not a valid URL: ${topicUrl}`);
+  }
+  if (!/^https?:$/.test(u.protocol)) throw new Error(`Not an http(s) URL: ${topicUrl}`);
+  // Path forms: …/t/<id>[/<post>] or …/t/<slug>/<id>[/<post>], optional
+  // trailing slash, optionally already ending in ".json".
+  const m = /^(.*\/t\/)(?:([^/]*[^/\d][^/]*)\/)?(\d+)(?:\.json)?(?:\/\d+)?\/?$/.exec(u.pathname);
+  if (!m) throw new Error(`Not a Discourse topic URL (expected …/t/<id>): ${topicUrl}`);
+  const [, prefix, slug, id] = m;
+  return `${u.origin}${prefix}${slug ? `${slug}/` : ''}${id}.json`;
 }
