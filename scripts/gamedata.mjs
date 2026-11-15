@@ -403,3 +403,331 @@ export function pickLatestBuild(buildsJson, product = 'wowf') {
   }
   return best.version;
 }
+
+// ---------------------------------------------------------------------------
+// Downloading
+// ---------------------------------------------------------------------------
+
+/**
+ * One HTTP GET with the honest User-Agent and a 60 s timeout (the timeout also
+ * covers reading the body). Throws on network errors and non-2xx statuses.
+ * @param {typeof fetch} fetchImpl
+ * @param {string} url
+ * @returns {Promise<Response>}
+ */
+async function request(fetchImpl, url) {
+  const res = await fetchImpl(url, {
+    headers: { 'User-Agent': USER_AGENT },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  if (!res || !res.ok) throw new Error(`HTTP ${res ? res.status : 'no response'} for ${url}`);
+  return res;
+}
+
+// ---------------------------------------------------------------------------
+// Building the index data
+// ---------------------------------------------------------------------------
+
+/** Sort rank of entry kinds inside one name: talent first, then ability, then spell. */
+const KIND_RANK = { talent: 0, ability: 1, spell: 2 };
+
+/**
+ * True when a plain spell name looks like test / internal data that the client
+ * ships but players never see. Only applied to kind "spell"; talents and class
+ * abilities are real by construction.
+ *
+ * Judgment call: the brief lists "zz" as a marker. Blizzard's convention is a
+ * "zz" PREFIX ("zzOLD Frost Armor"), and a plain substring test would also
+ * drop real names such as "Pizzazz", so only the prefix is matched.
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isJunkSpellName(name) {
+  return (
+    /\((TEST|OLD|DND|NYI|PT)\)/i.test(name) ||
+    name.includes('DNT') ||
+    /^zz/i.test(name) ||
+    name.startsWith('[')
+  );
+}
+
+/**
+ * Adds an entry to a name group, de-duplicating by (kind, class, tree, icon):
+ * many spell ranks share a name and icon, so only the lowest id is kept. For
+ * talents the rank spell ids of all merged duplicates are collected in `ids`
+ * (used later to match Wowhead talents by spell id).
+ * @param {Map<string, Map<string, object>>} groups name key -> dedupe key -> entry
+ * @param {object} e entry with name, kind, class, tree, icon, id (+ tab for talents)
+ */
+function addEntry(groups, e) {
+  const key = normalizeName(e.name);
+  let group = groups.get(key);
+  if (!group) groups.set(key, (group = new Map()));
+  const dk = `${e.kind}|${e.class}|${e.tree}|${e.icon}`;
+  const have = group.get(dk);
+  if (e.kind === 'talent') e.ids = new Set([e.id]);
+  if (!have) {
+    group.set(dk, e);
+    return;
+  }
+  if (e.kind === 'talent') for (const id of e.ids) have.ids.add(id);
+  if (e.id < have.id) {
+    have.id = e.id;
+    have.name = e.name;
+  }
+}
+
+/**
+ * Turns the collected groups into the output object: drops question-mark
+ * duplicates, orders entries talent -> ability -> spell (then by id), caps each
+ * name at 6 entries and converts rank-id sets to sorted arrays.
+ * @param {Map<string, Map<string, object>>} groups
+ * @returns {Record<string, object[]>}
+ */
+function finalizeGroups(groups) {
+  const out = {};
+  for (const [key, group] of groups) {
+    let list = [...group.values()];
+    // A question-mark icon is only a placeholder: drop it when the same name
+    // has at least one real icon.
+    if (list.some((e) => e.icon !== QUESTION_MARK_ICON)) {
+      list = list.filter((e) => e.icon !== QUESTION_MARK_ICON);
+    }
+    list.sort((a, b) => (KIND_RANK[a.kind] ?? 9) - (KIND_RANK[b.kind] ?? 9) || a.id - b.id);
+    out[key] = list.slice(0, MAX_ENTRIES_PER_NAME).map((e) => {
+      if (e.ids) e = { ...e, ids: [...e.ids].sort((a, b) => a - b) };
+      return e;
+    });
+  }
+  return out;
+}
+
+/**
+ * Downloads the needed tables for one build and builds the index data.
+ * Tables are fetched one at a time (pause between them), parsed as streams and
+ * reduced to small maps, so peak memory is the size of the maps, not the files.
+ *
+ * @param {{fetchImpl?: typeof fetch, version: string, log?: (msg: string) => void, pauseMs?: number}} opts
+ * @returns {Promise<{version: string, builtAt: string,
+ *   tabs: Record<string, {name: string, class: string|null, tree: string}>,
+ *   spells: Record<string, object[]>, items: Record<string, object[]>}>}
+ * @throws on any network, HTTP or CSV problem (loadGameIndex catches it)
+ */
+export async function buildGameIndexData({ fetchImpl = fetch, version, log = () => {}, pauseMs = TABLE_PAUSE_MS } = {}) {
+  if (!version) throw new Error('buildGameIndexData: version is required');
+
+  let firstTable = true;
+  /** Streams one table's rows, pausing between tables to be polite. */
+  async function* table(name, opts) {
+    if (!firstTable && pauseMs > 0) await sleep(pauseMs);
+    firstTable = false;
+    log(`gamedata: downloading ${name}`);
+    const res = await request(fetchImpl, tableUrl(name, version));
+    try {
+      yield* csvRows(res.body ?? (await res.text()), opts);
+    } catch (err) {
+      throw new Error(`${name}: ${err.message}`);
+    }
+  }
+
+  // --- TalentTab: tab id -> { name, class, tree } --------------------------
+  /** @type {Record<string, {name: string, class: string|null, tree: string}>} */
+  const tabs = {};
+  /** class slug -> set of its tree slugs (to recognise tree-named skill lines) */
+  const classTrees = new Map();
+  for await (const r of table('TalentTab', { columns: ['ID', 'Name_lang', 'ClassMask'], required: ['ID', 'Name_lang', 'ClassMask'] })) {
+    const cls = classFromMask(r.ClassMask); // several bits or 0 => null
+    const tree = treeSlug(r.Name_lang);
+    tabs[r.ID] = { name: r.Name_lang, class: cls, tree };
+    if (cls) {
+      if (!classTrees.has(cls)) classTrees.set(cls, new Set());
+      classTrees.get(cls).add(tree);
+    }
+  }
+
+  // --- Talent: every rank spell of every talent -> { tab } ------------------
+  const rankCols = Array.from({ length: 9 }, (_, i) => `SpellRank_${i}`);
+  /** @type {Map<number, number>} spell id -> talent tab id */
+  const talentSpells = new Map();
+  for await (const r of table('Talent', { columns: ['TabID', 'SpellID', ...rankCols], required: ['TabID'] })) {
+    if (!tabs[r.TabID]) continue; // talent on an unknown tab: not a usable talent
+    // SpellID is often 0 and the ranks live in SpellRank_0..8 (0 = unused).
+    for (const col of ['SpellID', ...rankCols]) {
+      const id = Number(r[col]);
+      if (id > 0 && !talentSpells.has(id)) talentSpells.set(id, Number(r.TabID));
+    }
+  }
+
+  // --- SkillLine: which skill lines are class lines (CategoryID 7) ----------
+  /** @type {Map<string, string>} skill line id -> its name's tree slug */
+  const classLines = new Map();
+  for await (const r of table('SkillLine', { columns: ['ID', 'DisplayName_lang', 'CategoryID'], required: ['ID', 'DisplayName_lang', 'CategoryID'] })) {
+    if (Number(r.CategoryID) === CATEGORY_CLASS) classLines.set(r.ID, treeSlug(r.DisplayName_lang));
+  }
+
+  // --- SkillLineAbility: spell -> { class, tree } for class abilities --------
+  /** @type {Map<number, {class: string, tree: string|null}>} */
+  const abilitySpells = new Map();
+  for await (const r of table('SkillLineAbility', { columns: ['SkillLine', 'Spell', 'ClassMask'], required: ['SkillLine', 'Spell', 'ClassMask'] })) {
+    if (!classLines.has(r.SkillLine)) continue;
+    const cls = classFromMask(r.ClassMask);
+    // A multi-class or class-less mask cannot say whose ability this is; the
+    // spell is then treated like any other spell further down.
+    if (!cls) continue;
+    // Abilities learned from a tree's own skill line ("Frost" for mages) also
+    // get that tree; general class lines ("Mage") leave the tree null.
+    const slug = classLines.get(r.SkillLine);
+    const tree = classTrees.get(cls)?.has(slug) ? slug : null;
+    const id = Number(r.Spell);
+    const have = abilitySpells.get(id);
+    if (!have || (!have.tree && tree)) abilitySpells.set(id, { class: cls, tree });
+  }
+
+  // --- SpellName: id -> name ------------------------------------------------
+  /** @type {Map<number, string>} */
+  const spellNames = new Map();
+  for await (const r of table('SpellName', { columns: ['ID', 'Name_lang'], required: ['ID', 'Name_lang'] })) {
+    if (r.Name_lang) spellNames.set(Number(r.ID), r.Name_lang);
+  }
+
+  // --- SpellMisc: spell id -> icon file id (prefer DifficultyID 0) ----------
+  /** @type {Map<number, number>} */
+  const spellIconIds = new Map();
+  const spellHasDiff0 = new Set();
+  for await (const r of table('SpellMisc', { columns: ['ID', 'SpellID', 'DifficultyID', 'SpellIconFileDataID'], required: ['SpellIconFileDataID'] })) {
+    // The spell id lives in SpellID; very old layouts only have ID.
+    const spellId = Number('SpellID' in r ? r.SpellID : r.ID);
+    if (!spellNames.has(spellId)) continue; // nameless spells are useless to us
+    const fdid = Number(r.SpellIconFileDataID);
+    if (!(fdid > 0)) continue;
+    const isDiff0 = !('DifficultyID' in r) || Number(r.DifficultyID) === 0;
+    if (!spellIconIds.has(spellId) || (isDiff0 && !spellHasDiff0.has(spellId))) {
+      spellIconIds.set(spellId, fdid);
+      if (isDiff0) spellHasDiff0.add(spellId);
+    }
+  }
+
+  // --- ItemSparse + Item: item id -> name, icon file id ----------------------
+  /** @type {Map<number, string>} */
+  const itemNames = new Map();
+  for await (const r of table('ItemSparse', { columns: ['ID', 'Display_lang'], required: ['ID', 'Display_lang'] })) {
+    if (r.Display_lang) itemNames.set(Number(r.ID), r.Display_lang);
+  }
+  /** @type {Map<number, number>} */
+  const itemIconIds = new Map();
+  for await (const r of table('Item', { columns: ['ID', 'IconFileDataID'], required: ['ID', 'IconFileDataID'] })) {
+    const id = Number(r.ID);
+    const fdid = Number(r.IconFileDataID);
+    if (itemNames.has(id) && fdid > 0) itemIconIds.set(id, fdid);
+  }
+
+  // --- ManifestInterfaceData: icon file id -> icon name ----------------------
+  const needed = new Set([...spellIconIds.values(), ...itemIconIds.values()]);
+  /** @type {Map<number, string>} */
+  const iconNames = new Map();
+  for await (const r of table('ManifestInterfaceData', { columns: ['ID', 'FilePath', 'FileName'], required: ['ID', 'FilePath', 'FileName'] })) {
+    const fdid = Number(r.ID);
+    if (!needed.has(fdid)) continue;
+    // Icons live under Interface\ICONS\; the case and slash style vary.
+    const dir = r.FilePath.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+    if (dir !== 'interface/icons') continue;
+    // The CDN's icon name is the file name, lower-cased, without extension.
+    iconNames.set(fdid, r.FileName.replace(/\.[^.]*$/, '').toLowerCase());
+  }
+
+  // --- Assemble spell entries -------------------------------------------------
+  const spellGroups = new Map();
+  for (const [id, name] of spellNames) {
+    const fdid = spellIconIds.get(id);
+    const icon = fdid && iconNames.get(fdid);
+    if (!icon) continue; // never index a spell without an icon
+    const tab = talentSpells.get(id);
+    const ability = abilitySpells.get(id);
+    if (tab !== undefined) {
+      // Talent wins over ability: class and tree come from the talent's tab.
+      const t = tabs[tab];
+      addEntry(spellGroups, { name, kind: 'talent', class: t.class, tree: t.tree, icon, id, tab });
+    } else if (ability) {
+      addEntry(spellGroups, { name, kind: 'ability', class: ability.class, tree: ability.tree, icon, id });
+    } else if (!isJunkSpellName(name)) {
+      addEntry(spellGroups, { name, kind: 'spell', class: null, tree: null, icon, id });
+    }
+  }
+
+  // --- Assemble item entries --------------------------------------------------
+  const itemGroups = new Map();
+  for (const [id, name] of itemNames) {
+    const icon = iconNames.get(itemIconIds.get(id));
+    if (!icon) continue;
+    const key = normalizeName(name);
+    let group = itemGroups.get(key);
+    if (!group) itemGroups.set(key, (group = new Map()));
+    const have = group.get(icon); // de-duplicate by (name, icon), lowest id wins
+    if (!have || id < have.id) group.set(icon, { name, icon, id });
+  }
+  const items = {};
+  for (const [key, group] of itemGroups) {
+    items[key] = [...group.values()].sort((a, b) => a.id - b.id).slice(0, MAX_ENTRIES_PER_NAME);
+  }
+
+  return { version, builtAt: new Date().toISOString(), tabs, spells: finalizeGroups(spellGroups), items };
+}
+
+// ---------------------------------------------------------------------------
+// Lookup
+// ---------------------------------------------------------------------------
+
+/**
+ * Wraps index data in a synchronous lookup.
+ * @param {{version?: string|null, spells?: object, items?: object}} data
+ * @returns {{version: string|null, size: number,
+ *   lookup: (name: string, opts?: {classSlug?: string, preferType?: string}) => object|null}}
+ */
+export function makeGameIndex(data) {
+  const spells = data?.spells ?? {};
+  const items = data?.items ?? {};
+  // Own-property check so names such as "constructor" never hit Object.prototype.
+  const get = (table, key) => (Object.hasOwn(table, key) && Array.isArray(table[key]) ? table[key].filter((e) => e && e.icon) : []);
+
+  let size = 0;
+  for (const t of [spells, items]) for (const k of Object.keys(t)) size += Array.isArray(t[k]) ? t[k].length : 0;
+
+  /** Builds the public result object for a spell entry. */
+  const spellResult = (e) => {
+    const r = { name: e.name, type: 'spell', kind: e.kind, class: e.class ?? null, tree: e.tree ?? null, icon: e.icon, source: e.source ?? 'client' };
+    if (typeof e.verified === 'boolean') r.verified = e.verified;
+    return r;
+  };
+  /** Builds the public result object for an item entry. */
+  const itemResult = (e) => ({ name: e.name, type: 'item', kind: 'item', class: null, tree: null, icon: e.icon, source: 'client' });
+
+  /**
+   * Finds the best entry for a name.
+   *   preferType 'item': an item wins when one exists.
+   *   Otherwise spells are ranked: (1) talent/ability of `classSlug`,
+   *   (2) talent/ability of any class, (3) any other spell; when there is
+   *   no spell at all an item is returned. Entries without icon are never used.
+   * Never throws.
+   */
+  function lookup(name, { classSlug, preferType } = {}) {
+    try {
+      const key = normalizeName(name);
+      if (!key) return null;
+      const sp = get(spells, key);
+      const it = get(items, key);
+      if (preferType === 'item' && it.length) return itemResult(it[0]);
+      const classy = (e) => e.kind === 'talent' || e.kind === 'ability';
+      const pick =
+        (classSlug && sp.find((e) => classy(e) && e.class === classSlug)) ||
+        sp.find(classy) ||
+        sp[0];
+      if (pick) return spellResult(pick);
+      if (it.length) return itemResult(it[0]);
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  return { version: data?.version ?? null, size, lookup };
+}
