@@ -1018,6 +1018,34 @@ export function filterSummary(state, available = CATEGORIES) {
 }
 
 /**
+ * Text of the empty state shown when no change matches the filters.
+ *  - "No classes" with every category off can never show anything: say so
+ *    plainly (`impossible: true`) and offer to show everything again.
+ *  - otherwise a generic "Nothing matches", naming the filters that are
+ *    easiest to forget: the kind switch and hidden class changes.
+ * The action always resets to defaultState(); only its label differs.
+ * @param {object} state
+ * @returns {{title: string, detail: string, action: string, impossible: boolean}}
+ */
+export function emptyMessage(state) {
+  const hidden = classChoice(state) === 'none';
+  if (hidden && Array.isArray(state.cats) && state.cats.length === 0) {
+    return {
+      title: 'Nothing to show',
+      detail: 'Class changes are hidden and every category is switched off, so no change can be shown. '
+        + 'Choose a class or "All classes", or switch a category back on.',
+      action: 'Show all changes',
+      impossible: true,
+    };
+  }
+  const notes = ['No changes match the current filters.'];
+  const kind = sanitizeKindFilter(state.kind);
+  if (kind !== 'all') notes.push(`Only ${kind === 'patch' ? 'patch notes' : 'hotfixes'} are being shown; try "All" to include both.`);
+  if (hidden) notes.push('Class changes are hidden; choose "All classes" to include them.');
+  return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false };
+}
+
+/**
  * Does the hash ask for the filter panel to be open (`filters=open`)? The
  * flag is UI state, not a filter: decodeHash ignores it. It lets a link or a
  * screenshot script open the mobile panel directly.

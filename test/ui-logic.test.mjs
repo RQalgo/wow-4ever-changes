@@ -640,6 +640,26 @@ test('No classes: an Items line tagged class:shaman is not a class change and fo
   assert.ok(idsFor({ cats: ['quests'] }).includes('2026-11-15-001')); // unchanged when not hiding
 });
 
+test('No classes + no categories shows nothing, and the empty state says why', () => {
+  assert.deepEqual(L.visibleDays(data, hidden({ cats: [] })), []);
+  const msg = L.emptyMessage(hidden({ cats: [] }));
+  assert.equal(msg.impossible, true);
+  assert.equal(msg.title, 'Nothing to show');
+  assert.match(msg.detail, /Class changes are hidden and every category is switched off/);
+  assert.equal(msg.action, 'Show all changes');
+});
+
+test('emptyMessage: generic text names the kind filter and hidden class changes', () => {
+  assert.deepEqual(L.emptyMessage(L.defaultState()),
+    { title: 'Nothing matches', detail: 'No changes match the current filters.', action: 'Clear filters', impossible: false });
+  assert.match(L.emptyMessage({ ...L.defaultState(), kind: 'patch' }).detail, /Only patch notes are being shown/);
+  const h = L.emptyMessage(hidden({ q: 'zzz', kind: 'hotfix' }));
+  assert.equal(h.impossible, false);
+  assert.match(h.detail, /Only hotfixes .* Class changes are hidden; choose "All classes"/);
+  // Categories off WITH classes shown is not impossible (class lines remain).
+  assert.equal(L.emptyMessage({ ...L.defaultState(), cats: [] }).impossible, false);
+});
+
 test('No classes: no class cards, no empty day blocks, per-day counts match the lines', () => {
   const days = L.visibleDays(data, hidden());
   assert.ok(days.length > 0);
