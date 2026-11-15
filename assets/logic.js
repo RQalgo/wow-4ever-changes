@@ -825,6 +825,21 @@ export function decodeHash(hash) {
   };
 }
 
+/**
+ * Validate the class choice remembered in localStorage (untrusted: it may be
+ * from an older version of the app or edited by hand). Returns the part of
+ * the state to restore, or null when there is nothing worth restoring (the
+ * default "All classes").
+ * @param {unknown} v parsed JSON, e.g. {cls: "paladin", spec: "holy"} or {hideClasses: true}
+ * @returns {{cls: string, spec: string, hideClasses: boolean}|null}
+ */
+export function sanitizeStoredSelection(v) {
+  if (!v || typeof v !== 'object') return null;
+  const sel = sanitizeSelection(v.cls, v.spec);
+  if (sel.cls) return { ...sel, hideClasses: false };
+  if (v.hideClasses === true) return { cls: '', spec: '', hideClasses: true };
+  return null;
+}
 
 /* ======================= 8. Day kinds (schema v2) ======================= */
 

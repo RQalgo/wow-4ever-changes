@@ -688,3 +688,13 @@ test('class=none hash: encode, decode, round-trip, junk ignored', () => {
   }
   assert.deepEqual(L.decodeHash('#class=none&filters=open'), hidden()); // UI flag ignored
 });
+
+test('sanitizeStoredSelection restores a class or the hiding, nothing else', () => {
+  assert.deepEqual(L.sanitizeStoredSelection({ cls: 'paladin', spec: 'holy' }), { cls: 'paladin', spec: 'holy', hideClasses: false });
+  assert.deepEqual(L.sanitizeStoredSelection({ cls: '', spec: '', hideClasses: true }), { cls: '', spec: '', hideClasses: true });
+  assert.deepEqual(L.sanitizeStoredSelection({ cls: 'mage', hideClasses: true }), { cls: 'mage', spec: '', hideClasses: false });
+  assert.equal(L.sanitizeStoredSelection({ cls: '', spec: '' }), null); // "All classes": nothing to restore
+  assert.equal(L.sanitizeStoredSelection({ hideClasses: 'yes' }), null);
+  assert.equal(L.sanitizeStoredSelection(null), null);
+  assert.equal(L.sanitizeStoredSelection('paladin'), null);
+});
