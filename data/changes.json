@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T04:53:25Z",
+  "generatedAt": "2026-11-15T09:30:08Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -3455,7 +3455,7 @@
               "kind": "spell",
               "class": null,
               "tree": null,
-              "icon": "spell_nature_thunderclap",
+              "icon": "ability_thunderclap",
               "source": "wowhead"
             }
           ],
@@ -10630,7 +10630,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_rogue_rupture",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10732,7 +10733,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "ability_shaman_totemrelocation",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10781,7 +10783,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_nature_chainlightning",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Lightning Bolt",
@@ -10856,7 +10859,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_fire_volcano",
-              "source": "client"
+              "source": "client",
+              "verified": false
             },
             {
               "name": "Call of Thunder",
@@ -10865,7 +10869,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_nature_callstorm",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Lightning Bolt",
@@ -10884,7 +10889,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_nature_chainlightning",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10937,7 +10943,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_nature_stormreach",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11059,7 +11066,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "ability_ghoulfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11085,7 +11093,8 @@
               "class": "shaman",
               "tree": "restoration",
               "icon": "spell_nature_riptide",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11174,7 +11183,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_gem_amethyst_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11199,7 +11209,8 @@
               "class": "warlock",
               "tree": "affliction",
               "icon": "spell_shadow_contagion",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Curse of Exhaustion",
@@ -11208,7 +11219,8 @@
               "class": "warlock",
               "tree": "affliction",
               "icon": "spell_shadow_grimward",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Bane of Agony",
@@ -11244,7 +11256,8 @@
               "class": "warlock",
               "tree": "affliction",
               "icon": "spell_shadow_haunting",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Drain Mana",
@@ -11253,7 +11266,8 @@
               "class": "warlock",
               "tree": "affliction",
               "icon": "spell_shadow_siphonmana",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Wrack",
@@ -11316,7 +11330,8 @@
               "class": "warlock",
               "tree": "destruction",
               "icon": "spell_fire_playingwithfire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11342,7 +11357,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "ability_warrior_devastate",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11368,7 +11384,8 @@
               "class": "warrior",
               "tree": "protection",
               "icon": "ability_warrior_defensivestance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11392,7 +11409,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_warrior_decisivestrike",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11416,7 +11434,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "spell_nature_enchantarmor",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11469,7 +11488,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "inv_sword_01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Rend",
@@ -11478,7 +11498,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "ability_gouge",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Overpower",
@@ -11487,7 +11508,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "ability_meleedamage",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11513,7 +11535,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_warrior_decisivestrike",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Slam",
@@ -11522,7 +11545,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_warrior_decisivestrike",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11549,7 +11573,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_summonimp",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Gore Drinker",
@@ -11585,7 +11610,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_summonimp",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11611,7 +11637,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_deathscream",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11637,7 +11664,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_unholyfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11700,7 +11728,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_summonimp",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Enrage",
@@ -11709,7 +11738,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_unholyfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11735,7 +11765,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_deathpact",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Flurry",
@@ -11744,7 +11775,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_ghoulfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11770,7 +11802,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_ghoulfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11796,7 +11829,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_whirlwind",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11822,7 +11856,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_nature_bloodlust",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Death Wish",
@@ -11831,7 +11866,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_deathpact",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11857,7 +11893,8 @@
               "class": "warrior",
               "tree": "protection",
               "icon": "ability_warrior_innerrage",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -13929,7 +13966,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "ability_whirlwind",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14059,7 +14097,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_shootwand",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14119,7 +14158,8 @@
               "class": "druid",
               "tree": "balance",
               "icon": "spell_nature_faeriefire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Cat Form",
@@ -14128,7 +14168,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_druid_catform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Bear Form",
@@ -14174,7 +14215,8 @@
               "class": "druid",
               "tree": "balance",
               "icon": "spell_nature_faeriefire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Bear Form",
@@ -14218,7 +14260,8 @@
               "class": "druid",
               "tree": "balance",
               "icon": "spell_nature_faeriefire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14253,7 +14296,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "spell_shadow_vampiricaura",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Lacerate",
@@ -14299,7 +14343,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "spell_nature_spiritwolf",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Thick Hide",
@@ -14308,7 +14353,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "inv_misc_pelt_bear_03",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Leader of the Pack",
@@ -14345,7 +14391,8 @@
               "class": "druid",
               "tree": "restoration",
               "icon": "spell_nature_insectswarm",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14438,7 +14485,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_druid_ravage",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14477,7 +14525,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_druid_catform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Dire Bear Form",
@@ -14516,7 +14565,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "ability_whirlwind",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Aimed Shot",
@@ -14525,7 +14575,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "inv_spear_07",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Sniper Shot",
@@ -14534,7 +14585,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "hunter_pvp_snipershot",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14560,7 +14612,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_ammo_arrow_01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14796,7 +14849,8 @@
               "class": "hunter",
               "tree": "beast-mastery",
               "icon": "ability_hunter_mendpet",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Mend Pet",
@@ -14805,7 +14859,8 @@
               "class": "hunter",
               "tree": "beast-mastery",
               "icon": "ability_hunter_mendpet",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14859,7 +14914,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "hunter_pvp_snipershot",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14886,7 +14942,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_hunter_pet_tallstrider",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14912,7 +14969,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_hunter_resourcefulness",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Strider Kick",
@@ -14921,7 +14979,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_hunter_pet_tallstrider",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14949,7 +15008,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_hunter_resourcefulness",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14975,7 +15035,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_dualwield",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15014,7 +15075,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15039,7 +15101,8 @@
               "class": "mage",
               "tree": "arcane",
               "icon": "spell_nature_enchantarmor",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15178,7 +15241,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_flamebolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15204,7 +15268,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_firebolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Presence of Mind",
@@ -15213,7 +15278,8 @@
               "class": "mage",
               "tree": "arcane",
               "icon": "spell_nature_enchantarmor",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Pyroblast",
@@ -15222,7 +15288,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_fireball02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Fire Blast",
@@ -15259,7 +15326,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_fire_lavaspawn",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Improved Fire Blast",
@@ -15334,7 +15402,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_soulburn",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Fireball",
@@ -15343,7 +15412,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_flamebolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Pyroblast",
@@ -15352,7 +15422,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_fireball02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Impact",
@@ -15361,7 +15432,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_meteorstorm",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15387,7 +15459,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_stun",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15414,7 +15487,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frost",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15452,7 +15526,8 @@
               "class": "mage",
               "tree": "arcane",
               "icon": "spell_nature_abolishmagic",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Amplify Magic",
@@ -15461,7 +15536,8 @@
               "class": "mage",
               "tree": "arcane",
               "icon": "spell_holy_flashheal",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15507,7 +15583,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostarmor02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Frost Armor",
@@ -15516,7 +15593,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostarmor02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15607,7 +15685,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_chillingblast",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15669,7 +15748,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15695,7 +15775,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_chillingblast",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Frostbolt",
@@ -15704,7 +15785,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Frost Blast",
@@ -15836,7 +15918,8 @@
               "class": "paladin",
               "tree": "holy",
               "icon": "ability_thunderbolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Judgement of Fury",
@@ -15870,7 +15953,8 @@
               "class": "paladin",
               "tree": "holy",
               "icon": "ability_thunderbolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15895,7 +15979,8 @@
               "class": "paladin",
               "tree": "holy",
               "icon": "ability_thunderbolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16025,7 +16110,8 @@
               "class": "paladin",
               "tree": "holy",
               "icon": "ability_paladin_infusionoflight",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Holy Shock",
@@ -16172,7 +16258,8 @@
               "class": "priest",
               "tree": "holy",
               "icon": "spell_holy_renew",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16313,7 +16400,8 @@
               "class": "priest",
               "tree": null,
               "icon": "spell_holy_mindvision",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16338,7 +16426,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_frost_windwalkon",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Penance",
@@ -16347,7 +16436,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_penance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16373,7 +16463,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_devineaegis",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16400,7 +16491,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_devineaegis",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16427,7 +16519,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_searinglight",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Smite",
@@ -16436,7 +16529,8 @@
               "class": "priest",
               "tree": "holy",
               "icon": "spell_holy_holysmite",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Penance",
@@ -16445,7 +16539,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_penance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16486,7 +16581,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_nature_enchantarmor",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16512,7 +16608,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_powerwordshield",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16538,7 +16635,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_sealofvengeance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Shadow Word: Death",
@@ -16557,7 +16655,8 @@
               "class": "priest",
               "tree": "shadow",
               "icon": "spell_shadow_siphonmana",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Starshards",
@@ -16566,7 +16665,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_arcane_starfire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Penance",
@@ -16575,7 +16675,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_penance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16732,7 +16833,8 @@
               "class": "priest",
               "tree": "shadow",
               "icon": "spell_magic_lesserinvisibilty",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16773,7 +16875,8 @@
               "class": "priest",
               "tree": "shadow",
               "icon": "spell_shadow_unholyfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16799,7 +16902,8 @@
               "class": "priest",
               "tree": "shadow",
               "icon": "spell_warlock_demonsoul",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16825,7 +16929,8 @@
               "class": "priest",
               "tree": "shadow",
               "icon": "spell_shadow_soulleech_2",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Mind Flay",
@@ -16834,7 +16939,8 @@
               "class": "priest",
               "tree": "shadow",
               "icon": "spell_shadow_siphonmana",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -16959,7 +17065,8 @@
               "class": "rogue",
               "tree": "assassination",
               "icon": "spell_ice_lament",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Mutilate",
@@ -16995,7 +17102,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_shaman_totemrecall",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17020,7 +17128,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_groundingtotem",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17080,7 +17189,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_invisibilitytotem",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Windfury Totem",
@@ -17124,7 +17234,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_invisibilitytotem",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Strength of Earth Totem",
@@ -17133,7 +17244,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_earthbindtotem",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Windfury Totem",
@@ -17177,7 +17289,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_nature_chainlightning",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17201,7 +17314,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_fire_sealoffire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17225,7 +17339,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_fire_sealoffire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17249,7 +17364,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_fire_sealoffire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17308,7 +17424,8 @@
               "class": "shaman",
               "tree": "restoration",
               "icon": "spell_nature_healingwavegreater",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17332,7 +17449,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_shadow_manaburn",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Fire Nova",
@@ -17341,7 +17459,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_fire_sealoffire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17377,7 +17496,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_fire_volcano",
-              "source": "client"
+              "source": "client",
+              "verified": false
             },
             {
               "name": "Chain Lightning",
@@ -17386,7 +17506,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_nature_chainlightning",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17412,7 +17533,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_fire_volcano",
-              "source": "client"
+              "source": "client",
+              "verified": false
             }
           ],
           "tags": [
@@ -17475,7 +17597,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_lightning_lightningbolt01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17501,7 +17624,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_lightning_lightningbolt01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17527,7 +17651,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_nature_spiritarmor",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17553,7 +17678,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_nature_callstorm",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17579,7 +17705,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_nature_stranglevines",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17605,7 +17732,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_nature_stormreach",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17631,7 +17759,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_fire_immolation",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Flame Shock",
@@ -17640,7 +17769,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_fire_flameshock",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17719,7 +17849,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_fire_sealoffire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Trial by Fire",
@@ -17728,7 +17859,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_fire_sealoffire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17825,7 +17957,8 @@
               "class": "shaman",
               "tree": "restoration",
               "icon": "spell_frost_summonwaterelemental",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17851,7 +17984,8 @@
               "class": "shaman",
               "tree": "restoration",
               "icon": "spell_nature_manaregentotem",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Healing Stream",
@@ -17860,7 +17994,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_spear_04",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -17886,7 +18021,8 @@
               "class": "shaman",
               "tree": "restoration",
               "icon": "spell_frost_manarecharge",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Totemic Focus",
@@ -17956,7 +18092,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_gem_amethyst_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -18136,7 +18273,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_warrior_decisivestrike",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -18160,7 +18298,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "ability_meleedamage",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19465,7 +19604,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_druid_catform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19528,7 +19668,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_druid_catform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19695,7 +19836,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "inv_misc_pelt_bear_03",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19925,7 +20067,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_meteorstorm",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Flamestrike",
@@ -19962,7 +20105,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19986,7 +20130,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_flamebolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20188,7 +20333,8 @@
               "class": "priest",
               "tree": "holy",
               "icon": "spell_holy_holysmite",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20245,7 +20391,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_penance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20271,7 +20418,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_penance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20297,7 +20445,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_penance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Heal",
@@ -20341,7 +20490,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_penance",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20417,7 +20567,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_shadow_manaburn",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Fire Nova",
@@ -20426,7 +20577,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_fire_sealoffire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20505,7 +20657,8 @@
               "class": "shaman",
               "tree": "restoration",
               "icon": "spell_frost_summonwaterelemental",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22198,7 +22351,8 @@
               "class": "druid",
               "tree": "balance",
               "icon": "spell_nature_faeriefire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22304,7 +22458,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "spell_shadow_vampiricaura",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Shifting Power",
@@ -22323,7 +22478,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_druid_catform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22413,7 +22569,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "hunter_pvp_snipershot",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22439,7 +22596,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_dualwield",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22519,7 +22677,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_firebolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22571,7 +22730,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_soulburn",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Fire Vulnerability",
@@ -22606,7 +22766,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_chillingblast",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22778,7 +22939,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_frost_windwalkon",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22933,7 +23095,8 @@
               "class": "shaman",
               "tree": null,
               "icon": "spell_shaman_totemrecall",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -23075,7 +23238,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "ability_gouge",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Sunder Armor",
@@ -23240,7 +23404,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_unholyfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Flurry",
@@ -23249,7 +23414,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_ghoulfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -23354,7 +23520,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_summonimp",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Bloodthirst",
@@ -23363,7 +23530,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_nature_bloodlust",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -23546,7 +23714,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_unholyfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Flurry",
@@ -23555,7 +23724,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_ghoulfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -23581,7 +23751,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "spell_shadow_deathpact",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Flurry",
@@ -23590,7 +23761,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_ghoulfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -24569,7 +24741,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Frostbite",
@@ -24720,7 +24893,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_flamebolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -24851,7 +25025,8 @@
               "class": "druid",
               "tree": "balance",
               "icon": "spell_nature_faeriefire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Demoralizing Shout",
@@ -25525,7 +25700,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_hunter_pet_tallstrider",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -25578,7 +25754,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_fire_lavaspawn",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26076,7 +26253,8 @@
               "class": "priest",
               "tree": "holy",
               "icon": "spell_holy_renew",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26185,7 +26363,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_arcane_starfire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Twilight Focus",
@@ -26489,7 +26668,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_invisibilitytotem",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26516,7 +26696,8 @@
               "class": "shaman",
               "tree": "elemental",
               "icon": "spell_lightning_lightningbolt01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26542,7 +26723,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_fire_volcano",
-              "source": "client"
+              "source": "client",
+              "verified": false
             },
             {
               "name": "Lightning Bolt",
@@ -26595,7 +26777,8 @@
               "class": "shaman",
               "tree": "restoration",
               "icon": "spell_nature_riptide",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26732,7 +26915,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "inv_sword_01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26758,7 +26942,8 @@
               "class": "warrior",
               "tree": "arms",
               "icon": "inv_sword_01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Cleave",
@@ -26802,7 +26987,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_warrior_decisivestrike",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26827,7 +27013,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_warrior_decisivestrike",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Slam",
@@ -26836,7 +27023,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_warrior_decisivestrike",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
