@@ -22,6 +22,7 @@ import {
   highlightSegments, buildSuggestions, encodeHash, decodeHash, sanitizeSelection,
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
   availableCategories, toggleCategory, normalizeCats, isCategoryOn,
+  activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, enabled categories (null = all), kind filter. */
@@ -347,6 +348,8 @@ function renderResults() {
   const days = visibleDays(data, state);
   const total = days.reduce((n, d) => n + d.changes.length, 0);
   $('live').textContent = `${total} ${total === 1 ? 'change' : 'changes'} shown`;
+  shownCount = total;
+  renderFilterBar();
   if (!days.length) {
     // Name the kind filter when it is active: it is the easiest one to forget.
     const kindNote = state.kind === 'all' ? ''
@@ -636,9 +639,122 @@ function watchBarHeight(box) {
   else window.addEventListener('resize', set);
 }
 
-/** Build the (static) filter panel structure once. */
+/**
+ * Build the original inline "sliders" icon for the filter button (three
+ * lines with knobs). Decorative: the button carries the accessible name.
+ * @returns {SVGElement}
+ */
+function filterIconSvg() {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  for (const [k, v] of Object.entries({
+    viewBox: '0 0 24 24', width: '22', height: '22', 'aria-hidden': 'true', fill: 'none',
+    stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round',
+  })) svg.setAttribute(k, v);
+  const path = document.createElementNS(NS, 'path');
+  // Three rails with a gap where each knob sits.
+  path.setAttribute('d', 'M4 6h8 M18 6h2 M4 12h2 M12 12h8 M4 18h10 M20 18h0');
+  svg.append(path);
+  for (const [cx, cy] of [[15, 6], [9, 12], [17, 18]]) {
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', cx);
+    c.setAttribute('cy', cy);
+    c.setAttribute('r', '2.2');
+    svg.append(c);
+  }
+  return svg;
+}
+
+/** Narrow-screen query: below this width the filters live in a bottom sheet. */
+const sheetQuery = window.matchMedia('(max-width: 899px)');
+
+/** Is the filter sheet currently open? (Only ever true on narrow screens.) */
+let panelOpen = false;
+
+/**
+ * Open or close the filter sheet. While open: the panel is a modal dialog,
+ * the page behind cannot scroll, focus moves into the panel; closing returns
+ * focus to the filter button. On wide screens the panel is the sidebar and
+ * this does nothing.
+ * @param {boolean} open
+ * @param {boolean} [moveFocus] move focus in/out (false when reacting to the URL or a resize)
+ */
+function setPanelOpen(open, moveFocus = true) {
+  const want = open && sheetQuery.matches;
+  if (want === panelOpen) return;
+  panelOpen = want;
+  const panel = $('filter-panel');
+  $('filters').classList.toggle('panel-open', want);
+  document.documentElement.classList.toggle('sheet-open', want);
+  $('filters-btn').setAttribute('aria-expanded', String(want));
+  // Dialog semantics only apply while it really behaves like a dialog.
+  if (want) {
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-labelledby', 'panel-title');
+    if (moveFocus) $('panel-title').focus();
+  } else {
+    panel.removeAttribute('role');
+    panel.removeAttribute('aria-modal');
+    panel.removeAttribute('aria-labelledby');
+    if (moveFocus) $('filters-btn').focus();
+  }
+  syncHash();
+}
+
+/**
+ * Keep Tab inside the open sheet (a simple focus trap): from the last
+ * control it wraps to the first and the other way round.
+ * @param {KeyboardEvent} e keydown
+ */
+function trapFocus(e) {
+  if (!panelOpen || e.key !== 'Tab') return;
+  const items = [...$('filter-panel').querySelectorAll('button:not(:disabled), [tabindex="0"]')]
+    .filter((n) => !n.closest('[hidden]'));
+  if (!items.length) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  const active = document.activeElement;
+  if (e.shiftKey && (active === first || active === $('panel-title') || !$('filter-panel').contains(active))) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && (active === last || !$('filter-panel').contains(active))) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+/**
+ * Build the (static) filter structure once:
+ *   .filters-bar   search + filter button (narrow screens)
+ *   .filter-summary one-line summary of the active filters (narrow screens)
+ *   .filter-panel  kind, class, tree and category controls, Clear, Done
+ * On wide screens the panel is simply part of the sidebar.
+ */
 function buildFilters() {
   const box = $('filters');
+
+  // --- bar: search and the filter button
+  const btn = el('button', 'filter-btn');
+  btn.type = 'button';
+  btn.id = 'filters-btn';
+  btn.setAttribute('aria-label', 'Filters');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-controls', 'filter-panel');
+  btn.append(filterIconSvg(), el('span', 'badge'));
+  btn.lastChild.id = 'filters-badge';
+  btn.addEventListener('click', () => setPanelOpen(!panelOpen));
+  const bar = el('div', 'filters-bar');
+  bar.append(buildSearch(), btn);
+
+  const summary = el('button', 'filter-summary');
+  summary.type = 'button';
+  summary.id = 'filter-summary';
+  summary.hidden = true;
+  summary.title = 'Change filters';
+  summary.addEventListener('click', () => setPanelOpen(true));
+
+  // --- panel
   const classGroup = el('div', 'chip-row');
   classGroup.id = 'class-row';
   classGroup.setAttribute('role', 'group');
@@ -647,31 +763,76 @@ function buildFilters() {
   specGroup.id = 'spec-row';
   specGroup.setAttribute('role', 'group');
   specGroup.hidden = true;
-
   // Category chips (non-class changes): multi-select row built by renderCategoryChips().
   const catGroup = el('div', 'chip-row chip-row-cats');
   catGroup.id = 'cat-row';
   catGroup.setAttribute('role', 'group');
   catGroup.setAttribute('aria-label', 'Categories');
 
-  // Tools row: search and the clear button.
-  const tools = el('div', 'tools');
-  tools.id = 'tools';
-  const clear = el('button', 'btn-clear');
+  const title = el('h2', 'panel-title', 'Filters');
+  title.id = 'panel-title';
+  title.tabIndex = -1;
+  const clear = el('button', 'btn-clear', 'Clear filters');
   clear.type = 'button';
   clear.id = 'clear-filters';
-  const clearLabel = el('span');
-  clearLabel.append('Clear', el('span', 'opt', ' filters'));
-  clear.append(clearLabel);
   clear.addEventListener('click', () => setState(defaultState()));
-  tools.append(buildSearch(), clear);
+  const head = el('div', 'panel-head');
+  head.append(title, clear);
+
+  const done = el('button', 'btn done-btn', 'Done');
+  done.type = 'button';
+  done.id = 'done-btn';
+  done.addEventListener('click', () => setPanelOpen(false));
+  const foot = el('div', 'panel-foot');
+  foot.append(done);
+
+  const panel = el('div', 'filter-panel');
+  panel.id = 'filter-panel';
+  panel.append(
+    head,
+    el('p', 'filter-label', 'Show'), buildKindFilter(),
+    el('p', 'filter-label', 'Class'), classGroup, specGroup,
+    el('p', 'filter-label', 'Categories'), catGroup,
+    foot,
+  );
+
+  const backdrop = el('div', 'filter-backdrop');
+  backdrop.addEventListener('click', () => setPanelOpen(false));
 
   // Polite live region so screen readers hear how many changes are shown.
   const live = el('p', 'visually-hidden');
   live.id = 'live';
   live.setAttribute('role', 'status');
-  box.replaceChildren(tools, buildKindFilter(), classGroup, specGroup, catGroup, live);
+  box.replaceChildren(bar, summary, backdrop, panel, live);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panelOpen) { e.preventDefault(); setPanelOpen(false); }
+    else trapFocus(e);
+  });
+  // Rotating a tablet / resizing to desktop turns the sheet into the sidebar.
+  sheetQuery.addEventListener('change', () => { if (!sheetQuery.matches) setPanelOpen(false, false); });
   watchBarHeight(box);
+}
+
+/** How many changes are shown right now (for the sheet's "Show N changes" button). */
+let shownCount = 0;
+
+/**
+ * Sync the narrow-screen bar with the state: badge (number of active
+ * filters), the button's accessible name, the one-line summary and the Done
+ * button's label.
+ */
+function renderFilterBar() {
+  const n = activeFilterCount(state);
+  const badge = $('filters-badge');
+  badge.hidden = n === 0;
+  badge.textContent = String(n);
+  $('filters-btn').setAttribute('aria-label', n ? `Filters, ${n} active` : 'Filters');
+  const text = filterSummary(state, categories);
+  const sum = $('filter-summary');
+  sum.hidden = !text;
+  sum.textContent = text;
+  $('done-btn').textContent = `Show ${shownCount} ${shownCount === 1 ? 'change' : 'changes'}`;
 }
 
 /** Sync the clear button with the state (enabled only when something differs from the defaults). */
@@ -717,8 +878,21 @@ function loadSelection() {
  * @returns {object} state
  */
 function initialState() {
-  if (location.hash.length > 1) return decodeHash(location.hash);
+  // A hash that only carries the UI flag (#filters=open) has no filter in it:
+  // fall through to the remembered class like an empty hash.
+  const params = new URLSearchParams(location.hash.replace(/^#/, ''));
+  params.delete('filters');
+  if (params.toString()) return decodeHash(location.hash);
   return { ...defaultState(), ...(loadSelection() || {}) };
+}
+
+/**
+ * The hash that describes the current view: the filter state plus the
+ * `filters=open` flag while the mobile sheet is open (so it can be shared).
+ * @returns {string}
+ */
+function currentHash() {
+  return withPanelFlag(encodeHash(state), panelOpen);
 }
 
 /**
@@ -726,7 +900,7 @@ function initialState() {
  * browser history, and it does not fire hashchange).
  */
 function syncHash() {
-  const want = encodeHash(state);
+  const want = currentHash();
   if (want === location.hash) return;
   history.replaceState(null, '', want || location.pathname + location.search);
 }
@@ -754,11 +928,17 @@ function render() {
   renderHeader();
   categories = availableCategories(data);
   buildFilters();
+  // Read the UI flag first: setState() rewrites the hash without it.
+  const openAtStart = hasPanelFlag(location.hash);
   state = initialState();
   setState(state);
+  // #filters=open opens the sheet right away (narrow screens only).
+  if (openAtStart) setPanelOpen(true, false);
   // Back/forward or a manually edited hash: re-read the state from the URL.
   window.addEventListener('hashchange', () => {
-    if (encodeHash(state) !== location.hash) setState(decodeHash(location.hash));
+    if (currentHash() === location.hash) return;
+    setPanelOpen(hasPanelFlag(location.hash), false);
+    if (encodeHash(state) !== encodeHash(decodeHash(location.hash))) setState(decodeHash(location.hash));
   });
 }
 
