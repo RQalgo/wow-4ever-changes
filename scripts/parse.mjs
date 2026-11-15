@@ -105,6 +105,16 @@ const LIST_TAGS = new Set(['ul', 'ol']);
 /** Category name (case-insensitive) whose bold sub-headings are classes. */
 const CLASSES_CATEGORY = 'classes';
 
+/** Tags allowed in a developer note's <li> (the note is entirely italic). */
+const EM_TAGS = new Set(['em', 'i']);
+
+/**
+ * Start of a developer note: "Developers’ notes", "Developers' notes",
+ * "Developer's note", "Developer notes"... with curly or straight
+ * apostrophes, in any case.
+ */
+const DEV_NOTE_RE = /^developers?['’]?s?['’]?\s+notes?\b/i;
+
 /** Category used for a list that appears after a date but before any category heading. */
 const FALLBACK_CATEGORY = 'General';
 
@@ -211,6 +221,34 @@ function itemsOf(list) {
 }
 
 /**
+ * True when an <li>'s own content is entirely <em>/<i> and starts with a
+ * developer-note marker. Such items explain the change before them and are
+ * attached to its `notes` instead of becoming a change of their own.
+ * @param {import('node-html-parser').Node[]} own The item's non-list children.
+ */
+export function isDeveloperNote(own) {
+  return isOnly(own, EM_TAGS) && DEV_NOTE_RE.test(textOf(own));
+}
+
+/**
+ * Texts of every item in `lists`, depth-first in published order. Used for
+ * the `notes` of a change whose <li> has its own text and a nested list.
+ * @param {import('node-html-parser').HTMLElement[]} lists
+ * @param {string[]} [out]
+ */
+function collectNoteTexts(lists, out = []) {
+  for (const list of lists) {
+    for (const li of itemsOf(list)) {
+      const { own, nested } = splitListItem(li);
+      const text = textOf(own);
+      if (text) out.push(text);
+      collectNoteTexts(nested, out);
+    }
+  }
+  return out;
+}
+
+/**
  * Build a change object (without its id, assigned per day later).
  * @param {object} ctx Walker context (see walkList).
  * @param {string} text
@@ -252,6 +290,10 @@ function descend(ctx, heading) {
  * @param {object[]} out Changes of the current day, in published order.
  */
 function walkList(list, ctx, out) {
+  // The last change emitted by *this* list; a developer note in a sibling
+  // <li> attaches to it. It is deliberately not shared with nested or
+  // parent lists, so a note never jumps across a heading.
+  let previous = null;
   for (const li of itemsOf(list)) {
     const { own, nested } = splitListItem(li);
     const text = textOf(own);
@@ -269,9 +311,22 @@ function walkList(list, ctx, out) {
       continue;
     }
 
-    // Ordinary leaf: one change. (A bold-only item without a nested list
-    // also lands here and becomes a change with that text.)
-    out.push(makeChange(ctx, text));
+    // Developer note as a sibling item: attach to the previous change. With
+    // no previous change in this list, keep it as a change so the text is
+    // never silently dropped.
+    if (!nested.length && previous && isDeveloperNote(own)) {
+      previous.notes.push(text);
+      continue;
+    }
+
+    // Ordinary change. (A bold-only item without a nested list also lands
+    // here and becomes a change with that text.) If the item has its own
+    // text *and* nested lists, the nested items are its notes, e.g. a
+    // developer note nested under the change it explains.
+    const change = makeChange(ctx, text);
+    if (nested.length) change.notes.push(...collectNoteTexts(nested));
+    out.push(change);
+    previous = change;
   }
 }
 
