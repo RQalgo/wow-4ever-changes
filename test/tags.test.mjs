@@ -197,3 +197,44 @@ describe('NPC abilities outside Classes', () => {
     assert.deepEqual(computeTags(c), ['class:hunter', 'spec:hunter/survival', 'talent', 'bugfix']);
   });
 });
+
+describe('text rules added with dev posts', () => {
+  const dev = (text, o = {}) => ch({ category: 'Dev Posts', text, ...o });
+
+  test('systems: realms, servers, login, queues, botting, RMT, gold buying, accounts', () => {
+    for (const t of ['Realm maintenance tonight.', 'Server restarts are planned.', 'Login issues are resolved.',
+      'Queues are shorter now.', 'We banned accounts for botting.', 'RMT hurts the economy.', 'Gold buying is against the rules.']) {
+      assert.ok(computeTags(dev(t)).includes('systems'), t);
+    }
+  });
+
+  test('systems: not "spell queue", "to account for", "Bound to Account", lower-case "rmt"', () => {
+    for (const t of ['You can spell queue another spell.', 'Skill-ups lowered to account for this.',
+      'The item becomes soulbound (was Bound to Account).', 'rmt']) {
+      assert.ok(!computeTags(ch({ category: 'Items', text: t })).includes('systems'), t);
+    }
+  });
+
+  test('pvp: faction balance, PvP rulesets, battleground', () => {
+    assert.deepEqual(computeTags(dev('Faction Balance Updates - November 10')), ['pvp']);
+    assert.deepEqual(computeTags(dev('This applies to PvP rulesets.')), ['pvp']);
+    assert.deepEqual(computeTags(dev('Battleground queues are not affected.')), ['pvp', 'systems']);
+  });
+
+  test('media only for dev posts: podcast, livestream, video, "watch it now"', () => {
+    for (const t of ['Listen to the new podcast.', 'Join our livestream on Friday.', 'Our developer video is out.', 'Watch it now on YouTube.', 'Watch live on Twitch.']) {
+      assert.deepEqual(computeTags(dev(t)), ['media'], t);
+    }
+    assert.deepEqual(computeTags(dev('Keep watch for the patrol.')), ['other']);
+    assert.ok(!computeTags(ch({ category: 'User Interface', text: 'Video settings were reset.' })).includes('media'));
+  });
+
+  test('raid: "until raids open" is not a dungeon line (existing rule), "raids" is', () => {
+    assert.deepEqual(computeTags(dev('Until raids open, this vendor sells the item.')), ['other']);
+    assert.deepEqual(computeTags(dev('Raids will unlock in phases.')), ['dungeons']);
+  });
+
+  test('a dev post with no specific category tag gets "other"', () => {
+    assert.deepEqual(computeTags(dev('Thank you for the feedback!')), ['other']);
+  });
+});

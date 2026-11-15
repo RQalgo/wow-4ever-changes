@@ -103,7 +103,36 @@ const TEXT_RULES = [
   ['ui', /\bUI\b/], // case-sensitive: "ui" is not a word, but keep "UI" distinct
   ['events', /\b(?:extravaganza|festival|darkmoon faire)\b/i],
   ['systems', /\blegacy (?:perks?|challenges?|system)\b/i],
+  // Added with dev posts (schema v4), conservative on purpose:
+  //  - pvp: "faction balance" (the PvP faction-balance announcements);
+  //    "PvP ruleset" and "battleground" are already caught above;
+  //  - systems: realms / servers / login / queues, and account security
+  //    (botting, bots, RMT, gold buying / selling, accounts).
+  //    "spell queue" is a combat mechanic, not a login queue; "to account
+  //    for", "into account" and "Bound to Account" are not about accounts
+  //    (both seen in the stored patch notes). "RMT" is case-sensitive (it is
+  //    an acronym, not a word).
+  ['pvp', /\bfaction balance\b/i],
+  ['systems', /\b(?:realms?|servers?|log-?ins?|botting|bots?|gold (?:buying|buyers?|selling|sellers?))\b/i],
+  ['systems', /(?<!\bspell )\bqueue[sd]?\b/i],
+  ['systems', /(?<!\b(?:to|into) )\baccounts?\b(?! for\b)/i],
+  ['systems', /\bRMT\b/],
 ];
+
+/**
+ * Text rules that only apply to dev posts (category DEV_POSTS_CATEGORY): the
+ * `media` tag for posts about a podcast, livestream or video. In hotfix and
+ * patch lines words like "video" or "watch" mean settings or NPC names, so
+ * they never tag those. "watch" counts only as an invitation to watch
+ * ("watch it now", "watch live", "watch on YouTube").
+ */
+const DEV_TEXT_RULES = [
+  ['media', /\b(?:podcasts?|live ?streams?|videos?|youtube|twitch)\b/i],
+  ['media', /\bwatch\s+(?:it\s+|the\s+\w+\s+)?(?:now|live|here|on\s+(?:youtube|twitch))\b/i],
+];
+
+/** Published category of dev-post changes (docs/SCHEMA.md v4). */
+const DEV_POSTS_CATEGORY = 'dev posts';
 
 /** Lines that start like a bug fix get "bugfix" in addition to their other tags. */
 // An optional "Zone Name - " prefix is skipped ("Durotar - Fixed an issue ...").
@@ -315,6 +344,9 @@ export function computeTags(change) {
   (published_ ?? []).forEach((t) => cats.add(t));
   if (subjects.some((s) => s.type === 'item')) cats.add('items');
   for (const [tag, re] of TEXT_RULES) if (bodies.some((b) => re.test(b))) cats.add(tag);
+  if (String(change.category ?? '').trim().toLowerCase() === DEV_POSTS_CATEGORY) {
+    for (const [tag, re] of DEV_TEXT_RULES) if (bodies.some((b) => re.test(b))) cats.add(tag);
+  }
   if (QUOTE_RE.test(change.text ?? '') && QUEST_CONTEXT_RE.test(change.text ?? '')) cats.add('quests');
   if (BUGFIX_START_RE.test(change.text ?? '')) cats.add('bugfix');
   // A dungeon named in the published sub-heading ("The Deadmines") is a dungeon line.
