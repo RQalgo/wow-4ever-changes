@@ -201,6 +201,17 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .toggle[aria-checked="true"] .toggle-box { background: var(--accent); }
 .toggle[aria-checked="true"] .toggle-box::after { transform: translateX(14px); background: var(--accent-ink); }
 
+/* Kind filter: segmented radio group, full width on phones. Reuses the chip colours. */
+.segmented { display: flex; margin: 0 0 .3rem; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.segment {
+  flex: 1 1 0; min-height: 44px; padding: 0 .5rem; cursor: pointer; background: transparent; color: var(--text);
+  border: 0; border-left: 1px solid var(--border); font: 600 .9rem var(--sans);
+}
+.segment:first-child { border-left: 0; }
+.segment:hover { background: var(--surface-2); }
+.segment[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); }
+.segment:focus-visible { outline-offset: -3px; }
+
 /* Icon box: fixed 36px so images loading or failing never move the layout. */
 .icon {
   flex: none; width: 36px; height: 36px; border-radius: 6px; overflow: hidden;

@@ -20,10 +20,10 @@ import {
   CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays,
   specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
   highlightSegments, buildSuggestions, encodeHash, decodeHash, sanitizeSelection,
-  dayKind, dayKey,
+  dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
 } from './logic.js';
 
-/** Current UI state: class, spec, search text, General toggle. */
+/** Current UI state: class, spec, search text, General toggle, kind filter. */
 let state = defaultState();
 
 /** The loaded dataset (see docs/SCHEMA.md), or null before loading. */
@@ -410,6 +410,51 @@ function renderSpecChips() {
   row.replaceChildren(...chips);
 }
 
+/** Segment labels of the kind filter, keyed by filter value. */
+const KIND_FILTER_LABEL = { all: 'All', hotfix: 'Hotfixes', patch: 'Patches' };
+
+/**
+ * Build the three-way kind control "All / Hotfixes / Patches" as a radio
+ * group: role=radiogroup with role=radio buttons, aria-checked, roving
+ * tabindex (only the selected segment is in the tab order) and arrow-key
+ * navigation, like a native radio group. Created once; renderKindFilter()
+ * keeps it in sync with the state.
+ * @returns {HTMLElement}
+ */
+function buildKindFilter() {
+  const group = el('div', 'segmented');
+  group.id = 'kind-row';
+  group.setAttribute('role', 'radiogroup');
+  group.setAttribute('aria-label', 'Show hotfixes or patch notes');
+  for (const value of KIND_FILTERS) {
+    const b = el('button', 'segment', KIND_FILTER_LABEL[value]);
+    b.type = 'button';
+    b.dataset.kind = value;
+    b.setAttribute('role', 'radio');
+    b.addEventListener('click', () => setState({ ...state, kind: value }));
+    group.append(b);
+  }
+  group.addEventListener('keydown', (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const n = KIND_FILTERS.length;
+    const next = KIND_FILTERS[(KIND_FILTERS.indexOf(state.kind) + step + n) % n];
+    setState({ ...state, kind: next });
+    group.querySelector(`[data-kind="${next}"]`).focus(); // setState keeps the buttons, so focus survives
+  });
+  return group;
+}
+
+/** Sync the kind control (checked segment, roving tabindex) with the state. */
+function renderKindFilter() {
+  for (const b of $('kind-row').children) {
+    const on = b.dataset.kind === state.kind;
+    b.setAttribute('aria-checked', String(on));
+    b.tabIndex = on ? 0 : -1;
+  }
+}
+
 /**
  * Build the search box with its suggestion dropdown (ARIA combobox pattern:
  * input role=combobox -> listbox of role=option, aria-activedescendant tracks
@@ -585,7 +630,7 @@ function buildFilters() {
   const live = el('p', 'visually-hidden');
   live.id = 'live';
   live.setAttribute('role', 'status');
-  box.replaceChildren(tools, classGroup, specGroup, live);
+  box.replaceChildren(tools, buildKindFilter(), classGroup, specGroup, live);
   watchBarHeight(box);
 }
 
@@ -595,7 +640,7 @@ function renderTools() {
   gen.setAttribute('role', 'switch');
   gen.setAttribute('aria-checked', String(state.general));
   const d = defaultState();
-  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.general !== d.general;
+  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.general !== d.general || state.kind !== d.kind;
   $('clear-filters').disabled = !dirty;
 }
 
@@ -660,6 +705,7 @@ function setState(next, opts = {}) {
   if (!opts.fromInput) renderSearch();
   renderClassChips();
   renderSpecChips();
+  renderKindFilter();
   renderTools();
   renderResults();
 }
