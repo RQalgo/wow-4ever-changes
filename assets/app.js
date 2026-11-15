@@ -11,8 +11,10 @@
  * Pure logic (filtering, search, suggestions, hash encoding) lives in
  * ./logic.js so it can be unit tested without a DOM.
  *
- * Days are identified by date + kind (see dayKey in logic.js): a patch and a
- * hotfix can share a date.
+ * Days are identified by date + kind (see dayKey in logic.js): a patch, a
+ * hotfix and a dev-post day (Blizzard staff forum posts, schema v4) can share
+ * a date. A dev-post day is drawn as one "Dev Posts" card whose lines link to
+ * the posts (renderLine with `dev`).
  *
  * Sections: helpers, data loading, rendering, boot.
  */
