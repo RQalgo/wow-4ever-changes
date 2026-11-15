@@ -768,3 +768,15 @@ test('dev kind counts as an active filter, is named in the summary and the empty
   assert.equal(L.filterSummary({ ...L.defaultState(), cls: 'mage', kind: 'dev' }), 'Mage · Dev Posts');
   assert.match(L.emptyMessage({ ...L.defaultState(), kind: 'dev' }).detail, /Only dev posts are being shown/);
 });
+
+test('media category: chip "Media" between Events and Systems, offered only when present', () => {
+  const slugs = L.CATEGORIES.map((c) => c.slug);
+  assert.equal(slugs.indexOf('media'), slugs.indexOf('events') + 1);
+  assert.equal(slugs.indexOf('systems'), slugs.indexOf('media') + 1);
+  assert.equal(L.CATEGORIES.find((c) => c.slug === 'media').label, 'Media');
+  const media = mk({ scope: 'general', category: 'Dev Posts', tags: ['media'] });
+  assert.deepEqual(L.categoryTagsOf(media), ['media']); // a known tag, not "other"
+  assert.deepEqual(L.availableCategories({ days: [{ changes: [media] }] }).map((c) => c.slug), ['media']);
+  assert.ok(!L.availableCategories({ days: [{ changes: [mk({ scope: 'general', category: 'Items' })] }] }).some((c) => c.slug === 'media'));
+  assert.deepEqual(L.decodeHash('#cats=media,items').cats, ['items', 'media']); // chip order
+});

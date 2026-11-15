@@ -106,6 +106,8 @@ export const CATEGORIES = [
   { slug: 'world', label: 'World & NPCs' },
   { slug: 'races', label: 'Races' },
   { slug: 'events', label: 'Events' },
+  // Podcasts, videos and streams (mostly dev posts, schema v4).
+  { slug: 'media', label: 'Media' },
   { slug: 'systems', label: 'Systems' },
   { slug: 'bugfix', label: 'Bug fixes' },
   { slug: 'known-issue', label: 'Known issues' },
