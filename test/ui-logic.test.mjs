@@ -844,3 +844,21 @@ test('dev posts are never class changes and keep their extra tag chips', () => {
   assert.equal(L.isClassChange(p), false);
   assert.deepEqual(L.extraTagsForLine(p).map((t) => t.label), ['Mage', 'Talent', 'Media']);
 });
+
+/* ---------- group headings ---------- */
+test('displayGroup: " > " becomes " › ", other ">" and blanks are left alone', () => {
+  assert.equal(L.displayGroup('Gnome > Racial Traits'), 'Gnome › Racial Traits');
+  assert.equal(L.displayGroup('A > B  >  C'), 'A › B › C');
+  assert.equal(L.displayGroup('Gnome › Racial Traits'), 'Gnome › Racial Traits');
+  assert.equal(L.displayGroup('Level >60 only'), 'Level >60 only');
+  assert.equal(L.displayGroup('A>B'), 'A>B');
+  assert.equal(L.displayGroup('  The Deadmines '), 'The Deadmines');
+  assert.equal(L.displayGroup('   '), null);
+  assert.equal(L.displayGroup(null), null);
+});
+
+test('flattenSections: group headings use one separator', () => {
+  const f = L.flattenSections([mk({ scope: 'general', category: 'Races', group: 'Gnome > Racial Traits', text: 'a' })]);
+  assert.deepEqual(f.cards.map(headingTitles), [['Races › Gnome › Racial Traits']]);
+  assert.equal(f.cards[0].headings[0].group, 'Gnome › Racial Traits');
+});

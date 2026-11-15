@@ -318,6 +318,21 @@ export function groupChanges(changes) {
   return { classSections, general, count: changes.length };
 }
 
+/**
+ * Display form of a published `group` sub-heading: every " > " (Blizzard's
+ * own breadcrumb, which older stored data still contains) becomes the " › "
+ * the app uses everywhere else, so one heading never mixes two separators.
+ * Surrounding white space is trimmed; an empty group is null.
+ * @param {string|null|undefined} group
+ * @returns {string|null}
+ */
+export function displayGroup(group) {
+  if (typeof group !== 'string') return null;
+  // Only a ">" with white space on both sides is a separator ("<60" or "A>B" are left alone).
+  const g = group.replace(/\s+>\s+/g, ' \u203A ').trim();
+  return g || null;
+}
+
 /** Title of the single card of a dev-post day. */
 export const DEV_CARD_TITLE = 'Dev Posts';
 
@@ -358,12 +373,10 @@ export function flattenSections(changes, kind = 'hotfix') {
     cards.push({ kind: 'class', class: sec.class, category: null, headings });
   }
   for (const cat of g.general) {
-    const headings = cat.groups.map((grp) => ({
-      title: grp.group ? [cat.category, grp.group] : [cat.category],
-      spec: null,
-      group: grp.group,
-      changes: grp.changes,
-    }));
+    const headings = cat.groups.map((grp) => {
+      const label = displayGroup(grp.group);
+      return { title: label ? [cat.category, label] : [cat.category], spec: null, group: label, changes: grp.changes };
+    });
     cards.push({ kind: 'general', class: null, category: cat.category, headings });
   }
   return { count: g.count, cards };
