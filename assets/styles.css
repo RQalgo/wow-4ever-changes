@@ -406,11 +406,25 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   .site-footer { padding: 1rem 1.5rem; }
 }
 
-/* Wide screens: cards flow into two columns inside a day. */
+/* Wide screens: the page uses the full window width (no centred max-width,
+   which left wide margins on 16:9 monitors), and a day's cards flow into
+   columns. The number of columns never exceeds the number of cards, so a day
+   with one card uses the full width (data-count is set in app.js). Short
+   cards stay whole; long cards (.card--long) may continue in the next column
+   between lines, with their border repeated on each piece, so columns end
+   at similar heights. */
 @media (min-width: 1100px) {
-  .layout, .site-header, .site-footer { max-width: 1480px; }
-  .cards { column-count: 2; column-gap: .75rem; }
+  .layout, .site-header, .site-footer { max-width: none; }
+  .cards { column-gap: .75rem; }
+  .cards[data-count="2"], .cards[data-count="3"] { column-count: 2; }
   .card { break-inside: avoid; }
+  .card--long { break-inside: auto; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .card--long .line, .card--long h3, .card--long h4 { break-inside: avoid; break-after: auto; }
+  .card--long h3, .card--long h4 { break-after: avoid; }
+}
+/* Very wide windows (e.g. 2560 px): up to three columns. */
+@media (min-width: 2100px) {
+  .cards[data-count="3"] { column-count: 3; }
 }
 
 /* ---------- Motion ---------- */
