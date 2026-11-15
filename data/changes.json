@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T04:42:46Z",
+  "generatedAt": "2026-11-15T04:53:25Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -171,7 +171,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_warrior_warcry",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -235,7 +236,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_whirlwind",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Mutilate",
@@ -516,13 +518,12 @@
           "subjects": [
             {
               "name": "Gloves of Holy Might",
-              "type": "spell",
-              "kind": "spell",
+              "type": "item",
+              "kind": "item",
               "class": null,
               "tree": null,
-              "icon": "spell_holy_holysmite",
-              "source": "client",
-              "verified": false
+              "icon": "inv_gauntlets_06",
+              "source": "wowhead"
             }
           ],
           "tags": [
@@ -1417,13 +1418,12 @@
           "subjects": [
             {
               "name": "Earthen Silk Slippers",
-              "type": "spell",
-              "kind": "spell",
+              "type": "item",
+              "kind": "item",
               "class": null,
               "tree": null,
-              "icon": "ability_ensnare",
-              "source": "client",
-              "verified": false
+              "icon": "inv_boots_cloth_22",
+              "source": "wowhead"
             }
           ],
           "tags": [
@@ -1876,7 +1876,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_cyclone",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Windfury Totem",
@@ -1937,7 +1938,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_mentalquickness",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -2002,7 +2004,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_nature_wispheal",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Lightning Bolt",
@@ -2661,8 +2664,7 @@
               "class": null,
               "tree": null,
               "icon": "temp",
-              "source": "client",
-              "verified": true
+              "source": "wowhead"
             }
           ],
           "tags": [
@@ -3371,7 +3373,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_spiritwolf",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Night Watchman's Torch",
@@ -3452,9 +3455,8 @@
               "kind": "spell",
               "class": null,
               "tree": null,
-              "icon": "temp",
-              "source": "client",
-              "verified": false
+              "icon": "spell_nature_thunderclap",
+              "source": "wowhead"
             }
           ],
           "tags": [
@@ -3922,13 +3924,12 @@
           "subjects": [
             {
               "name": "Gloves of Holy Might",
-              "type": "spell",
-              "kind": "spell",
+              "type": "item",
+              "kind": "item",
               "class": null,
               "tree": null,
-              "icon": "spell_holy_holysmite",
-              "source": "client",
-              "verified": false
+              "icon": "inv_gauntlets_06",
+              "source": "wowhead"
             }
           ],
           "tags": [
@@ -5406,7 +5407,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostarmor",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Fingers of Frost",
@@ -5415,7 +5417,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "ability_mage_wintersgrasp",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5547,7 +5550,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_racial_bearform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5571,7 +5575,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_racial_darkflight",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5595,7 +5600,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "spell_shadow_vampiricaura",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5619,7 +5625,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_druid_rake",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5668,7 +5675,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_ghoulfrenzy",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5692,7 +5700,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_druid_disembowel",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5766,7 +5775,8 @@
               "class": "druid",
               "tree": "balance",
               "icon": "spell_arcane_starfire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5790,7 +5800,8 @@
               "class": "druid",
               "tree": "balance",
               "icon": "spell_arcane_arcane03",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -5816,7 +5827,8 @@
               "class": "druid",
               "tree": "balance",
               "icon": "spell_nature_forceofnature",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Leader of the Pack",
@@ -5965,7 +5977,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_hunter_pet_cat",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -6231,7 +6244,8 @@
               "class": "druid",
               "tree": "restoration",
               "icon": "spell_nature_healingtouch",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Wild Growth",
@@ -6606,7 +6620,8 @@
               "class": "hunter",
               "tree": "beast-mastery",
               "icon": "spell_nature_ravenform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -6644,7 +6659,8 @@
               "class": "hunter",
               "tree": "beast-mastery",
               "icon": "ability_mount_jungletiger",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -6670,7 +6686,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "ability_upgrademoonglaive",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -6711,7 +6728,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "ability_trueshot",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -6737,7 +6755,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_gouge",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -6763,7 +6782,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "spell_nature_invisibilty",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -6823,7 +6843,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": false
             }
           ],
           "tags": [
@@ -7012,7 +7033,8 @@
               "class": "mage",
               "tree": "arcane",
               "icon": "spell_holy_devotion",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -7104,7 +7126,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_flameshock",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -7130,7 +7153,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_flamebolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Arcane Wrath",
@@ -7167,7 +7191,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_nature_wispheal",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -7193,7 +7218,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_lavaspawn",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -7247,7 +7273,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostbolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -7624,7 +7651,8 @@
               "class": "paladin",
               "tree": "holy",
               "icon": "ability_thunderbolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -7838,7 +7866,8 @@
               "class": "paladin",
               "tree": "holy",
               "icon": "spell_holy_greaterblessingoflight",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -7864,7 +7893,8 @@
               "class": "paladin",
               "tree": "holy",
               "icon": "ability_paladin_sacredcleansing",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -8067,7 +8097,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_holy_removecurse",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -8093,7 +8124,8 @@
               "class": "paladin",
               "tree": "protection",
               "icon": "spell_holy_righteousnessaura",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -8172,7 +8204,8 @@
               "class": "paladin",
               "tree": "protection",
               "icon": "spell_holy_sealoffury",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -8342,7 +8375,8 @@
               "class": "paladin",
               "tree": "protection",
               "icon": "spell_holy_stoicism",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -8368,7 +8402,8 @@
               "class": "paladin",
               "tree": "protection",
               "icon": "spell_holy_blessingofprotection",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -8431,7 +8466,8 @@
               "class": "paladin",
               "tree": "protection",
               "icon": "spell_holy_greaterblessingofsanctuary",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -9127,7 +9163,8 @@
               "class": "priest",
               "tree": "holy",
               "icon": "spell_nature_nullifydisease",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Shadowform",
@@ -9178,7 +9215,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "ability_rogue_fleetfooted",
-              "source": "client"
+              "source": "client",
+              "verified": false
             }
           ],
           "tags": [
@@ -9282,7 +9320,8 @@
               "class": "rogue",
               "tree": "assassination",
               "icon": "ability_warrior_riposte",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -9525,7 +9564,8 @@
               "class": null,
               "tree": null,
               "icon": "trade_brewpoison",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -9640,7 +9680,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "ability_creature_cursed_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -9687,7 +9728,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "spell_shadow_lifedrain",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -9714,7 +9756,8 @@
               "class": "rogue",
               "tree": "combat",
               "icon": "ability_rogue_sprint",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -9740,7 +9783,8 @@
               "class": "rogue",
               "tree": "combat",
               "icon": "ability_rogue_fleetfooted",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -9975,7 +10019,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "spell_shadow_lifedrain",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Ghostly Strike",
@@ -10269,7 +10314,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "spell_magic_lesserinvisibilty",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10352,7 +10398,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "ability_stealth",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10378,7 +10425,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_rogue_distract",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10403,7 +10451,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "ability_rogue_blackjack",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10429,7 +10478,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "ability_ambush",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10455,7 +10505,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "spell_shadow_lifedrain",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Rupture",
@@ -10464,7 +10515,8 @@
               "class": "rogue",
               "tree": "assassination",
               "icon": "ability_rogue_rupture",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Garrote",
@@ -10500,7 +10552,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_deathknight_spelldeflection",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10602,7 +10655,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "ability_creature_cursed_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10628,7 +10682,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_cyclone",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10908,7 +10963,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_spiritwolf",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -10976,7 +11032,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_mentalquickness",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -11940,7 +11997,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_warrior_warcry",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -13516,7 +13574,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_warrior_warcry",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14088,7 +14147,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_racial_bearform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14133,7 +14193,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_racial_bearform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14182,7 +14243,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "spell_shadow_vampiricaura",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Shredding Attacks",
@@ -14366,7 +14428,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "spell_shadow_vampiricaura",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Savage Fury",
@@ -14423,7 +14486,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_racial_bearform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14768,7 +14832,8 @@
               "class": "hunter",
               "tree": "marksmanship",
               "icon": "ability_trueshot",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14939,7 +15004,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": false
             },
             {
               "name": "Frostbolt",
@@ -15202,7 +15268,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_fire_lavaspawn",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15228,7 +15295,8 @@
               "class": "mage",
               "tree": "fire",
               "icon": "spell_nature_wispheal",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -15419,7 +15487,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostarmor",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Fingers of Frost",
@@ -15428,7 +15497,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "ability_mage_wintersgrasp",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Ice Armor",
@@ -15589,7 +15659,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": false
             },
             {
               "name": "Frostbolt",
@@ -15642,7 +15713,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_frost_frostbolt02",
-              "source": "client"
+              "source": "client",
+              "verified": false
             },
             {
               "name": "Fingers of Frost",
@@ -15651,7 +15723,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "ability_mage_wintersgrasp",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Ice Lance",
@@ -16971,7 +17044,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_cyclone",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "White",
@@ -19489,7 +19563,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_racial_bearform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20046,7 +20121,8 @@
               "class": "paladin",
               "tree": "protection",
               "icon": "spell_holy_righteousnessaura",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20075,7 +20151,8 @@
               "class": "paladin",
               "tree": "protection",
               "icon": "spell_holy_righteousnessaura",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Shield Specialization",
@@ -20868,7 +20945,17 @@
           "group": null,
           "text": "Booty Bay Bruiser’s Buckshot no longer has a knockback effect.",
           "notes": [],
-          "subjects": [],
+          "subjects": [
+            {
+              "name": "Booty Bay Bruiser's Buckshot",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_weapon_rifle_02",
+              "source": "wowhead"
+            }
+          ],
           "tags": [
             "items"
           ]
@@ -20901,6 +20988,42 @@
             "Developers’ notes: Most of the items above have simply had their power level adjusted to the expected value from the quest, but some received stat changes."
           ],
           "subjects": [
+            {
+              "name": "Abandoned Ferocity",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_axe_17",
+              "source": "wowhead"
+            },
+            {
+              "name": "Blade of the Magram Clan",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_sword_07",
+              "source": "wowhead"
+            },
+            {
+              "name": "Bludgeon of Betrayed Virtues",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_hammer_08",
+              "source": "wowhead"
+            },
+            {
+              "name": "Centaur Spear",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_weapon_halberd_04",
+              "source": "wowhead"
+            },
             {
               "name": "Ceremonial Centaur Blanket",
               "type": "item",
@@ -21335,6 +21458,15 @@
           "text": "The various creatures needed for the quest “Storm, Earth, and Fire” respawn more quickly, creatures drop their twisted totems more often, Maraudine Scouts now drop Twisted Air Totems, Ongeku can now drop a Twisted Earth Totem, Murdaloc can now drop a Twisted Fire Totem. The Twisted Fire Totem can now additionally be obtained via Dustbelcher ogres across the Badlands. Larger encampents like Dustbelch Grotto will respawn more quickly, but smaller ones will not.",
           "notes": [],
           "subjects": [
+            {
+              "name": "Air Totems",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_nature_invisibilitytotem",
+              "source": "client"
+            },
             {
               "name": "Twisted Earth Totem",
               "type": "item",
@@ -21953,7 +22085,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_racial_bearform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22526,7 +22659,8 @@
               "class": "paladin",
               "tree": "protection",
               "icon": "spell_holy_blessingofprotection",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -23332,7 +23466,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_whirlwind",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -23357,7 +23492,8 @@
               "class": "warrior",
               "tree": "fury",
               "icon": "ability_whirlwind",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -24442,7 +24578,8 @@
               "class": "mage",
               "tree": "frost",
               "icon": "spell_frost_frostarmor",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -24756,8 +24893,22 @@
           "group": null,
           "text": "Warriors’ Dual Wield Specialization is granting both your Main hand and Off-hand 2/4/6/8/10% hit chance. It should only be granted to your Off-hand.",
           "notes": [],
-          "subjects": [],
+          "subjects": [
+            {
+              "name": "Dual Wield Specialization",
+              "type": "spell",
+              "kind": "talent",
+              "class": "rogue",
+              "tree": "combat",
+              "icon": "ability_dualwield",
+              "source": "client",
+              "verified": true
+            }
+          ],
           "tags": [
+            "class:rogue",
+            "spec:rogue/combat",
+            "talent",
             "known-issue"
           ]
         },
@@ -25346,7 +25497,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_gouge",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26814,7 +26966,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "ability_stealth",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Polymorph",
@@ -27078,6 +27231,15 @@
           "text": "Wizard Oil: Minor Wizard Oil has been reverted to Classic Era value of 8 spell power, Lesser Wizard Oil to 16, and Wizard Oil to 24. Brilliant Wizard Oil remains unchanged.",
           "notes": [],
           "subjects": [
+            {
+              "name": "Minor Wizard Oil",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_poison_mindnumbing",
+              "source": "client"
+            },
             {
               "name": "Lesser Wizard Oil",
               "type": "item",
