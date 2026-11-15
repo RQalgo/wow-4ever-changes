@@ -12,11 +12,11 @@ searchable by skill name.
 
 | Path | What it is |
 |---|---|
-| `site/` | The static web app (plain HTML/CSS/JS, no build step) |
+| `index.html`, `assets/` | The static web app (plain HTML/CSS/JS, no build step), served by GitHub Pages from the root of `main` |
 | `scripts/` | Node scripts: fetch the official post, parse it, resolve icons |
 | `data/` | Generated data (`changes.json`) and the icon lookup cache |
 | `test/` | `node --test` unit tests and HTML fixtures |
-| `.github/workflows/` | Daily update + GitHub Pages deploy, and CI |
+| `.github/workflows/` | Scheduled data update, and CI |
 
 ## Disclaimer
 

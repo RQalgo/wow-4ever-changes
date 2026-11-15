@@ -29,11 +29,12 @@ Blizzard keeps one rolling post, "WoW: Forever Hotfixes"
 2. `scripts/parse.mjs`   HTML -> structured days/changes (docs/SCHEMA.md)
 3. `scripts/icons.mjs`   find skill/item names in each line, look up icons
                           on Wowhead (cached in data/icon-cache.json)
-4. write `data/changes.json`, commit if changed, deploy `site/` to Pages
+4. write `data/changes.json` and commit it to `main` if it changed; GitHub
+   Pages (deploy from branch: `main`, root) republishes automatically
 
-## Web app (`site/`)
+## Web app (`index.html` + `assets/`)
 Plain HTML/CSS/JS, no build step. Date groups, class > spec filter,
-General section, search box with skill-name suggestions, deep-linkable
+General section, search box that suggests skill names by default, deep-linkable
 filter state in the URL hash, light/dark.
 
 ## Task list
@@ -43,7 +44,7 @@ filter state in the URL hash, light/dark.
 | 2 | Parser + fetcher + tests | Opus agent, PR |
 | 3 | Web app UI incl. search with skill suggestions | Sonnet agent, PR |
 | 4 | Icon resolver + cache + tests | Sonnet agent, PR |
-| 5 | Workflows: daily update, Pages deploy, CI | Sonnet agent, PR |
+| 5 | Workflows: scheduled update, CI; pipeline orchestrator | Sonnet agent, PR |
 | 6 | Review + merge each PR, end-to-end check | lead |
 
 ## Conventions
