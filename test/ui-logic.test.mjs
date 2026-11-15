@@ -416,3 +416,88 @@ test('cats hash: only enabled categories, none, and general=0 compatibility', ()
   const st = { cls: 'rogue', spec: '', q: 'x', cats: ['ui', 'world'], kind: 'hotfix' };
   assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
 });
+
+/* ---------- compact headings ---------- */
+/** Headings of a card as "A › B" strings, for readable assertions. */
+const headingTitles = (card) => card.headings.map((h) => h.title.join(' › '));
+
+test('flattenSections: a class with one tree has ONE heading "Druid › Restoration"', () => {
+  const f = L.flattenSections(dayOf('2026-11-13', 'hotfix').changes);
+  assert.equal(f.count, 5);
+  const druid = f.cards.find((c) => c.class === 'druid');
+  assert.deepEqual(headingTitles(druid), ['Druid › Restoration']);
+  assert.equal(druid.headings[0].changes.length, 1);
+});
+
+test('flattenSections: class-wide and tree lines become sibling headings', () => {
+  const f = L.flattenSections([
+    mk({ id: 'a', class: 'paladin', text: 'wide' }),
+    mk({ id: 'b', class: 'paladin', spec: 'retribution', text: 'tree' }),
+    mk({ id: 'c', class: 'paladin', spec: 'holy', text: 'tree2' }),
+  ]);
+  assert.equal(f.cards.length, 1); // one card per class
+  assert.deepEqual(headingTitles(f.cards[0]), ['Paladin', 'Paladin › Holy', 'Paladin › Retribution']);
+  assert.deepEqual(f.cards[0].headings.map((h) => h.spec), [null, 'holy', 'retribution']);
+});
+
+test('flattenSections: all-classes first, classes alphabetical, then general categories', () => {
+  const f = L.flattenSections(dayOf('2026-11-13', 'hotfix').changes);
+  assert.deepEqual(f.cards.map((c) => c.kind === 'class' ? (c.class || 'all') : c.category), ['all', 'druid', 'paladin', 'Dungeons', 'Items']);
+  assert.deepEqual(headingTitles(f.cards[0]), ['All classes']);
+});
+
+test('flattenSections: general group is inline in the heading, no separate "General"', () => {
+  const f = L.flattenSections([
+    mk({ scope: 'general', category: 'Dungeons', group: 'The Deadmines', text: 'a' }),
+    mk({ scope: 'general', category: 'Dungeons', group: null, text: 'b' }),
+    mk({ scope: 'general', category: 'Professions', group: 'Tailoring', text: 'c' }),
+  ]);
+  assert.deepEqual(f.cards.map(headingTitles), [['Dungeons', 'Dungeons › The Deadmines'], ['Professions › Tailoring']]);
+  assert.ok(f.cards.flatMap(headingTitles).every((t) => !/general/i.test(t)));
+  assert.equal(f.cards[0].headings[1].group, 'The Deadmines');
+});
+
+test('flattenSections keeps each line once, in its published section (multi-class line)', () => {
+  const f = L.flattenSections(dayOf('2026-11-15', 'hotfix').changes);
+  const places = f.cards.flatMap((c) => c.headings.flatMap((h) => h.changes.map((ch) => [ch.id, headingTitles({ headings: [h] })[0]])));
+  assert.equal(places.filter(([id]) => id === '2026-11-15-000').length, 1);
+  assert.deepEqual(places.find(([id]) => id === '2026-11-15-000'), ['2026-11-15-000', 'Shaman']);
+  assert.deepEqual(places.find(([id]) => id === '2026-11-15-001'), ['2026-11-15-001', 'Items']); // Items line tagged class:shaman stays under Items
+  assert.equal(places.length, f.count);
+});
+
+/* ---------- extra tags and icon cluster ---------- */
+test('extraTagsForLine: other classes, Talent and other categories, never the section itself', () => {
+  const multi = L.extraTagsForLine(byId('2026-11-15-000')); // published under Shaman
+  assert.deepEqual(multi.map((t) => `${t.type}:${t.slug || ''}`), ['class:warrior', 'class:rogue', 'talent:']);
+  assert.equal(multi[0].label, 'Warrior');
+  assert.equal(multi[0].color, '#C69B6D');
+  // Items line tagged class:shaman: the class is extra, "items" is the section's own category.
+  assert.deepEqual(L.extraTagsForLine(byId('2026-11-15-001')).map((t) => t.type + ':' + t.slug), ['class:shaman']);
+  // "Quests and World" owns quests AND world: nothing extra.
+  assert.deepEqual(L.extraTagsForLine(byId('2026-11-15-004')), []);
+  // A class line that is also about quests gets a category chip; its own class and spec are omitted.
+  assert.deepEqual(L.extraTagsForLine(byId('2026-11-15-006')).map((t) => t.type + ':' + t.slug), ['category:quests']);
+  // Spec tag only -> nothing; old-shape lines have nothing extra.
+  assert.deepEqual(L.extraTagsForLine(byId('2026-11-13-001')), []);
+  assert.deepEqual(L.extraTagsForLine(byId('2026-11-13-003')), []);
+  assert.deepEqual(L.extraTagsForLine(byId('2026-11-15-002')).map((t) => t.type), ['talent']);
+});
+
+test('iconSlots caps at 4 icons, marks talents in the title, keeps the rest as overflow', () => {
+  const five = L.iconSlots(byId('2026-11-15-003'));
+  assert.equal(five.slots.length, 4);
+  assert.deepEqual(five.slots.map((s) => s.name), ['Frost Nova', 'Cone of Cold', 'Frostbolt', 'Ice Barrier']);
+  assert.deepEqual(five.more.map((s) => s.name), ['Blizzard']);
+  assert.deepEqual(five.slots.map((s) => s.talent), [false, false, false, true]);
+  assert.equal(five.slots[3].title, 'Ice Barrier (talent)');
+  assert.equal(five.slots[0].title, 'Frost Nova');
+  const three = L.iconSlots(byId('2026-11-15-000'));
+  assert.deepEqual(three.slots.map((s) => s.title), ['Windfury Totem', 'Whirlwind', 'Mutilate (talent)']);
+  assert.equal(three.more.length, 0);
+  // Old-shape subjects (no kind) are plain; no subjects -> no slots (UI shows one fallback tile).
+  assert.equal(L.iconSlots(byId('2026-11-13-002')).slots.length, 1);
+  assert.deepEqual(L.iconSlots(byId('2026-11-13-004')).slots.map((s) => s.talent), [false]);
+  assert.deepEqual(L.iconSlots(mk({})), { slots: [], more: [] });
+  assert.equal(L.iconSlots(byId('2026-11-15-003'), 2).more.length, 3);
+});

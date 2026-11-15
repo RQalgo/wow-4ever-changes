@@ -310,6 +310,45 @@ export function groupChanges(changes) {
   return { classSections, general, count: changes.length };
 }
 
+/**
+ * Flatten one day's changes into "cards" with compact headings, so the page
+ * never repeats a name (no "Druid" above "DRUID > RESTORATION").
+ *
+ * Each card has one or more sibling headings of the same level:
+ *   - class card "Druid": a heading "Druid" for class-wide lines and one
+ *     "Druid › Restoration" per tree that has lines. A class whose lines are
+ *     all in one tree therefore shows only "Druid › Restoration".
+ *   - general card per published category: "Dungeons" for ungrouped lines and
+ *     "Dungeons › The Deadmines" per group (the group is inline, not nested).
+ * Order: all-classes card, classes alphabetically, then general categories in
+ * first-seen order (same as groupChanges).
+ *
+ * @param {object[]} changes changes of a single day
+ * @returns {{count: number, cards: {kind: 'class'|'general', class: string|null,
+ *   category: string|null, headings: {title: string[], spec: string|null,
+ *   group: string|null, changes: object[]}[]}[]}}
+ */
+export function flattenSections(changes) {
+  const g = groupChanges(changes);
+  const cards = [];
+  for (const sec of g.classSections) {
+    const headings = [];
+    if (sec.direct.length) headings.push({ title: [sec.label], spec: null, group: null, changes: sec.direct });
+    for (const sp of sec.specs) headings.push({ title: [sec.label, sp.label], spec: sp.spec, group: null, changes: sp.changes });
+    cards.push({ kind: 'class', class: sec.class, category: null, headings });
+  }
+  for (const cat of g.general) {
+    const headings = cat.groups.map((grp) => ({
+      title: grp.group ? [cat.category, grp.group] : [cat.category],
+      spec: null,
+      group: grp.group,
+      changes: grp.changes,
+    }));
+    cards.push({ kind: 'general', class: null, category: cat.category, headings });
+  }
+  return { count: g.count, cards };
+}
+
 /* ======================= 5. Search (defined first; used by filtering) ======================= */
 
 /**
@@ -727,4 +766,57 @@ export function sanitizeKindFilter(v) {
  */
 export function matchesKind(day, filter) {
   return !filter || filter === 'all' || dayKind(day) === filter;
+}
+
+/* ======================= 9. Line decoration ======================= */
+
+/**
+ * The EXTRA tag chips to show under a line: everything the tags say that the
+ * line's section heading does not already say.
+ *  - one `class` chip per class tag other than the section's own class
+ *  - a `talent` chip when the line is tagged `talent`
+ *  - one `category` chip per category tag other than the section's own
+ *    category (mapped from the published heading, e.g. "Quests and World"
+ *    owns both quests and world)
+ * `spec:` tags are never shown (the heading already names the tree).
+ * @param {object} ch change
+ * @returns {({type: 'class', slug: string, label: string, color: string|null}
+ *   |{type: 'talent', label: string}
+ *   |{type: 'category', slug: string, label: string})[]}
+ */
+export function extraTagsForLine(ch) {
+  const out = [];
+  for (const slug of classTagsOf(ch)) {
+    if (slug === ch.class) continue; // the heading says it
+    out.push({ type: 'class', slug, label: className(slug), color: classColor(slug) });
+  }
+  if (effectiveTags(ch).includes('talent')) out.push({ type: 'talent', label: 'Talent' });
+  const own = categoryOfHeading(ch.category);
+  for (const slug of categoryTagsOf(ch)) {
+    if (own.includes(slug)) continue;
+    const def = CATEGORIES.find((c) => c.slug === slug);
+    out.push({ type: 'category', slug, label: def ? def.label : titleCase(slug) });
+  }
+  return out;
+}
+
+/** Most subject icons shown on one line; further subjects stay as name chips. */
+export const MAX_ICONS = 4;
+
+/**
+ * Split a line's subjects into the icon cluster and the overflow.
+ * `slots` holds up to `max` subjects (in subject order) with the text for the
+ * tile's title/alt: talents get " (talent)" so the kind is not conveyed by
+ * the corner mark alone. `more` holds the subjects beyond `max`.
+ * @param {object} ch change
+ * @param {number} [max]
+ * @returns {{slots: {name: string, icon: string|undefined, talent: boolean, title: string}[], more: object[]}}
+ */
+export function iconSlots(ch, max = MAX_ICONS) {
+  const subs = (ch.subjects || []).filter((s) => s && s.name);
+  const slots = subs.slice(0, max).map((s) => {
+    const talent = s.kind === 'talent';
+    return { name: s.name, icon: s.icon, talent, title: talent ? `${s.name} (talent)` : s.name };
+  });
+  return { slots, more: subs.slice(max) };
 }
