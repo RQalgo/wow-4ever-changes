@@ -161,3 +161,4 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 }
 /* The colour dot gets a ring so white/yellow stay visible on light parchment. */
 .chip-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 45%, transparent); }
+.chip-row[hidden] { display: none; }

@@ -53,3 +53,22 @@ test('class filter keeps that class plus "All classes" lines', () => {
   assert.ok(ids.includes('2026-11-11-001')); // paladin retribution (every spec)
   assert.ok(!ids.includes('2026-11-13-001')); // druid
 });
+
+/* ---------- filtering: spec ---------- */
+test('spec filter keeps spec lines, class-wide lines and All-classes lines', () => {
+  const st = { ...L.defaultState(), cls: 'paladin', spec: 'retribution' };
+  const ids = L.visibleDays(data, st).flatMap((d) => d.changes.map((c) => c.id));
+  assert.ok(ids.includes('2026-11-11-001')); // retribution
+  assert.ok(ids.includes('2026-11-11-000')); // paladin, spec null
+  assert.ok(ids.includes('2026-11-13-000')); // all classes
+  const holy = L.visibleDays(data, { ...st, spec: 'holy' }).flatMap((d) => d.changes.map((c) => c.id));
+  assert.ok(!holy.includes('2026-11-11-001')); // retribution hidden for holy
+  assert.ok(holy.includes('2026-11-11-000'));
+});
+
+test('specsForClass merges vanilla trees with trees seen in data', () => {
+  assert.deepEqual(L.specsForClass(data, 'paladin'), ['holy', 'protection', 'retribution']);
+  const extra = { days: [{ changes: [mk({ class: 'mage', spec: 'chronomancy' })] }] };
+  assert.deepEqual(L.specsForClass(extra, 'mage'), ['arcane', 'fire', 'frost', 'chronomancy']);
+  assert.deepEqual(L.specsForClass(data, ''), []);
+});

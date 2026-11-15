@@ -225,3 +225,23 @@ export function visibleDays(data, state) {
   }
   return out;
 }
+
+/**
+ * Talent trees to offer for a class: the known vanilla trees plus any extra
+ * spec slugs that appear in the data for that class (e.g. a new tree).
+ * Vanilla trees keep their canonical order; extras follow alphabetically.
+ * @param {{days: object[]}} data
+ * @param {string} cls class slug
+ * @returns {string[]} spec slugs
+ */
+export function specsForClass(data, cls) {
+  if (!cls) return [];
+  const base = VANILLA_SPECS[cls] || [];
+  const extra = new Set();
+  for (const day of data.days || []) {
+    for (const c of day.changes || []) {
+      if (c.class === cls && c.spec && !base.includes(c.spec)) extra.add(c.spec);
+    }
+  }
+  return [...base, ...[...extra].sort()];
+}

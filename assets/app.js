@@ -14,7 +14,7 @@
  */
 
 import {
-  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays,
+  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays, specsForClass, titleCase, className,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, General toggle. */
@@ -222,6 +222,24 @@ function renderClassChips() {
   row.replaceChildren(...chips);
 }
 
+/**
+ * Rebuild the talent-tree row. Only shown once a class is chosen; offers the
+ * vanilla trees plus any trees that appear in the data for that class.
+ */
+function renderSpecChips() {
+  const row = $('spec-row');
+  row.hidden = !state.cls;
+  if (!state.cls) { row.replaceChildren(); return; }
+  row.setAttribute('aria-label', `${className(state.cls)} talent tree`);
+  const color = classColor(state.cls);
+  const chips = [chip('All trees', !state.spec, () => setState({ ...state, spec: '' }), color)];
+  for (const spec of specsForClass(data, state.cls)) {
+    chips.push(chip(titleCase(spec), state.spec === spec,
+      () => setState({ ...state, spec: state.spec === spec ? '' : spec }), color));
+  }
+  row.replaceChildren(...chips);
+}
+
 /** Build the (static) filter panel structure once. */
 function buildFilters() {
   const box = $('filters');
@@ -229,7 +247,11 @@ function buildFilters() {
   classGroup.id = 'class-row';
   classGroup.setAttribute('role', 'group');
   classGroup.setAttribute('aria-label', 'Class');
-  box.replaceChildren(classGroup);
+  const specGroup = el('div', 'chip-row');
+  specGroup.id = 'spec-row';
+  specGroup.setAttribute('role', 'group');
+  specGroup.hidden = true;
+  box.replaceChildren(classGroup, specGroup);
 }
 
 /**
@@ -239,6 +261,7 @@ function buildFilters() {
 function setState(next) {
   state = next;
   renderClassChips();
+  renderSpecChips();
   renderResults();
 }
 
