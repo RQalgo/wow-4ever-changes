@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T13:17:11Z",
+  "generatedAt": "2026-11-15T20:23:02Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -12818,7 +12818,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_fingerofdeath",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -12843,7 +12844,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_fingerofdeath",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -12868,7 +12870,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_fingerofdeath",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -13189,7 +13192,8 @@
               "class": "hunter",
               "tree": "survival",
               "icon": "ability_rogue_feigndeath",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -13644,7 +13648,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_rune_04",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -13702,7 +13707,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_rogue_bloodsplatter",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -13788,7 +13794,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_creature_cursed_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14298,7 +14305,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_fingerofdeath",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -14934,7 +14942,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_bullrush",
-              "source": "client"
+              "source": "client",
+              "verified": false
             },
             {
               "name": "Mace Specialization",
@@ -14943,7 +14952,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_thunderbolt",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19537,7 +19547,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_mushroom_11",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19561,7 +19572,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_holy_magicalsentry",
-              "source": "client"
+              "source": "client",
+              "verified": false
             }
           ],
           "tags": [
@@ -19585,7 +19597,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_staff_05",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19623,7 +19636,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_arcane_portaldarnassus",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19662,7 +19676,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_coin_06",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19689,7 +19704,8 @@
               "class": null,
               "tree": null,
               "icon": "achievement_profession_chefhat",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Luremaster",
@@ -19698,7 +19714,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_basket_04",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19777,7 +19794,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_key_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19832,7 +19850,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_enchant_dustsoul",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19900,7 +19919,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_ore_thorium_01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -19925,7 +19945,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_eyeoftheowl",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -20392,7 +20413,8 @@
               "class": null,
               "tree": null,
               "icon": "trade_engineering",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -21864,7 +21886,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_helmet_04",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -21888,7 +21911,7 @@
               "class": null,
               "tree": null,
               "icon": "temp",
-              "source": "client"
+              "source": "wowhead"
             }
           ],
           "tags": [
@@ -21929,7 +21952,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_web_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -21963,7 +21987,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_racial_bearform",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -21988,7 +22013,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_drink_15",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22023,7 +22049,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_weapon_shortblade_09",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Lesser Magic Wand",
@@ -22032,7 +22059,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_staff_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Greater Magic Wand",
@@ -22041,7 +22069,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_staff_07",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Lesser Mystic Wand",
@@ -22050,7 +22079,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_staff_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Greater Mystic Wand",
@@ -22059,7 +22089,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_wand_07",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Twisted Nether Wand",
@@ -22068,7 +22099,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_wand_03",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22171,7 +22203,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_cape_12",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22253,7 +22286,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_arcane_mindmastery",
-              "source": "client"
+              "source": "client",
+              "verified": false
             }
           ],
           "tags": [
@@ -22348,7 +22382,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_horn_01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22403,7 +22438,8 @@
               "class": "shaman",
               "tree": "enhancement",
               "icon": "spell_nature_farsight",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22470,7 +22506,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_pet_scorchedstone",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22566,7 +22603,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_crate_02",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22605,7 +22643,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_nature_invisibilitytotem",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Twisted Earth Totem",
@@ -22614,7 +22653,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shaman_totemrecall",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Twisted Fire Totem",
@@ -22623,7 +22663,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_fire_searingtotem",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22648,7 +22689,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_jewelcrafting_gem_05",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -22788,7 +22830,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_relics_totemofrage",
-              "source": "client"
+              "source": "client",
+              "verified": false
             }
           ],
           "tags": [
@@ -22941,7 +22984,8 @@
               "class": "druid",
               "tree": "feral",
               "icon": "ability_hunter_pet_hyena",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -23481,7 +23525,8 @@
               "class": null,
               "tree": null,
               "icon": "xpbonus_icon",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -23535,7 +23580,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_sealofkings",
-              "source": "client"
+              "source": "client",
+              "verified": false
             },
             {
               "name": "Savory Deviate Delight",
@@ -23544,7 +23590,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_monsterhead_04",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -25843,7 +25890,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_orb_03",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -25899,7 +25947,8 @@
               "class": "shaman",
               "tree": "restoration",
               "icon": "spell_nature_nullifypoison",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -25966,7 +26015,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_stone_11",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26020,7 +26070,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_jewelry_necklace_37",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26196,7 +26247,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_relics_totemofrage",
-              "source": "client"
+              "source": "client",
+              "verified": false
             }
           ],
           "tags": [
@@ -26308,7 +26360,8 @@
               "class": null,
               "tree": null,
               "icon": "ability_parry",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26361,7 +26414,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_10_inscription2_repcontracts_scroll_02_uprez_color3",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -26884,7 +26938,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_fire_fire",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -28759,7 +28814,8 @@
               "class": "priest",
               "tree": "discipline",
               "icon": "spell_holy_dispelmagic",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -28793,7 +28849,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_nature_naturetouchgrow",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -28820,7 +28877,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_fingerofdeath",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Shadow Word: Pain",
@@ -28829,7 +28887,8 @@
               "class": "priest",
               "tree": null,
               "icon": "spell_shadow_shadowwordpain",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Distract",
@@ -28838,7 +28897,8 @@
               "class": "rogue",
               "tree": "subtlety",
               "icon": "ability_rogue_distract",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Stealth",
@@ -28857,7 +28917,8 @@
               "class": "mage",
               "tree": "arcane",
               "icon": "spell_nature_polymorph",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -28963,7 +29024,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_antishadow",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -29117,7 +29179,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_poison_mindnumbing",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Lesser Wizard Oil",
@@ -29126,7 +29189,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_potion_103",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Wizard Oil",
@@ -29135,7 +29199,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_potion_104",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Brilliant Wizard Oil",
@@ -29144,7 +29209,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_potion_105",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -29255,7 +29321,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_bag_01",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -29549,7 +29616,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_curseofsargeras",
-              "source": "client"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Curses",
@@ -29558,7 +29626,8 @@
               "class": null,
               "tree": null,
               "icon": "spell_shadow_curseofmannoroth",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
@@ -29582,7 +29651,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_stone_04",
-              "source": "client"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [
