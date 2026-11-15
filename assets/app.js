@@ -14,7 +14,7 @@
  */
 
 import {
-  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays, specsForClass, titleCase, className, iconUrl, glyphKey,
+  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays, specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms, highlightSegments,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, General toggle. */
@@ -83,6 +83,24 @@ function renderHeader() {
   const url = data.source && data.source.url;
   // Only allow http(s) links, in case the data file is ever malformed.
   if (url && /^https?:\/\//i.test(url)) $('source-link').href = url;
+}
+
+/** Lower-case query words for the current state; used to highlight matches. */
+let terms = [];
+
+/**
+ * Build a fragment of text nodes and <mark> elements for `text`, marking the
+ * current search words. Pure DOM nodes, so the data is always escaped.
+ * @param {string} text
+ * @returns {DocumentFragment}
+ */
+function highlighted(text) {
+  const frag = document.createDocumentFragment();
+  for (const seg of highlightSegments(text, terms)) {
+    if (seg.match) frag.append(el('mark', null, seg.text));
+    else frag.append(document.createTextNode(seg.text));
+  }
+  return frag;
 }
 
 /** SVG path data (24x24 viewBox, stroke only) for the original fallback glyphs. */
@@ -161,8 +179,28 @@ function renderIcon(ch) {
 function renderLine(ch) {
   const li = el('li', 'line');
   const body = el('div', 'line-body');
-  body.append(el('p', 'line-text', ch.text));
-  for (const note of ch.notes || []) body.append(el('p', 'line-note', note));
+  const text = el('p', 'line-text');
+  text.append(highlighted(ch.text));
+  body.append(text);
+  // Extra subjects (beyond the one used for the icon) become search chips.
+  const extra = (ch.subjects || []).slice(1);
+  if (extra.length) {
+    const chips = el('div', 'subject-chips');
+    for (const sub of extra) {
+      const b = el('button', 'subject-chip');
+      b.type = 'button';
+      b.title = `Search for ${sub.name}`;
+      b.append(highlighted(sub.name));
+      b.addEventListener('click', () => { setState({ ...state, q: sub.name }); });
+      chips.append(b);
+    }
+    body.append(chips);
+  }
+  for (const note of ch.notes || []) {
+    const n = el('p', 'line-note');
+    n.append(highlighted(note));
+    body.append(n);
+  }
   li.append(renderIcon(ch), body);
   return li;
 }
@@ -209,9 +247,15 @@ function renderGeneral(general) {
   box.append(el('h3', 'group-title', 'General'));
   for (const cat of general) {
     const sub = el('div', 'subgroup');
-    sub.append(el('h4', 'subgroup-title', cat.category));
+    const catTitle = el('h4', 'subgroup-title');
+    catTitle.append(highlighted(cat.category));
+    sub.append(catTitle);
     for (const g of cat.groups) {
-      if (g.group) sub.append(el('h5', 'group-label', g.group));
+      if (g.group) {
+        const gl = el('h5', 'group-label');
+        gl.append(highlighted(g.group));
+        sub.append(gl);
+      }
       sub.append(renderLines(g.changes));
     }
     box.append(sub);
@@ -247,6 +291,7 @@ function renderDay(day, changes) {
  * (with a clear button) when the filters match nothing.
  */
 function renderResults() {
+  terms = queryTerms(state.q);
   const days = visibleDays(data, state);
   if (!days.length) {
     showStatus('Nothing matches', 'No changes match the current filters.', {
@@ -307,6 +352,33 @@ function renderSpecChips() {
   row.replaceChildren(...chips);
 }
 
+/**
+ * Build the search box. The input is created once and never re-rendered, so
+ * typing keeps focus; renderSearch() only syncs its value.
+ * @returns {HTMLElement} wrapper containing label + input
+ */
+function buildSearch() {
+  const wrap = el('div', 'search');
+  const label = el('label', 'visually-hidden', 'Search changes by skill, item or text');
+  label.htmlFor = 'search';
+  const input = el('input', 'search-input');
+  input.id = 'search';
+  input.type = 'search';
+  input.placeholder = 'Search skills, items, text…';
+  input.autocomplete = 'off';
+  input.spellcheck = false;
+  input.enterKeyHint = 'search';
+  input.addEventListener('input', () => setState({ ...state, q: input.value }, { fromInput: true }));
+  wrap.append(label, input);
+  return wrap;
+}
+
+/** Sync the search input with state.q (e.g. after Clear or a hash change). */
+function renderSearch() {
+  const input = $('search');
+  if (input.value !== state.q) input.value = state.q;
+}
+
 /** Build the (static) filter panel structure once. */
 function buildFilters() {
   const box = $('filters');
@@ -332,7 +404,7 @@ function buildFilters() {
   clear.id = 'clear-filters';
   clear.append(el('span', null, 'Clear filters'));
   clear.addEventListener('click', () => setState(defaultState()));
-  tools.append(gen, clear);
+  tools.append(buildSearch(), gen, clear);
 
   box.replaceChildren(tools, classGroup, specGroup);
 }
@@ -351,8 +423,9 @@ function renderTools() {
  * Replace the state, then refresh filters and results.
  * @param {object} next new state
  */
-function setState(next) {
+function setState(next, opts = {}) {
   state = next;
+  if (!opts.fromInput) renderSearch();
   renderClassChips();
   renderSpecChips();
   renderTools();

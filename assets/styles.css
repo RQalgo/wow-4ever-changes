@@ -184,3 +184,22 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 /* Fallback tile: tinted with the class colour; glyph stays in the text colour for contrast. */
 .icon-fallback { color: var(--text); background: color-mix(in srgb, var(--muted) 18%, var(--surface-2)); }
 .icon-fallback.icon-class { background: color-mix(in srgb, var(--cc) 30%, var(--surface-2)); border-color: var(--cc); }
+
+/* Search box */
+.search { position: relative; flex: 1 1 200px; min-width: 0; }
+.search-input {
+  width: 100%; min-height: 44px; padding: 0 .9rem; background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px; font: 1rem var(--sans);
+}
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus-visible { outline-offset: 0; border-color: var(--focus); }
+
+/* Extra skill chips under a line */
+.subject-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem; }
+.subject-chip {
+  min-height: 28px; padding: 0 .65rem; background: var(--surface-2); color: var(--text); cursor: pointer;
+  border: 1px solid var(--border); border-radius: 999px; font: 500 .8rem var(--sans); position: relative;
+}
+/* Invisible padding grows the touch target to ~44px without enlarging the chip. */
+.subject-chip::after { content: ""; position: absolute; inset: -8px -2px; }
+.subject-chip:hover { border-color: var(--accent); }
