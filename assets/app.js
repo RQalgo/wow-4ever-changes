@@ -13,7 +13,12 @@
  * Sections: helpers, data loading, rendering, boot.
  */
 
-import { groupChanges, relativeDay, className, classColor } from './logic.js';
+import {
+  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays,
+} from './logic.js';
+
+/** Current UI state: class, spec, search text, General toggle. */
+let state = defaultState();
 
 /** The loaded dataset (see docs/SCHEMA.md), or null before loading. */
 let data = null;
@@ -151,10 +156,11 @@ function renderGeneral(general) {
  * Render one date: sticky heading (published label, relative hint, count)
  * and its sections.
  * @param {object} day a day from the data
+ * @param {object[]} changes the visible changes of that day
  * @returns {HTMLElement}
  */
-function renderDay(day) {
-  const view = groupChanges(day.changes);
+function renderDay(day, changes) {
+  const view = groupChanges(changes);
   const sec = el('section', 'day');
   sec.id = `d-${day.date}`;
   const head = el('h2', 'day-heading');
@@ -169,10 +175,78 @@ function renderDay(day) {
   return sec;
 }
 
+/**
+ * Re-render the results area for the current state; shows an empty state
+ * (with a clear button) when the filters match nothing.
+ */
+function renderResults() {
+  const days = visibleDays(data, state);
+  if (!days.length) {
+    showStatus('Nothing matches', 'No changes match the current filters.', {
+      label: 'Clear filters', onClick: () => setState(defaultState()),
+    });
+    return;
+  }
+  $('results').replaceChildren(...days.map(({ day, changes }) => renderDay(day, changes)));
+}
+
+/**
+ * Create a toggle chip button.
+ * @param {string} label visible text
+ * @param {boolean} pressed aria-pressed state
+ * @param {Function} onClick click handler
+ * @param {string|null} [color] class colour for the dot (accent only)
+ * @returns {HTMLButtonElement}
+ */
+function chip(label, pressed, onClick, color) {
+  const b = el('button', 'chip');
+  b.type = 'button';
+  b.setAttribute('aria-pressed', String(pressed));
+  if (color) {
+    b.style.setProperty('--cc', color);
+    b.append(el('span', 'chip-dot'));
+  }
+  b.append(el('span', 'chip-label', label));
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+/** Rebuild the class chip row from the current state. */
+function renderClassChips() {
+  const row = $('class-row');
+  const chips = [chip('All classes', !state.cls, () => setState({ ...state, cls: '', spec: '' }))];
+  for (const c of CLASSES) {
+    chips.push(chip(c.name, state.cls === c.slug,
+      () => setState({ ...state, cls: state.cls === c.slug ? '' : c.slug, spec: '' }), c.color));
+  }
+  row.replaceChildren(...chips);
+}
+
+/** Build the (static) filter panel structure once. */
+function buildFilters() {
+  const box = $('filters');
+  const classGroup = el('div', 'chip-row');
+  classGroup.id = 'class-row';
+  classGroup.setAttribute('role', 'group');
+  classGroup.setAttribute('aria-label', 'Class');
+  box.replaceChildren(classGroup);
+}
+
+/**
+ * Replace the state, then refresh filters and results.
+ * @param {object} next new state
+ */
+function setState(next) {
+  state = next;
+  renderClassChips();
+  renderResults();
+}
+
 /** Render everything that depends on the data. */
 function render() {
   renderHeader();
-  $('results').replaceChildren(...data.days.map(renderDay));
+  buildFilters();
+  setState(state);
 }
 
 /** Load the data, handle failure with a retry button, then render. */
