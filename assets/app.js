@@ -3,7 +3,8 @@
  *
  * Responsibilities:
  *   - load ./data/changes.json and show loading / error / empty states
- *   - own the UI state (class, spec, query, category chips, kind) and re-render
+ *   - own the UI state (class choice incl. "No classes", spec, query, category
+ *     chips, kind) and re-render
  *   - build every DOM node with createElement/textContent (data is never
  *     inserted through innerHTML)
  *
@@ -19,13 +20,14 @@
 import {
   CLASSES, flattenSections, relativeDay, classColor, defaultState, visibleDays,
   specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
-  highlightSegments, buildSuggestions, iconSlots, extraTagsForLine, encodeHash, decodeHash, sanitizeSelection,
+  highlightSegments, buildSuggestions, iconSlots, extraTagsForLine, encodeHash, decodeHash,
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
   availableCategories, toggleCategory, normalizeCats, isCategoryOn,
   activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
+  classChoice, withClassChoice, normalizeClassState, sanitizeStoredSelection, emptyMessage,
 } from './logic.js';
 
-/** Current UI state: class, spec, search text, enabled categories (null = all), kind filter. */
+/** Current UI state: class, spec, search text, enabled categories (null = all), kind filter, hideClasses ("No classes"). */
 let state = defaultState();
 
 /** The loaded dataset (see docs/SCHEMA.md), or null before loading. */
@@ -231,7 +233,8 @@ function renderTagChip(tag) {
     b.style.setProperty('--cc', tag.color || 'var(--muted)');
     b.append(el('span', 'chip-dot'), tag.label);
     b.title = `Show only ${tag.label} changes`;
-    b.addEventListener('click', () => setState({ ...state, cls: tag.slug, spec: '' }));
+    // Picking a class also ends "No classes" (withClassChoice turns the hiding off).
+    b.addEventListener('click', () => setState(withClassChoice(state, tag.slug)));
   } else {
     b.textContent = tag.label;
     b.title = `Show only ${tag.label}`;
@@ -405,12 +408,11 @@ function renderResults() {
   shownCount = total;
   renderFilterBar();
   if (!days.length) {
-    // Name the kind filter when it is active: it is the easiest one to forget.
-    const kindNote = state.kind === 'all' ? ''
-      : ` Only ${state.kind === 'patch' ? 'patch notes' : 'hotfixes'} are being shown; try "All" to include both.`;
-    showStatus('Nothing matches', `No changes match the current filters.${kindNote}`, {
-      label: 'Clear filters', onClick: () => setState(defaultState()),
-    });
+    // emptyMessage names the filters that are easy to forget (kind, hidden
+    // class changes) and spells out the impossible "No classes + no
+    // categories" case; its one button always resets every filter.
+    const msg = emptyMessage(state);
+    showStatus(msg.title, msg.detail, { label: msg.action, onClick: () => setState(defaultState()) });
     return;
   }
   $('results').replaceChildren(...days.map(({ day, changes }) => renderDay(day, changes)));
@@ -437,15 +439,50 @@ function chip(label, pressed, onClick, color) {
   return b;
 }
 
-/** Rebuild the class chip row from the current state. */
+/**
+ * Replace the chips of a row without losing keyboard focus. The rows are
+ * rebuilt on every state change, so the chip that was just pressed with
+ * Enter/Space would otherwise be removed from the page and focus would fall
+ * back to <body> (Tab then restarts from the top). The chip at the same
+ * position gets the focus back; if that one is now disabled (the categories'
+ * All / None after use), the nearest enabled chip after it, else before it.
+ * Rows keep their chip order between renders, so the position identifies
+ * the same chip.
+ * @param {HTMLElement} row
+ * @param {HTMLElement[]} chips new children
+ */
+function replaceChips(row, chips) {
+  const i = [...row.children].indexOf(document.activeElement);
+  row.replaceChildren(...chips);
+  if (i < 0) return;
+  const order = [...chips.slice(i), ...chips.slice(0, i).reverse()];
+  const target = order.find((c) => !c.disabled);
+  if (target) target.focus();
+}
+
+/**
+ * Rebuild the class chip row from the current state. The row is a three-way
+ * choice (see classChoice in logic.js): "All classes" (default), "No classes"
+ * (hide every class change, leaving only the category content), or one class.
+ * The two quick choices come first and use the dashed look of the
+ * categories' All / None, so the rows read alike. Every chip is an
+ * aria-pressed toggle; pressing the selected class or "No classes" again
+ * returns to "All classes".
+ */
 function renderClassChips() {
   const row = $('class-row');
-  const chips = [chip('All classes', !state.cls, () => setState({ ...state, cls: '', spec: '' }))];
-  for (const c of CLASSES) {
-    chips.push(chip(c.name, state.cls === c.slug,
-      () => setState({ ...state, cls: state.cls === c.slug ? '' : c.slug, spec: '' }), c.color));
-  }
-  row.replaceChildren(...chips);
+  const current = classChoice(state);
+  /** Choose `choice`, or go back to "All classes" when it is already chosen. */
+  const pick = (choice) => () => setState(withClassChoice(state, current === choice ? 'all' : choice));
+  const all = chip('All classes', current === 'all', () => setState(withClassChoice(state, 'all')));
+  all.classList.add('chip-quick');
+  all.title = 'Show the changes of every class';
+  const none = chip('No classes', current === 'none', pick('none'));
+  none.classList.add('chip-quick');
+  none.title = 'Hide all class changes and show only the categories below';
+  const chips = [all, none];
+  for (const c of CLASSES) chips.push(chip(c.name, current === c.slug, pick(c.slug), c.color));
+  replaceChips(row, chips);
   scrollPressedIntoView(row);
 }
 
@@ -475,7 +512,7 @@ function renderSpecChips() {
     chips.push(chip(titleCase(spec), state.spec === spec,
       () => setState({ ...state, spec: state.spec === spec ? '' : spec }), color));
   }
-  row.replaceChildren(...chips);
+  replaceChips(row, chips);
 }
 
 /**
@@ -506,7 +543,7 @@ function renderCategoryChips() {
     chips.push(chip(c.label, isCategoryOn(state, c.slug),
       () => setState({ ...state, cats: toggleCategory(state.cats, c.slug, categories) })));
   }
-  row.replaceChildren(...chips);
+  replaceChips(row, chips);
 }
 
 /** Segment labels of the kind filter, keyed by filter value. */
@@ -892,35 +929,37 @@ function renderFilterBar() {
 /** Sync the clear button with the state (enabled only when something differs from the defaults). */
 function renderTools() {
   const d = defaultState();
-  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.cats !== d.cats || state.kind !== d.kind;
+  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.cats !== d.cats
+    || state.kind !== d.kind || state.hideClasses !== d.hideClasses;
   $('clear-filters').disabled = !dirty;
 }
 
-/** localStorage key for the remembered class/spec. */
+/** localStorage key for the remembered class choice (class/spec or "No classes"). */
 const STORAGE_KEY = 'wow4ever.filter';
 
 /**
- * Remember the class/spec for the next visit. localStorage can throw
- * (private mode, blocked storage), so every access is wrapped.
- * @param {{cls: string, spec: string}} st
+ * Remember the class choice for the next visit: the class and tree, or the
+ * "No classes" choice (like a class, it is part of the class row). Other
+ * filters are not remembered. localStorage can throw (private mode, blocked
+ * storage), so every access is wrapped.
+ * @param {{cls: string, spec: string, hideClasses: boolean}} st
  */
 function saveSelection(st) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cls: st.cls, spec: st.spec }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cls: st.cls, spec: st.spec, hideClasses: st.hideClasses }));
   } catch (_) { /* storage unavailable: ignore */ }
 }
 
 /**
- * Read the remembered class/spec (validated), or null.
- * @returns {{cls: string, spec: string}|null}
+ * Read the remembered class choice (validated by sanitizeStoredSelection),
+ * or null. Values written by older versions ({cls, spec}) still work.
+ * @returns {{cls: string, spec: string, hideClasses: boolean}|null}
  */
 function loadSelection() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const v = JSON.parse(raw);
-    const sel = sanitizeSelection(v && v.cls, v && v.spec);
-    return sel.cls ? sel : null;
+    return sanitizeStoredSelection(JSON.parse(raw));
   } catch (_) {
     return null;
   }
@@ -928,7 +967,7 @@ function loadSelection() {
 
 /**
  * Decide the initial state: the URL hash wins; with an empty hash restore
- * the last class/spec from localStorage.
+ * the last class choice (class/spec or "No classes") from localStorage.
  * @returns {object} state
  */
 function initialState() {
@@ -964,8 +1003,9 @@ function syncHash() {
  * @param {object} next new state
  */
 function setState(next, opts = {}) {
-  // One canonical `cats` (null when every chip is on), whatever the source.
-  state = { ...next, cats: normalizeCats(next.cats, categories) };
+  // One canonical `cats` (null when every chip is on) and one canonical class
+  // choice (a class turns "No classes" off), whatever the source.
+  state = normalizeClassState({ ...next, cats: normalizeCats(next.cats, categories) });
   syncHash();
   saveSelection(state);
   if (!opts.fromInput) renderSearch();

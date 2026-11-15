@@ -209,6 +209,22 @@
             "spec:druid/restoration",
             "quests"
           ]
+        },
+        {
+          "id": "2026-11-15-007",
+          "scope": "class",
+          "category": "Classes",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug where Dazed from every class's snares ignored diminishing returns.",
+          "notes": [],
+          "subjects": [
+            { "name": "Dazed", "type": "spell", "kind": "spell", "class": null, "icon": "spell_frost_stun" }
+          ],
+          "tags": [
+            "bugfix"
+          ]
         }
       ]
     },

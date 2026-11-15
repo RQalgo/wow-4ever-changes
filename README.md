@@ -24,6 +24,12 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
 
 - Pick a class, then a talent tree. A tree view also shows the class-wide and
   all-class lines, since those affect the tree too.
+- *No classes* (next to *All classes*) hides every class change, i.e.
+  everything published under Classes, and leaves only the category content
+  (Items, Quests, Dungeons, ...), which the category chips then filter as
+  usual. Picking a class or *All classes* shows class changes again. With
+  *No classes* and category *None* nothing can match; the page says so and
+  offers to show everything again.
 - Category chips (Items, Quests, Dungeons, PvP, ...) switch non-class changes
   on and off; only categories that occur in the data are shown, with quick
   *All* / *None*. A line can touch several classes: it is shown once, in its
@@ -39,10 +45,12 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
   patch title and a Source link). Use the *All / Hotfixes / Patches* switch to
   show only one kind.
 - The view is stored in the URL, e.g.
-  `#class=paladin&spec=retribution`, `#kind=patch` or `#cats=items,quests`
-  (enabled categories; `cats=none` for none; the old `general=0` still works),
-  so it can be bookmarked or shared. `#filters=open` opens the filter sheet on
-  phones.
+  `#class=paladin&spec=retribution`, `#class=none` (no class changes),
+  `#kind=patch` or `#cats=items,quests` (enabled categories; `cats=none` for
+  none; the old `general=0` still works), so it can be bookmarked or shared.
+  `#filters=open` opens the filter sheet on phones. Without a hash the page
+  restores the last class choice (a class and tree, or *No classes*) from the
+  browser's local storage; the other filters are not remembered.
 
 ## How the data stays current
 

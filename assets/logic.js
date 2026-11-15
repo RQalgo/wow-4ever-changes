@@ -9,7 +9,8 @@
  *   1b. Tags          : category vocabulary, effectiveTags (schema v3 + fallback)
  *   2. Dates          : relative day hints
  *   3. Grouping       : turn a day's changes into class/spec/general sections
- *   4. Filtering      : class/spec/general semantics
+ *   4. Filtering      : class/spec/general semantics, the three-way class
+ *                       choice (all classes / one class / no classes)
  *   5. Search         : matching and highlight segmentation
  *   6. Suggestions    : skill-name suggestions for the search box
  *   7. URL hash state : encode / decode the shareable filter state
@@ -20,6 +21,9 @@
  * Filtering never reads `scope`/`class`/`category` directly any more: every
  * filter goes through effectiveTags(), which returns the schema v3 `tags` when
  * a change has them and derives equivalent tags from the old fields otherwise.
+ * One deliberate exception: the "No classes" choice hides lines by the
+ * section they were published in (isClassChange reads `scope`, exactly like
+ * groupChanges), not by their tags; see docs/SCHEMA.md.
  * That keeps the app working with both the current data (no tags yet) and the
  * v3 data that a scheduled job will publish later.
  */
@@ -420,10 +424,78 @@ export function highlightSegments(text, terms) {
  * Create the default (unfiltered) UI state. `cats` is the list of ENABLED
  * category chips, or null meaning "all on" (the default). Using null rather
  * than a full list keeps categories that appear in later data switched on.
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'}}
+ * `hideClasses` is the "No classes" choice of the class row: true hides every
+ * class change (see isClassChange); it is only ever true while `cls` is empty
+ * (see normalizeClassState).
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch', hideClasses: boolean}}
  */
 export function defaultState() {
-  return { cls: '', spec: '', q: '', cats: null, kind: 'all' };
+  return { cls: '', spec: '', q: '', cats: null, kind: 'all', hideClasses: false };
+}
+
+/**
+ * Is this a "class change", i.e. one the "No classes" choice hides?
+ *
+ * Definition: the line was PUBLISHED under Classes (a class heading, a
+ * talent-tree heading, or the unlabelled "all classes" part). This is the
+ * same test groupChanges uses to put a line on a class card (anything that is
+ * not scope "general"), so hiding class changes removes exactly the class
+ * cards and never leaves an empty one behind.
+ *
+ * Lines published under another category (Items, Quests, Races, Known
+ * issues, ...) are NOT class changes even when their tags name a class (an
+ * Items set bonus tagged class:shaman, a dungeon boss's "Shield Slam" tagged
+ * class:warrior): with classes hidden they stay visible and follow the
+ * category chips like every other non-class line. A tag-based definition was
+ * considered and rejected because class tags on such lines are often
+ * incidental (see docs/SCHEMA.md "Filter semantics used by the app").
+ * @param {object} ch change
+ * @returns {boolean}
+ */
+export function isClassChange(ch) {
+  return !!ch && ch.scope !== 'general';
+}
+
+/**
+ * The class row's three-way choice for a state:
+ *  - 'all'   every class's changes are shown (the default)
+ *  - 'none'  class changes are hidden ("No classes")
+ *  - a class slug, e.g. 'paladin' (the tree row then refines it)
+ * A selected class wins over a stray `hideClasses` flag.
+ * @param {{cls?: string, hideClasses?: boolean}} state
+ * @returns {string} 'all' | 'none' | class slug
+ */
+export function classChoice(state) {
+  if (state.cls) return state.cls;
+  return state.hideClasses ? 'none' : 'all';
+}
+
+/**
+ * Return a copy of `state` with a new class choice. Choosing anything resets
+ * the talent tree (as picking a class always has); 'none' also clears the
+ * class, and 'all' or a class turns the hiding off. An unknown class slug
+ * falls back to 'all'.
+ * @param {object} state current state
+ * @param {string} choice 'all' | 'none' | class slug
+ * @returns {object} new state
+ */
+export function withClassChoice(state, choice) {
+  if (choice === 'none') return { ...state, cls: '', spec: '', hideClasses: true };
+  const { cls } = sanitizeSelection(choice, '');
+  return { ...state, cls, spec: '', hideClasses: false };
+}
+
+/**
+ * Canonical class part of a state, whatever produced it (a chip, a tag chip
+ * under a line, the URL, localStorage): a selected class turns `hideClasses`
+ * off, and without a class there is no tree. `hideClasses` becomes a real
+ * boolean (older callers may omit it).
+ * @param {object} state
+ * @returns {object} new state
+ */
+export function normalizeClassState(state) {
+  const cls = state.cls || '';
+  return { ...state, cls, spec: cls ? state.spec || '' : '', hideClasses: !cls && state.hideClasses === true };
 }
 
 /**
@@ -488,7 +560,25 @@ export function matchesClassFilter(ch, state) {
 }
 
 /**
+ * Category tags that decide whether a NON-class line is shown while class
+ * changes are hidden: its category tags, or "other" when it has none (the
+ * schema promises at least one, but a line must never become impossible to
+ * show with every chip on).
+ * @param {object} ch change published outside Classes
+ * @returns {string[]}
+ */
+function nonClassCategories(ch) {
+  const cats = categoryTagsOf(ch);
+  return cats.length ? cats : ['other'];
+}
+
+/**
  * Class and category part of the filter for one change:
+ *  - "No classes" chosen (classChoice 'none'): class changes (isClassChange)
+ *    are never shown, even when they carry a category tag; every other line
+ *    is shown when at least one of its category tags is on, even when it is
+ *    tagged with a class (its class tag no longer exempts it from the chips,
+ *    so "No classes" + no categories really shows nothing)
  *  - tagged with a class: the class/tree filter decides, the category chips
  *    are ignored ("class-tagged changes are always shown")
  *  - no class tag but category tags: shown when at least one of them is on
@@ -501,6 +591,10 @@ export function matchesClassFilter(ch, state) {
  * @returns {boolean}
  */
 export function matchesClassAndCategory(ch, state) {
+  if (classChoice(state) === 'none') {
+    if (isClassChange(ch)) return false;
+    return nonClassCategories(ch).some((c) => isCategoryOn(state, c));
+  }
   if (classTagsOf(ch).length) return matchesClassFilter(ch, state);
   const cats = categoryTagsOf(ch);
   if (!cats.length) return true; // all-class line
@@ -667,13 +761,16 @@ export function sanitizeSelection(cls, spec) {
  * Default values are omitted (kind=all is never written); the default state
  * encodes to "" (no hash). `cats` lists the ENABLED categories and is written
  * only when not all are on: "cats=none" means every chip is off. The slugs
- * are written in chip order, so one selection has one URL.
- * @param {{cls: string, spec: string, q: string, cats?: string[]|null, kind?: string}} state
+ * are written in chip order, so one selection has one URL. Hidden class
+ * changes ("No classes") are written as "class=none".
+ * @param {{cls: string, spec: string, q: string, cats?: string[]|null, kind?: string, hideClasses?: boolean}} state
  * @returns {string} "" or a string starting with "#"
  */
 export function encodeHash(state) {
   const p = new URLSearchParams();
-  if (state.cls) p.set('class', state.cls);
+  const choice = classChoice(state);
+  // "none" can never clash with a class: sanitizeSelection only accepts real class slugs.
+  if (choice !== 'all') p.set('class', choice);
   if (state.cls && state.spec) p.set('spec', state.spec);
   if (state.q) p.set('q', state.q);
   let catsValue = null;
@@ -712,9 +809,11 @@ export function decodeCats(raw, generalOff = false) {
  * Decode a location hash back into a state. Unknown/invalid values fall back
  * to defaults, so a hand-edited URL can never break the page. The legacy
  * `general=0` (the old "Show General changes" switch) decodes to `cats: []`.
- * An unknown `kind` value is ignored (treated as "all").
+ * An unknown `kind` value is ignored (treated as "all"). `class=none` (exact,
+ * lower-case, like class slugs) hides class changes; a `spec` next to it is
+ * ignored because a tree needs a class.
  * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'}}
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch', hideClasses: boolean}}
  */
 export function decodeHash(hash) {
   const p = new URLSearchParams(String(hash || '').replace(/^#/, ''));
@@ -725,7 +824,24 @@ export function decodeHash(hash) {
     q: (p.get('q') || '').slice(0, 100),
     cats: decodeCats(p.get('cats'), p.get('general') === '0'),
     kind: sanitizeKindFilter(p.get('kind')),
+    hideClasses: p.get('class') === 'none',
   };
+}
+
+/**
+ * Validate the class choice remembered in localStorage (untrusted: it may be
+ * from an older version of the app or edited by hand). Returns the part of
+ * the state to restore, or null when there is nothing worth restoring (the
+ * default "All classes").
+ * @param {unknown} v parsed JSON, e.g. {cls: "paladin", spec: "holy"} or {hideClasses: true}
+ * @returns {{cls: string, spec: string, hideClasses: boolean}|null}
+ */
+export function sanitizeStoredSelection(v) {
+  if (!v || typeof v !== 'object') return null;
+  const sel = sanitizeSelection(v.cls, v.spec);
+  if (sel.cls) return { ...sel, hideClasses: false };
+  if (v.hideClasses === true) return { cls: '', spec: '', hideClasses: true };
+  return null;
 }
 
 /* ======================= 8. Day kinds (schema v2) ======================= */
@@ -860,15 +976,16 @@ export function iconSlots(ch, max = MAX_ICONS) {
 /* ======================= 10. Filter panel (mobile) ======================= */
 
 /**
- * How many filters differ from the defaults: class, tree, kind and
- * categories each count once. The search text is not counted (it is visible
- * in the search box itself). Used for the badge on the mobile filter button.
- * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null}} state
+ * How many filters differ from the defaults: class (or "No classes"), tree,
+ * kind and categories each count once. The search text is not counted (it
+ * is visible in the search box itself). Used for the badge on the mobile
+ * filter button.
+ * @param {{cls: string, spec: string, kind?: string, cats?: string[]|null, hideClasses?: boolean}} state
  * @returns {number}
  */
 export function activeFilterCount(state) {
   let n = 0;
-  if (state.cls) n += 1;
+  if (classChoice(state) !== 'all') n += 1;
   if (state.cls && state.spec) n += 1;
   if (sanitizeKindFilter(state.kind) !== 'all') n += 1;
   if (state.cats) n += 1;
@@ -877,16 +994,18 @@ export function activeFilterCount(state) {
 
 /**
  * One-line summary of the active filters for the closed mobile bar, e.g.
- * "Paladin › Retribution · Patches · 3 categories". Empty string when
- * nothing is filtered. A single enabled category is named; several are
- * counted; none says "No categories".
+ * "Paladin › Retribution · Patches · 3 categories" or "No class changes ·
+ * Patches". Empty string when nothing is filtered. A single enabled category
+ * is named; several are counted; none says "No categories".
  * @param {object} state
  * @param {{slug: string, label: string}[]} [available] category chips of the loaded data
  * @returns {string}
  */
 export function filterSummary(state, available = CATEGORIES) {
   const parts = [];
-  if (state.cls) {
+  const choice = classChoice(state);
+  if (choice === 'none') parts.push('No class changes');
+  else if (choice !== 'all') {
     parts.push(state.spec ? `${className(state.cls)} › ${titleCase(state.spec)}` : className(state.cls));
   }
   const kind = sanitizeKindFilter(state.kind);
@@ -899,6 +1018,34 @@ export function filterSummary(state, available = CATEGORIES) {
     } else parts.push(`${state.cats.length} categories`);
   }
   return parts.join(' · ');
+}
+
+/**
+ * Text of the empty state shown when no change matches the filters.
+ *  - "No classes" with every category off can never show anything: say so
+ *    plainly (`impossible: true`) and offer to show everything again.
+ *  - otherwise a generic "Nothing matches", naming the filters that are
+ *    easiest to forget: the kind switch and hidden class changes.
+ * The action always resets to defaultState(); only its label differs.
+ * @param {object} state
+ * @returns {{title: string, detail: string, action: string, impossible: boolean}}
+ */
+export function emptyMessage(state) {
+  const hidden = classChoice(state) === 'none';
+  if (hidden && Array.isArray(state.cats) && state.cats.length === 0) {
+    return {
+      title: 'Nothing to show',
+      detail: 'Class changes are hidden and every category is switched off, so no change can be shown. '
+        + 'Choose a class or "All classes", or switch a category back on.',
+      action: 'Show all changes',
+      impossible: true,
+    };
+  }
+  const notes = ['No changes match the current filters.'];
+  const kind = sanitizeKindFilter(state.kind);
+  if (kind !== 'all') notes.push(`Only ${kind === 'patch' ? 'patch notes' : 'hotfixes'} are being shown; try "All" to include both.`);
+  if (hidden) notes.push('Class changes are hidden; choose "All classes" to include them.');
+  return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false };
 }
 
 /**
