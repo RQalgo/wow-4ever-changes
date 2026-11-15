@@ -56,8 +56,14 @@ test('fetchPost wraps network errors', async () => {
 
 test('fetchPost times out', async () => {
   // A stub that only settles when the abort signal fires, like real fetch.
+  // AbortSignal.timeout() uses an unref'd timer, so a ref'd keep-alive timer
+  // stops the event loop from draining before the abort fires.
   const impl = (url, init) => new Promise((_, reject) => {
-    init.signal.addEventListener('abort', () => reject(init.signal.reason));
+    const keepAlive = setTimeout(() => {}, 5_000);
+    init.signal.addEventListener('abort', () => {
+      clearTimeout(keepAlive);
+      reject(init.signal.reason);
+    });
   });
   await assert.rejects(fetchPost(SOURCE_URL, { fetchImpl: impl, timeoutMs: 20 }), /Timed out after 20 ms/);
 });
