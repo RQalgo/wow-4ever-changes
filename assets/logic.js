@@ -165,6 +165,69 @@ export function groupChanges(changes) {
   return { classSections, general, count: changes.length };
 }
 
+/* ======================= 5. Search (defined first; used by filtering) ======================= */
+
+/**
+ * Split a query into lower-cased words (whitespace separated, empty dropped).
+ * @param {string} q
+ * @returns {string[]}
+ */
+export function queryTerms(q) {
+  return String(q || '').toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+/**
+ * The text a search is run against: line text, notes, subject names, group
+ * and category, lower-cased and joined.
+ * @param {object} ch change
+ * @returns {string}
+ */
+export function searchHaystack(ch) {
+  return [ch.text, ...(ch.notes || []), ...(ch.subjects || []).map((s) => s.name), ch.group, ch.category]
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase();
+}
+
+/**
+ * Case-insensitive search: every word of the query must appear somewhere in
+ * the haystack. An empty query matches everything.
+ * @param {object} ch change
+ * @param {string} q raw query
+ * @returns {boolean}
+ */
+export function matchesQuery(ch, q) {
+  const terms = queryTerms(q);
+  if (!terms.length) return true;
+  const hay = searchHaystack(ch);
+  return terms.every((t) => hay.includes(t));
+}
+
+/**
+ * Split text into segments marking where query words match, so the UI can
+ * wrap matches in <mark> using DOM nodes (no HTML strings).
+ * @param {string} text
+ * @param {string[]} terms lower-case query words
+ * @returns {{text: string, match: boolean}[]}
+ */
+export function highlightSegments(text, terms) {
+  const str = String(text == null ? '' : text);
+  if (!terms || !terms.length) return [{ text: str, match: false }];
+  // Longest words first so "judgement" wins over "judge" at the same offset.
+  const sorted = [...new Set(terms)].sort((a, b) => b.length - a.length);
+  const re = new RegExp(sorted.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'gi');
+  const out = [];
+  let last = 0;
+  for (const m of str.matchAll(re)) {
+    if (m[0] === '') continue;
+    if (m.index > last) out.push({ text: str.slice(last, m.index), match: false });
+    out.push({ text: m[0], match: true });
+    last = m.index + m[0].length;
+  }
+  if (last < str.length) out.push({ text: str.slice(last), match: false });
+  return out.length ? out : [{ text: str, match: false }];
+}
+
 /* ======================= 4. Filtering ======================= */
 
 /**
@@ -208,7 +271,7 @@ export function matchesState(ch, state) {
   } else if (!matchesClassFilter(ch, state)) {
     return false;
   }
-  return true;
+  return matchesQuery(ch, state.q);
 }
 
 /**

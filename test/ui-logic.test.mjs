@@ -98,3 +98,30 @@ test('glyphKey picks neutral glyphs per general category', () => {
   assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Dungeons' })), 'arch');
   assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Zones' })), 'hex');
 });
+
+/* ---------- search ---------- */
+test('matchesQuery: all words, case-insensitive, over text/notes/subjects/group/category', () => {
+  const ch = data.days[0].changes[2]; // Judgement of Command + dev note
+  assert.ok(L.matchesQuery(ch, 'JUDGEMENT melee'));
+  assert.ok(L.matchesQuery(ch, 'stay ranged')); // in the note
+  assert.ok(!L.matchesQuery(ch, 'judgement fireball'));
+  assert.ok(L.matchesQuery(ch, '')); // empty matches all
+  const deadmines = data.days[0].changes[3];
+  assert.ok(L.matchesQuery(deadmines, 'deadmines')); // group
+  assert.ok(L.matchesQuery(deadmines, 'dungeons sneed')); // category + text
+  const item = data.days[0].changes[4];
+  assert.ok(L.matchesQuery(item, 'taran')); // subject name / text
+});
+
+test('search combines with class filter via visibleDays', () => {
+  const v = L.visibleDays(data, { ...L.defaultState(), cls: 'paladin', q: 'windfury' });
+  assert.deepEqual(v.flatMap((d) => d.changes.map((c) => c.id)), ['2026-11-11-001']);
+});
+
+test('highlightSegments marks matches and escapes regex characters', () => {
+  const segs = L.highlightSegments('Judgement of Command', ['judge', 'cmd', 'command']);
+  assert.deepEqual(segs.filter((s) => s.match).map((s) => s.text), ['Judge', 'Command']);
+  assert.equal(segs.map((s) => s.text).join(''), 'Judgement of Command');
+  assert.deepEqual(L.highlightSegments('a (b)', ['(b']), [{ text: 'a ', match: false }, { text: '(b', match: true }, { text: ')', match: false }]);
+  assert.deepEqual(L.highlightSegments('abc', []), [{ text: 'abc', match: false }]);
+});
