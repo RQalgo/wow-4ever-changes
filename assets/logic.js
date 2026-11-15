@@ -1247,8 +1247,8 @@ export function emptyMessage(state, ctx = {}) {
       const nearest = outside.map((v) => v.day.date).sort((a, b) => gap(a) - gap(b) || (a < b ? 1 : -1))[0];
       return {
         title: 'Nothing in this date range',
-        detail: `No changes match the current filters in ${range}. `
-          + `${n} matching ${n === 1 ? 'change is' : 'changes are'} outside it; the nearest date is ${formatDateLong(nearest)}.`,
+        detail: `No changes match the current filters in the selected dates (${range}). `
+          + `${n} matching ${n === 1 ? 'change is' : 'changes are'} outside them; the nearest date is ${formatDateLong(nearest)}.`,
         action: 'Show all dates',
         impossible: false,
         reset: 'dates',
@@ -1261,7 +1261,7 @@ export function emptyMessage(state, ctx = {}) {
   const shown = { patch: 'patch notes', hotfix: 'hotfixes', dev: 'dev posts' }[kind];
   if (kind !== 'all') notes.push(`Only ${shown} are being shown; try "All" to include every kind.`);
   if (hidden) notes.push('Class changes are hidden; choose "All classes" to include them.');
-  if (range && !ctx.data) notes.push(`Only changes in ${range} are being shown.`);
+  if (range && !ctx.data) notes.push(`Only changes in the selected dates (${range}) are being shown.`);
   return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false, reset: 'all' };
 }
 

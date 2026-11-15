@@ -1185,11 +1185,11 @@ test('emptyMessage: the date range is named when it is the reason, with a reset 
   assert.equal(msg.title, 'Nothing in this date range');
   assert.equal(msg.reset, 'dates');
   assert.equal(msg.action, 'Show all dates');
-  assert.equal(msg.detail, 'No changes match the current filters in Nov 15, 2026. '
-    + '6 matching changes are outside it; the nearest date is November 14, 2026.');
+  assert.equal(msg.detail, 'No changes match the current filters in the selected dates (Nov 15, 2026). '
+    + '6 matching changes are outside them; the nearest date is November 14, 2026.');
   // A gap in the data (no day on Nov 12): nearest date on either side, the later one on a tie.
   const gap = L.emptyMessage({ ...L.defaultState(), from: '2026-11-12', to: '2026-11-12' }, { data, bounds });
-  assert.match(gap.detail, /in Nov 12, 2026\. 26 matching changes are outside it; the nearest date is November 13, 2026\.$/);
+  assert.match(gap.detail, /dates \(Nov 12, 2026\)\. 26 matching changes are outside them; the nearest date is November 13, 2026\.$/);
   // The range is NOT the reason (the search matches nothing anywhere): generic text, full reset, no range note.
   const other = L.emptyMessage({ ...L.defaultState(), from: '2026-11-13', q: 'zzzz' }, { data, bounds });
   assert.equal(other.title, 'Nothing matches');
@@ -1197,7 +1197,7 @@ test('emptyMessage: the date range is named when it is the reason, with a reset 
   assert.doesNotMatch(other.detail, /Nov/);
   // Without the data the range cannot be ruled out, so it is mentioned.
   assert.match(L.emptyMessage({ ...L.defaultState(), from: '2026-11-13' }, { bounds }).detail,
-    /Only changes in Nov 13 – Nov 15, 2026 are being shown\.$/);
+    /Only changes in the selected dates \(Nov 13 – Nov 15, 2026\) are being shown\.$/);
   // The impossible case still wins.
   assert.equal(L.emptyMessage(hidden({ cats: [], from: '2026-11-13' }), { data, bounds }).impossible, true);
 });
