@@ -804,3 +804,22 @@ test('addSubjects: Wowhead item beats a same-named client spell on an Items line
   // An ordinary disagreement still keeps the client icon and is marked unverified.
   assert.deepEqual([mangle.icon, mangle.source, mangle.verified], ['ability_druid_disembowel', 'client', false]);
 });
+
+describe('dev posts: the transient _fullText', () => {
+  test('subjects come from the text and every line of _fullText instead of the summary notes', async () => {
+    const days = oneDay({
+      scope: 'general', category: 'Dev Posts',
+      text: 'Class Deep Dives — Mage and Shaman',
+      notes: ['Mages and Shamans get a fresh look.'],
+      _fullText: 'Class Deep Dives — Mage and Shaman\nMages and Shamans get a fresh look.\nFire Mages now have Heating Up.\nEnhancement Shamans gain Maelstrom Weapon.',
+    });
+    const index = stubIndex({
+      'heating up': clientHit('Heating Up', 'hu', { kind: 'talent', class: 'mage', tree: 'fire' }),
+      'maelstrom weapon': clientHit('Maelstrom Weapon', 'mw', { kind: 'talent', class: 'shaman', tree: 'enhancement' }),
+    });
+    await runIn(days, { fetchImpl: stubFetch(() => []), gameIndex: index });
+    const c = days[0].changes[0];
+    assert.deepEqual(c.subjects.map((s) => [s.name, s.tree]), [['Heating Up', 'fire'], ['Maelstrom Weapon', 'enhancement']]);
+    assert.ok(c._fullText, 'addSubjects leaves _fullText in place; update.mjs removes it');
+  });
+});

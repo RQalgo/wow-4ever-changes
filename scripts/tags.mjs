@@ -290,7 +290,8 @@ function categoryTagsFor(category) {
  *                   only when nothing more specific applies and the line is not
  *                   already described by a class tag
  *
- * Every change gets at least one tag.
+ * Every change gets at least one tag. The text rules read `text`, `notes`
+ * and, when present, the transient `_fullText` (a dev post's whole text).
  *
  * @param {object} change
  * @returns {string[]} tags in deterministic order
@@ -298,7 +299,12 @@ function categoryTagsFor(category) {
 export function computeTags(change) {
   const subjects = Array.isArray(change.subjects) ? change.subjects : [];
   const notes = Array.isArray(change.notes) ? change.notes : [];
-  const bodies = [change.text ?? '', ...notes];
+  // `_fullText` is TRANSIENT (docs/SCHEMA.md v4): a dev post's title + whole
+  // body as plain text, set by scripts/sources.mjs for freshly fetched posts
+  // and deleted by scripts/update.mjs before the file is written. `notes`
+  // only hold a short summary, so the full text is what the rules must see.
+  const fullText = typeof change._fullText === 'string' && change._fullText ? [change._fullText] : [];
+  const bodies = [change.text ?? '', ...notes, ...fullText];
 
   // --- NPC abilities (outside Classes only) ---
   // A subject owned by an NPC name ("Deathless Guardian's Shield Slam") keeps

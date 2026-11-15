@@ -238,3 +238,13 @@ describe('text rules added with dev posts', () => {
     assert.deepEqual(computeTags(dev('Thank you for the feedback!')), ['other']);
   });
 });
+
+describe('dev posts: the transient _fullText', () => {
+  test('classes and categories come from _fullText as well as text and notes', () => {
+    const c = ch({ category: 'Dev Posts', text: 'Player-Level Dungeon XP Adjustment - November 14', notes: ['Yesterday, we updated it.'],
+      _fullText: 'Player-Level Dungeon XP Adjustment - November 14\nThis affects The Deadmines most. Rogues are happy.' });
+    assert.deepEqual(computeTags(c), ['class:rogue', 'dungeons']);
+    assert.deepEqual(computeTags({ ...c, _fullText: undefined }), ['dungeons']); // "Dungeon" in the title alone
+    assert.deepEqual(computeTags({ ...c, text: 'Hello', _fullText: undefined }), ['other']);
+  });
+});
