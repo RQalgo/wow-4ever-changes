@@ -314,7 +314,11 @@ export function computeTags(change) {
   const npcOwned = new Set(outsideClasses
     ? subjects.filter((s) => bodies.some((b) => isNpcOwned(s.name, b)))
     : []);
-  const playerSubjects = subjects.filter((s) => !npcOwned.has(s));
+  // Racial traits share names with class talents ("Endurance", "Ferocity"),
+  // so on lines published under a races category the subjects add no class,
+  // spec or talent tags either (classes named in the text still count).
+  const racial = /\brac(e|es|ial)\b/i.test(change.category ?? '');
+  const playerSubjects = racial ? [] : subjects.filter((s) => !npcOwned.has(s));
 
   // --- classes ---
   const classes = new Set();
