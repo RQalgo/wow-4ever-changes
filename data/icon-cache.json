@@ -14,6 +14,7 @@
     "icon": "spell_nature_nullifydisease"
   },
   "abomimable head": null,
+  "about tech": null,
   "accelerant": {
     "name": "Accelerant",
     "type": "spell",
@@ -23,12 +24,16 @@
   },
   "action bar": null,
   "action sides: swaps": null,
+  "actions taken against botting": null,
   "added: shank": null,
   "additionally": null,
   "addressed": null,
   "addressing": null,
   "adjustments": null,
   "advanced": null,
+  "adventure": null,
+  "adventure in wow": null,
+  "afterward": null,
   "aggression": {
     "name": "Aggression",
     "type": "spell",
@@ -36,6 +41,7 @@
   },
   "aggressive mode": null,
   "aggro display": null,
+  "aidan moon": null,
   "aimed shot": {
     "name": "Aimed Shot",
     "type": "spell",
@@ -45,6 +51,7 @@
   },
   "aimed shot: bonus": null,
   "alba fairmoon": null,
+  "alliance in eu roleplay-pvp": null,
   "alliance outrunners": null,
   "alliance-equivalent": null,
   "ambush": {
@@ -52,6 +59,7 @@
     "type": "spell",
     "icon": "ability_rogue_ambush"
   },
+  "american pvp": null,
   "amplify curse": {
     "name": "Amplify Curse",
     "type": "spell",
@@ -142,10 +150,13 @@
   "astor hadren": null,
   "attack power": null,
   "attack speed": null,
+  "attention oceanic": null,
+  "attunement": null,
   "auction house": null,
   "audio": null,
   "aura": null,
   "aura: ranged attack power": null,
+  "australian": null,
   "auto attack": null,
   "auto shot": {
     "name": "Auto Shot",
@@ -155,6 +166,7 @@
     "icon": "ability_whirlwind"
   },
   "azeroth": null,
+  "azeroth in world of warcraft": null,
   "back": null,
   "backstab": {
     "name": "Backstab",
@@ -187,9 +199,12 @@
     "icon": "ability_upgrademoonglaive"
   },
   "barrage: damage": null,
+  "barrow deeps": null,
   "base": null,
   "base mana": null,
+  "baseline abilities": null,
   "bat": null,
+  "battle for the darkspear islands in world of warcraft": null,
   "battleground marks of honor": null,
   "bear": null,
   "bear form": {
@@ -199,6 +214,7 @@
   },
   "bear form and dire bear form: threat": null,
   "beasts": null,
+  "begin": null,
   "benefits": null,
   "berard's bookshelf": null,
   "berard's journal": {
@@ -223,6 +239,10 @@
   },
   "besides": null,
   "beta": null,
+  "beta build": null,
+  "beta celebration": null,
+  "beta launch": null,
+  "beta special": null,
   "beyond": null,
   "binding heal": {
     "name": "Binding Heal",
@@ -250,6 +270,7 @@
   "blast: mana": null,
   "blast: redesigned": null,
   "blast: this": null,
+  "bleeds": null,
   "blessed band of light": {
     "name": "Blessed Band of Light",
     "type": "item",
@@ -436,12 +457,16 @@
     "icon": "inv_jewelry_ring_24"
   },
   "character creation": null,
+  "character names": null,
   "character select": null,
   "chat channels": null,
+  "check out episode": null,
   "chill: redesigned": null,
   "cinder": null,
   "city of dalaran": null,
+  "claim your world of warcraft": null,
   "class": null,
+  "class deep dives": null,
   "claw": {
     "name": "Claw",
     "type": "spell",
@@ -484,6 +509,7 @@
   "combat text for self": null,
   "combo point": null,
   "combo points": null,
+  "coming to wow forever": null,
   "command": {
     "name": "Command",
     "type": "spell",
@@ -535,12 +561,14 @@
   "cooldown manager": null,
   "cooldown manager in world of warcraft": null,
   "copper vein": null,
+  "cormack": null,
   "corruption": {
     "name": "Corruption",
     "type": "spell",
     "icon": "spell_shadow_abominationexplosion"
   },
   "costs": null,
+  "countdown to classic": null,
   "coup": {
     "name": "Coup",
     "type": "spell",
@@ -623,12 +651,16 @@
     "icon": "inv_spear_08"
   },
   "darkspear islands": null,
+  "darkspear islands in world of warcraft": null,
+  "darkspear raiders": null,
   "darnassus": null,
   "dash": {
     "name": "Dash",
     "type": "spell",
     "icon": "ability_druid_dash"
   },
+  "datamined in the latest beta build": null,
+  "date": null,
   "dawn": null,
   "dawn and dusk": null,
   "dead legacy talent": null,
@@ -659,6 +691,7 @@
   "deathless sorcerer's fireball": null,
   "deathless watcher's charge": null,
   "deathstalker erland": null,
+  "deep dives": null,
   "defeating balnazzar": null,
   "defeating zarla ober": null,
   "defensive stance": {
@@ -678,7 +711,12 @@
   "defias messenger": null,
   "deflection's parry": null,
   "deployed": null,
+  "designer aidan moon": null,
+  "designer josh greenfield": null,
+  "designer kris zierhut": null,
+  "designers josh greenfield": null,
   "desolace": null,
+  "deviate hides": null,
   "devouring contagion": {
     "name": "Devouring Contagion",
     "type": "spell",
@@ -707,7 +745,9 @@
   },
   "discipline: this": null,
   "discolored healing potions": null,
+  "discord": null,
   "discord voice": null,
+  "dive into dungeons with devs": null,
   "divine aegis": {
     "name": "Divine Aegis",
     "type": "spell",
@@ -783,8 +823,13 @@
     "type": "spell",
     "icon": "ability_dualwield"
   },
+  "due": null,
+  "dun morogh": null,
   "dungeon": null,
   "dungeon quest rewards": null,
+  "dungeon xp adjustment": null,
+  "dungeons of world of warcraft": null,
+  "dungeons with devs": null,
   "duplicate": null,
   "duration": null,
   "during": null,
@@ -793,6 +838,7 @@
   "dustwallow marsh": null,
   "dwarf": null,
   "early": null,
+  "early name": null,
   "earth fury": null,
   "earthbound": {
     "name": "Earthbound",
@@ -807,7 +853,10 @@
     "icon": "inv_boots_cloth_22"
   },
   "earthmother: this": null,
+  "eastern kingdoms": null,
   "eastern plaguelands": null,
+  "economy hold": null,
+  "economy holds for rmt": null,
   "economy legacy perk": null,
   "efficient strikes": {
     "name": "Efficient Strikes",
@@ -852,10 +901,12 @@
     "class": "rogue",
     "icon": "spell_magic_lesserinvisibilty"
   },
+  "elwynn forest": null,
   "embrace healing": null,
   "emperor thaurissan": null,
   "enchant bracer": null,
   "enchant weapon": null,
+  "end of beta special": null,
   "enemy": null,
   "energy": null,
   "enrage": {
@@ -866,6 +917,7 @@
     "icon": "spell_shadow_unholyfrenzy"
   },
   "ensured": null,
+  "eu roleplay-pvp": null,
   "eureka": null,
   "even": null,
   "everstaring abomination eye": {
@@ -879,9 +931,14 @@
     "icon": "ability_rogue_eviscerate"
   },
   "eww": null,
+  "excavation site: wetlands": null,
   "executioner morg": null,
+  "expeditionary force": null,
   "experience": null,
   "expertise": null,
+  "explore": null,
+  "explore the new dungeons of world of warcraft": null,
+  "explore wow": null,
   "explosive trap": {
     "name": "Explosive Trap",
     "type": "spell",
@@ -916,6 +973,7 @@
     "type": "spell",
     "icon": "spell_holy_excorcism"
   },
+  "feels familiar": null,
   "felsteed": null,
   "feral charge": {
     "name": "Feral Charge",
@@ -1013,6 +1071,8 @@
   "focus target": null,
   "focus: this": null,
   "for group ui": null,
+  "for rmt": null,
+  "for testing the wow forever beta": null,
   "forbearance": {
     "name": "Forbearance",
     "type": "spell",
@@ -1021,10 +1081,28 @@
     "icon": "spell_holy_removecurse"
   },
   "foreman thistlenettle": null,
+  "forever beta": null,
+  "forever beta celebration": null,
+  "forever character names": null,
+  "forever class deep dives": null,
+  "forever early name": null,
+  "forever launch time": null,
+  "forever now live": null,
+  "forever podcast": null,
+  "forever podcast ep": null,
+  "forever podcast: episode": null,
+  "forever raid overview": null,
+  "forever short story": null,
+  "forever starts": null,
+  "forever starts in the wow portal room": null,
+  "forever works": null,
+  "forever- the future of skyborne visual updates": null,
+  "forging forever": null,
   "form only": null,
   "form: the": null,
   "forsaken": null,
   "frame manager": null,
+  "friday": null,
   "friend of the library": null,
   "friendly": null,
   "friendly analog targeting": null,
@@ -1088,6 +1166,7 @@
     "type": "spell",
     "icon": "spell_frost_frostnova"
   },
+  "full article": null,
   "full energy": null,
   "furious howl attack power": null,
   "furlbrow's wardrobe": null,
@@ -1097,8 +1176,14 @@
     "icon": "spell_holy_blessingofstamina"
   },
   "furor: this": null,
+  "future of skyborne visual updates": null,
+  "game designer aidan moon": null,
+  "game designer josh greenfield": null,
+  "game designer kris zierhut": null,
+  "game designers josh greenfield": null,
   "gamepad bag ui": null,
   "gamepad lb": null,
+  "gamepad support": null,
   "gamepad ui": null,
   "gameplay": null,
   "gameplay enhancement": null,
@@ -1120,6 +1205,7 @@
     "icon": "spell_arcane_arcane03"
   },
   "genesis: now": null,
+  "get": null,
   "ghost wolf": {
     "name": "Ghost Wolf",
     "type": "spell",
@@ -1150,6 +1236,7 @@
     "icon": "inv_gauntlets_06"
   },
   "gnolls": null,
+  "gold": null,
   "gore drinker": {
     "name": "Gore Drinker",
     "type": "spell",
@@ -1163,8 +1250,10 @@
     "class": "shaman",
     "icon": "spell_nature_invisibilitytotem"
   },
+  "grand marshal": null,
   "greater blessing of salvation": null,
   "greater friend of the library": null,
+  "greetings": null,
   "grimoires": null,
   "grol'bolar quarry": null,
   "grounding totem": {
@@ -1177,6 +1266,7 @@
   "group finder": null,
   "group ui": null,
   "growth: now": null,
+  "guide: welcome to world of warcraft: forever": null,
   "guild": null,
   "hall of thanes": null,
   "hammer of wrath": {
@@ -1184,7 +1274,10 @@
     "type": "spell",
     "icon": "ability_thunderclap"
   },
+  "hammerdance": null,
+  "hammerdancegaming": null,
   "hand weapon": null,
+  "happy": null,
   "hawk": null,
   "hawk mana": null,
   "hawk: ranged attack power": null,
@@ -1224,6 +1317,7 @@
     "icon": "ability_ambush"
   },
   "helene peltskinner": null,
+  "hello": null,
   "hemorrhage": {
     "name": "Hemorrhage",
     "type": "spell",
@@ -1239,12 +1333,17 @@
   },
   "herb": null,
   "herbs": null,
+  "hi all": null,
+  "hi there": null,
   "high order": null,
   "high order and windshaper skyborne": null,
   "high order skyborne": null,
+  "high warlord": null,
+  "high-definition druid": null,
   "hillsbrad foothills": null,
   "hit chance": null,
   "hold and the drowned city": null,
+  "holds for rmt": null,
   "holy binding": {
     "name": "Holy Binding",
     "type": "spell",
@@ -1284,13 +1383,16 @@
     "icon": "classicon_paladin"
   },
   "holy tree": null,
+  "hope": null,
   "horn of awakening": {
     "name": "Horn of Awakening",
     "type": "item",
     "icon": "inv_misc_horn_03"
   },
+  "host countdown to classic": null,
   "hostile analog targeting": null,
   "hostile target action sides: swaps": null,
+  "hotfixes update": null,
   "howl attack power": null,
   "huey sunnydale": null,
   "human": null,
@@ -1302,6 +1404,8 @@
     "icon": "ability_hunter_snipershot"
   },
   "hyjal owl nests": null,
+  "hyjal summit": null,
+  "i": null,
   "i hunger": null,
   "ice armor": {
     "name": "Ice Armor",
@@ -1543,6 +1647,9 @@
   "instrument of law removed": null,
   "intellect to attack power": null,
   "interact": null,
+  "into dungeons with devs": null,
+  "invite-a-friend code": null,
+  "invite-a-friend players": null,
   "iron ambushers": null,
   "iron creed": {
     "name": "Iron Creed",
@@ -1553,13 +1660,22 @@
   "ironforge": null,
   "ironic": null,
   "is": null,
+  "islands in world of warcraft": null,
+  "issue for oceanic players": null,
+  "issues resolved": null,
+  "issues resolved for invite-a-friend players": null,
   "item": null,
   "item restoration": null,
   "ivar the foul": null,
   "jasperlode mine": null,
+  "jay hartman": null,
   "jezap jinglesprocket": null,
   "jin'zil": null,
+  "join": null,
+  "join host countdown to classic": null,
+  "join wow": null,
   "jom-jom": null,
+  "josh greenfield": null,
   "journeyman campfire kit": {
     "name": "Journeyman Campfire Kit",
     "type": "item",
@@ -1583,11 +1699,14 @@
     "class": "paladin",
     "icon": "ability_thunderbolt"
   },
+  "just": null,
+  "kalimdor": null,
   "kerlonian evershade": null,
   "khonsu": null,
   "killing": null,
   "kirin tor": null,
   "krek the noxious": null,
+  "kris zierhut": null,
   "lacerate": {
     "name": "Lacerate",
     "type": "spell",
@@ -1605,6 +1724,8 @@
   "lady sylvanas windrunner": null,
   "landing": null,
   "lasher sproutlings": null,
+  "latest beta build": null,
+  "launch time": null,
   "lava burst": {
     "name": "Lava Burst",
     "type": "spell",
@@ -1621,6 +1742,7 @@
     "icon": "spell_nature_unyeildingstamina"
   },
   "leader of the pack: the": null,
+  "learn": null,
   "learned": null,
   "learning": null,
   "leatherworking": {
@@ -1682,10 +1804,13 @@
   },
   "lightning reflexes: agility": null,
   "like": null,
+  "location": null,
+  "locations": null,
   "loch modan": null,
   "look": null,
   "looking for group ui": null,
   "lord melenas": null,
+  "lore-ing out": null,
   "lotheluum starbreeze": null,
   "lowered": null,
   "lt": null,
@@ -1724,6 +1849,7 @@
   "mass salvation": null,
   "mass: this": null,
   "master spelunker": null,
+  "masters": null,
   "mausoleum trigger": null,
   "max": null,
   "maximum": null,
@@ -1790,6 +1916,7 @@
   "mistreating astor hadren": null,
   "mmmmm": null,
   "modifier sides: swaps": null,
+  "money trade": null,
   "moonkin aura": {
     "name": "Moonkin Aura",
     "type": "spell",
@@ -1825,6 +1952,9 @@
     "icon": "ability_rogue_deadlybrew"
   },
   "mutilates": null,
+  "name reservation": null,
+  "name reservation issue": null,
+  "name reservation issue for oceanic players": null,
   "natural instinct": {
     "name": "Natural Instinct",
     "type": "spell",
@@ -1845,8 +1975,10 @@
     "icon": "spell_nature_ravenform"
   },
   "neeru fireblade": null,
+  "nerds lore-ing out": null,
   "nethergarde keep": null,
   "new": null,
+  "new dungeons of world of warcraft": null,
   "new spell added: shank": null,
   "new talent": null,
   "new talent boundless light": null,
@@ -1858,6 +1990,7 @@
   "new talent: blood splatter": null,
   "new talent: composure": null,
   "new talent: flash of steel": null,
+  "next adventure in wow": null,
   "nifty stopwatch": {
     "name": "Nifty Stopwatch",
     "type": "item",
@@ -1875,9 +2008,15 @@
   "nimsy": null,
   "ninja": null,
   "ninja and pirate": null,
+  "nobbel87": null,
   "non-boss": null,
   "non-periodic": null,
+  "normal": null,
+  "north american pvp": null,
+  "not": null,
+  "november": null,
   "novice warriors": null,
+  "now live": null,
   "number": null,
   "nyalah brightfire": null,
   "nyalah brightfire in valanaar": null,
@@ -1890,6 +2029,9 @@
     "icon": "spell_holy_greaterblessingoflight"
   },
   "oath of light in row": null,
+  "oceanic": null,
+  "oceanic players": null,
+  "october": null,
   "off-hand": null,
   "off-hand swing timer": null,
   "offhand": null,
@@ -1899,12 +2041,14 @@
     "type": "spell",
     "icon": "spell_nature_crystalball"
   },
+  "one": null,
   "one-handed weapon specialization": {
     "name": "One-Handed Weapon Specialization",
     "type": "spell",
     "icon": "inv_sword_20"
   },
   "ongeku": null,
+  "onyxia's lair": null,
   "opportunity": {
     "name": "Opportunity",
     "type": "spell",
@@ -1914,6 +2058,8 @@
   "order and windshaper skyborne": null,
   "order skyborne": null,
   "our": null,
+  "our world of warcraft": null,
+  "out episode": null,
   "over": null,
   "overall": null,
   "overlook standing stones": null,
@@ -1941,6 +2087,7 @@
     "icon": "ability_mount_jungletiger"
   },
   "pathfinding: this": null,
+  "pdt": null,
   "pelluk": null,
   "penance": {
     "name": "Penance",
@@ -1979,7 +2126,13 @@
     "type": "spell",
     "icon": "achievement_zone_barrens_01"
   },
+  "platinum wow": null,
+  "player's starter guide: welcome": null,
+  "player's starter guide: welcome to world of warcraft: forever": null,
+  "player-level dungeon xp adjustment": null,
   "please": null,
+  "podcast ep": null,
+  "podcast: episode": null,
   "poi": null,
   "poised": {
     "name": "Poised",
@@ -2004,6 +2157,7 @@
   },
   "poll frames": null,
   "poor copper vein": null,
+  "portal room": null,
   "potion": null,
   "pouch of violet dust": {
     "name": "Pouch of Violet Dust",
@@ -2070,6 +2224,7 @@
     "icon": "ability_hunter_pet_cat"
   },
   "predatory strikes: moved": null,
+  "prefer": null,
   "premeditation": {
     "name": "Premeditation",
     "type": "spell",
@@ -2093,17 +2248,23 @@
   "primal fury": null,
   "princess theradras": null,
   "princess theradras in maraudon": null,
+  "principal game designer kris zierhut": null,
   "probably": null,
   "procs": null,
   "profession": null,
   "profession trainers": null,
   "professions": null,
   "professions ui": null,
+  "progression in world of warcraft": null,
+  "pst": null,
   "purifying power": {
     "name": "Purifying Power",
     "type": "spell",
     "icon": "spell_holy_purifyingpower"
   },
+  "pvp episode": null,
+  "pvp progression": null,
+  "pvp progression in world of warcraft": null,
   "pyrewood village": null,
   "pyroblast": {
     "name": "Pyroblast",
@@ -2144,6 +2305,8 @@
   "raging blows": null,
   "raid and party": null,
   "raid frame manager": null,
+  "raid overview": null,
+  "raid sizes": null,
   "rake": {
     "name": "Rake",
     "type": "spell",
@@ -2168,6 +2331,7 @@
   "razorfen downs": null,
   "rb": null,
   "reagent economy legacy perk": null,
+  "real money trade": null,
   "reckless swings": {
     "name": "Reckless Swings",
     "type": "spell",
@@ -2242,11 +2406,14 @@
     "type": "item",
     "icon": "inv_weapon_rifle_22"
   },
+  "reply": null,
   "research": {
     "name": "Research",
     "type": "spell",
     "icon": "spell_holy_mindsooth"
   },
+  "reservation issue for oceanic players": null,
+  "resolved for invite-a-friend players": null,
   "resourcefulness": {
     "name": "Resourcefulness",
     "type": "spell",
@@ -2301,9 +2468,14 @@
     "icon": "spell_nature_riptide"
   },
   "riverglades": null,
+  "rmt": null,
   "rock elemental": null,
+  "rockbiter weapon to the weapon imbues": null,
   "rogue poisons": null,
   "role poll frames": null,
+  "roleplay": null,
+  "roleplay-pvp": null,
+  "roleplay-pvp ruleset": null,
   "root": {
     "name": "Root",
     "type": "spell",
@@ -2319,6 +2491,7 @@
     "type": "item",
     "icon": "inv_staff_10"
   },
+  "running classes": null,
   "rupture": {
     "name": "Rupture",
     "type": "spell",
@@ -2356,6 +2529,7 @@
     "class": "druid",
     "icon": "ability_druid_ravage"
   },
+  "savixirl": null,
   "scrolling combat text": null,
   "scrolling combat text for self": null,
   "scrolls": null,
@@ -2395,8 +2569,12 @@
   },
   "season of discovery": null,
   "secondary talents": null,
+  "see": null,
   "see items": null,
   "select": null,
+  "senior game designer aidan moon": null,
+  "senior game designer josh greenfield": null,
+  "senior game designers josh greenfield": null,
   "sentinel lynessa duskblossom": null,
   "serpent sting: attack power": null,
   "serpentbloom snakes": null,
@@ -2445,6 +2623,7 @@
   "shapeshifted": null,
   "shapeshifting": null,
   "shapeshifts": null,
+  "sharpening stones": null,
   "shatterspear trolls": null,
   "shen'dar highlands": null,
   "shen'dar village": null,
@@ -2477,6 +2656,7 @@
   "shimmer ridge": null,
   "shinyfinder narf": null,
   "shipwreck cove": null,
+  "shobek": null,
   "shock": {
     "name": "Shock",
     "type": "spell",
@@ -2485,6 +2665,7 @@
     "icon": "spell_nature_wispheal"
   },
   "shocks": null,
+  "short story": null,
   "shot: base": null,
   "shot: bonus": null,
   "shouts": null,
@@ -2524,6 +2705,7 @@
     "type": "spell",
     "icon": "spell_shadow_requiem"
   },
+  "site: wetlands": null,
   "skinning": {
     "name": "Skinning",
     "type": "spell",
@@ -2531,6 +2713,7 @@
   },
   "skonk": null,
   "skyborne": null,
+  "skyborne visual updates": null,
   "slam": {
     "name": "Slam",
     "type": "spell",
@@ -2566,6 +2749,7 @@
   "snow leopard prowler": null,
   "snowtalon": null,
   "so": null,
+  "sodapoppin": null,
   "soft targeting": null,
   "sootfur": null,
   "sorcerer's fireball": null,
@@ -2601,6 +2785,8 @@
   "spawns": null,
   "speak to tyrion": null,
   "specifically": null,
+  "speed running classes": null,
+  "speedrunning classes": null,
   "spell added: shank": null,
   "spell casting speed": null,
   "spell damage": null,
@@ -2618,8 +2804,10 @@
     "icon": "ability_rogue_sprint"
   },
   "stables": null,
+  "stake": null,
   "stance": null,
   "standard definition": null,
+  "standard-definition": null,
   "standing stones in shen'dar highlands": null,
   "stanley": null,
   "starfire": {
@@ -2638,6 +2826,8 @@
     "icon": "spell_arcane_starfire"
   },
   "starshards and penance": null,
+  "starter guide: welcome to world of warcraft: forever": null,
+  "starts in the wow portal room": null,
   "stealth": {
     "name": "Stealth",
     "type": "spell",
@@ -2701,6 +2891,7 @@
     "icon": "ability_hunter_animalhandler"
   },
   "summon hawk mana": null,
+  "sunday": null,
   "survive": null,
   "swap friendly target action sides: swaps": null,
   "swap hostile target action sides: swaps": null,
@@ -2739,6 +2930,7 @@
     "icon": "trade_tailoring"
   },
   "tainted ones": null,
+  "taldramir": null,
   "talent boundless light in row": null,
   "talent oath of light in row": null,
   "talent shieldsworn": null,
@@ -2772,14 +2964,23 @@
     "type": "spell",
     "icon": "ability_paladin_shieldofthetemplar"
   },
+  "temporary economy hold": null,
+  "temporary economy holds for rmt": null,
   "terrace: vitrix": null,
   "terry longdrink": null,
+  "testing the wow forever beta": null,
   "text for self": null,
   "thadd and garion wendell": null,
+  "thank": null,
+  "thank you for testing the wow forever beta": null,
+  "thanks": null,
+  "the darkspear islands": null,
   "the dead": null,
   "the dead legacy talent": null,
   "the drowned city": null,
   "the frost": null,
+  "the future of skyborne visual updates": null,
+  "the latest beta build": null,
   "the loch": null,
   "the quick": null,
   "the quick and the dead": {
@@ -2789,7 +2990,9 @@
   },
   "the ruins of lordaeron": null,
   "the shrieklings of zephras": null,
+  "the wow portal room": null,
   "theradras in maraudon": null,
+  "theramore expeditionary force": null,
   "they're": null,
   "thick hide": {
     "name": "Thick Hide",
@@ -2832,6 +3035,11 @@
     "icon": "spell_frost_manarecharge"
   },
   "tiger": null,
+  "time": null,
+  "time zone": null,
+  "tipsoutbaby": null,
+  "to classic": null,
+  "today": null,
   "tooltip of life tap": null,
   "total": null,
   "totem: buff": null,
@@ -2879,6 +3087,8 @@
   },
   "trueshot aura: ranged attack power": null,
   "truthseeker": null,
+  "tuesday": null,
+  "turbo nerds lore-ing out": null,
   "turn evil": {
     "name": "Turn Evil",
     "type": "spell",
@@ -2910,9 +3120,13 @@
   "unbridled rage": null,
   "uncommon": null,
   "undead priest's dark sacrifice": null,
+  "under": null,
+  "under baseline abilities": null,
   "undercity canal": null,
+  "underway": null,
   "unit frames": null,
   "units": null,
+  "unpacking beta launch": null,
   "unsealed fury": null,
   "unsealed wrath": {
     "name": "Unsealed Wrath",
@@ -2944,6 +3158,7 @@
   },
   "venom": null,
   "venom-dripping": null,
+  "venture": null,
   "venture co": null,
   "victory rush": {
     "name": "Victory Rush",
@@ -2953,6 +3168,7 @@
     "icon": "ability_warrior_devastate"
   },
   "view": null,
+  "view full article": null,
   "view talents": null,
   "vigor": {
     "name": "Vigor",
@@ -2966,6 +3182,7 @@
     "type": "spell",
     "icon": "spell_holy_vindication"
   },
+  "visual updates": null,
   "visually": null,
   "voice channel transcription": null,
   "voice chat": null,
@@ -3004,8 +3221,16 @@
     "icon": "ability_shootwand"
   },
   "wands: wands": null,
+  "wants": null,
+  "warcraft": null,
+  "warcraft: forever": null,
+  "warcraft: forever- the future of skyborne visual updates": null,
+  "warlock voidwalkers": null,
   "warriors' dual wield specialization": null,
   "warsong gulch": null,
+  "watch forging forever": null,
+  "watch now": null,
+  "watch the wow": null,
   "watcher's charge": null,
   "water pitchers": null,
   "waylaid crates": null,
@@ -3017,10 +3242,14 @@
     "type": "spell",
     "icon": "spell_holy_blessingofstrength"
   },
+  "weapon imbues": null,
   "weapon racks": null,
   "weapon: chance": null,
   "weaving's tooltip": null,
+  "weight stones": null,
+  "welcome to world of warcraft: forever": null,
   "wetlands": null,
+  "whether": null,
   "whirlwind": {
     "name": "Whirlwind",
     "type": "spell",
@@ -3028,6 +3257,7 @@
     "class": "warrior",
     "icon": "ability_whirlwind"
   },
+  "whispering wood": null,
   "white": null,
   "who list": null,
   "why": null,
@@ -3066,29 +3296,48 @@
   "winter's chill: bonus": null,
   "winter's chill: bonus to cone of cold": null,
   "winter's chill: redesigned": null,
+  "with devs": null,
   "witherbark mallet": {
     "name": "Witherbark Mallet",
     "type": "item",
     "icon": "inv_hammer_20"
   },
+  "witness": null,
   "wizard oil: minor wizard oil": null,
   "wizard oils": null,
   "word pain": null,
   "wording": null,
   "world of warcraft": null,
+  "world of warcraft: forever": null,
+  "world of warcraft: forever- the future of skyborne visual updates": null,
+  "wow forever": null,
+  "wow forever beta": null,
+  "wow forever beta celebration": null,
+  "wow forever podcast": null,
+  "wow forever podcast: episode": null,
+  "wow portal room": null,
   "wrack": {
     "name": "Wrack",
     "type": "spell",
     "icon": "ability_deathknight_hemorrhagicfever"
   },
   "wrathvine": null,
+  "xaryu": null,
+  "xp adjustment": null,
+  "xp to gold": null,
   "xp-to-gold": null,
   "yarrog baneshadow": null,
   "yashiro": null,
+  "yesterday": null,
+  "you for testing the wow forever beta": null,
+  "you'll": null,
   "young diemetradons": null,
   "your": null,
   "your clearcasting": null,
+  "your next adventure": null,
+  "your next adventure in wow": null,
   "your stormstrike": null,
+  "your world of warcraft": null,
   "zaetar": null,
   "zarla ober": null,
   "zephrali greatstaff": {
@@ -3103,5 +3352,6 @@
     "type": "spell",
     "icon": "achievement_dungeon_skywall"
   },
+  "zeppelins": null,
   "zul'farrak": null
 }
