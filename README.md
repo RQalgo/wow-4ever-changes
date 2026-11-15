@@ -25,8 +25,12 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
 - Pick a class, then a talent tree. A tree view also shows the class-wide and
   all-class lines, since those affect the tree too.
 - Tap the search box to get skill-name suggestions; type to narrow.
+- Each date shows a **Hotfix** or **Patch** badge (patch days also show the
+  patch title and a Source link). Use the *All / Hotfixes / Patches* switch to
+  show only one kind.
 - The view is stored in the URL, e.g.
-  `#class=paladin&spec=retribution`, so it can be bookmarked or shared.
+  `#class=paladin&spec=retribution` or `#kind=patch`, so it can be bookmarked
+  or shared.
 
 ## How the data stays current
 
