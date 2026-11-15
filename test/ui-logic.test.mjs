@@ -728,3 +728,43 @@ test('No classes counts as one active filter and is named in the summary', () =>
   assert.equal(L.filterSummary(hidden({ cats: [] })), 'No class changes · No categories');
   assert.equal(L.filterSummary(hidden({ cats: ['items'] }), L.availableCategories(data)), 'No class changes · Items');
 });
+
+/* ---------- dev posts (schema v4): day kind, kind filter, labels ---------- */
+test('dayKind / dayKey know the dev kind; unknown kinds still mean hotfix', () => {
+  assert.equal(L.dayKind({ kind: 'dev' }), 'dev');
+  assert.equal(L.dayKind({ kind: 'DEV' }), 'hotfix'); // exact value only
+  assert.equal(L.dayKey({ date: '2026-11-13', kind: 'dev' }), '2026-11-13|dev');
+  assert.deepEqual(L.DAY_KINDS, ['patch', 'hotfix', 'dev']); // same-date order of docs/SCHEMA.md
+});
+
+test('kind filter has four values; kind=dev is encoded, decoded and round-trips', () => {
+  assert.deepEqual(L.KIND_FILTERS, ['all', 'hotfix', 'patch', 'dev']);
+  assert.equal(L.sanitizeKindFilter('dev'), 'dev');
+  assert.equal(L.sanitizeKindFilter('devs'), 'all');
+  assert.equal(L.encodeHash({ ...L.defaultState(), kind: 'dev' }), '#kind=dev');
+  assert.equal(L.decodeHash('#kind=dev').kind, 'dev');
+  assert.equal(L.decodeHash('#kind=Dev').kind, 'all'); // unknown values are ignored as before
+  const st = { ...L.defaultState(), hideClasses: true, kind: 'dev' };
+  assert.equal(L.encodeHash(st), '#class=none&kind=dev');
+  assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
+  assert.equal(L.matchesKind({ kind: 'dev' }, 'dev'), true);
+  assert.equal(L.matchesKind({ kind: 'dev' }, 'hotfix'), false);
+  assert.equal(L.matchesKind({}, 'dev'), false);
+});
+
+test('kind labels: control / summary text and the badge (singular or plural)', () => {
+  assert.deepEqual(L.KIND_FILTERS.map(L.kindFilterLabel), ['All', 'Hotfixes', 'Patches', 'Dev Posts']);
+  assert.equal(L.kindFilterLabel('junk'), 'All');
+  assert.equal(L.kindBadgeLabel({ kind: 'dev' }, 1), 'Dev Post');
+  assert.equal(L.kindBadgeLabel({ kind: 'dev' }, 3), 'Dev Posts');
+  assert.equal(L.kindBadgeLabel({ kind: 'dev' }), 'Dev Post');
+  assert.equal(L.kindBadgeLabel({ kind: 'patch' }, 5), 'Patch');
+  assert.equal(L.kindBadgeLabel({}, 5), 'Hotfix');
+});
+
+test('dev kind counts as an active filter, is named in the summary and the empty state', () => {
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), kind: 'dev' }), 1);
+  assert.equal(L.filterSummary({ ...L.defaultState(), kind: 'dev' }), 'Dev Posts');
+  assert.equal(L.filterSummary({ ...L.defaultState(), cls: 'mage', kind: 'dev' }), 'Mage · Dev Posts');
+  assert.match(L.emptyMessage({ ...L.defaultState(), kind: 'dev' }).detail, /Only dev posts are being shown/);
+});

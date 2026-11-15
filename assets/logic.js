@@ -14,7 +14,8 @@
  *   5. Search         : matching and highlight segmentation
  *   6. Suggestions    : skill-name suggestions for the search box
  *   7. URL hash state : encode / decode the shareable filter state
- *   8. Day kinds      : hotfix vs patch (schema v2), day identity, kind filter
+ *   8. Day kinds      : hotfix / patch / dev post (schema v2, v4), day identity,
+ *                       kind filter and badge labels
  *   9. Line decoration: extra tag chips and the icon cluster of one line
  *  10. Filter panel   : active-filter count/summary and the #filters=open flag (mobile)
  *
@@ -427,7 +428,7 @@ export function highlightSegments(text, terms) {
  * `hideClasses` is the "No classes" choice of the class row: true hides every
  * class change (see isClassChange); it is only ever true while `cls` is empty
  * (see normalizeClassState).
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch', hideClasses: boolean}}
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean}}
  */
 export function defaultState() {
   return { cls: '', spec: '', q: '', cats: null, kind: 'all', hideClasses: false };
@@ -813,7 +814,7 @@ export function decodeCats(raw, generalOff = false) {
  * lower-case, like class slugs) hides class changes; a `spec` next to it is
  * ignored because a tree needs a class.
  * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch', hideClasses: boolean}}
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean}}
  */
 export function decodeHash(hash) {
   const p = new URLSearchParams(String(hash || '').replace(/^#/, ''));
@@ -844,26 +845,33 @@ export function sanitizeStoredSelection(v) {
   return null;
 }
 
-/* ======================= 8. Day kinds (schema v2) ======================= */
+/* ======================= 8. Day kinds (schema v2, v4) ======================= */
 
-/** The kind filter values: everything, only hotfix days, only patch days. */
-export const KIND_FILTERS = ['all', 'hotfix', 'patch'];
+/**
+ * The day kinds, in their order on a shared date (docs/SCHEMA.md: patch,
+ * then hotfix, then dev): patch notes, hotfixes and Blizzard staff forum
+ * posts ("dev posts", schema v4).
+ */
+export const DAY_KINDS = ['patch', 'hotfix', 'dev'];
+
+/** The kind filter values: everything, or only one day kind. */
+export const KIND_FILTERS = ['all', 'hotfix', 'patch', 'dev'];
 
 /**
  * Normalise a day's kind. Schema v2 says a missing `kind` means "hotfix"
  * (older data has none); anything unrecognised is treated the same way so a
- * malformed file can never create a third, unstyled kind.
+ * malformed file can never create a fourth, unstyled kind.
  * @param {{kind?: unknown}} day
- * @returns {'hotfix'|'patch'}
+ * @returns {'hotfix'|'patch'|'dev'}
  */
 export function dayKind(day) {
-  return day && day.kind === 'patch' ? 'patch' : 'hotfix';
+  return day && (day.kind === 'patch' || day.kind === 'dev') ? day.kind : 'hotfix';
 }
 
 /**
- * Stable identity of a day: date + kind. A patch and a hotfix can share a
- * date and are separate days, so the date alone is NOT unique. Use this for
- * DOM ids, maps and keys.
+ * Stable identity of a day: date + kind. A patch, a hotfix and a dev-post
+ * day can share a date and are separate days, so the date alone is NOT
+ * unique. Use this for DOM ids, maps and keys.
  * @param {{date: string, kind?: unknown}} day
  * @returns {string} e.g. "2026-11-13|patch"
  */
@@ -873,22 +881,48 @@ export function dayKey(day) {
 
 /**
  * Validate a kind-filter value from untrusted input (URL hash). Anything
- * other than "hotfix" / "patch" (including "all") becomes "all".
+ * other than "hotfix" / "patch" / "dev" (including "all") becomes "all".
  * @param {unknown} v
- * @returns {'all'|'hotfix'|'patch'}
+ * @returns {'all'|'hotfix'|'patch'|'dev'}
  */
 export function sanitizeKindFilter(v) {
-  return v === 'hotfix' || v === 'patch' ? v : 'all';
+  return v === 'hotfix' || v === 'patch' || v === 'dev' ? v : 'all';
 }
 
 /**
  * Does a day pass the kind filter?
  * @param {object} day
- * @param {string} filter 'all' | 'hotfix' | 'patch'
+ * @param {string} filter 'all' | 'hotfix' | 'patch' | 'dev'
  * @returns {boolean}
  */
 export function matchesKind(day, filter) {
   return !filter || filter === 'all' || dayKind(day) === filter;
+}
+
+/**
+ * Plural display name of a kind-filter value, as used by the kind control,
+ * the filter summary and the empty state: "Hotfixes", "Patches", "Dev Posts"
+ * ("All" for the default).
+ * @param {string} filter kind-filter value (sanitised here)
+ * @returns {string}
+ */
+export function kindFilterLabel(filter) {
+  return { all: 'All', hotfix: 'Hotfixes', patch: 'Patches', dev: 'Dev Posts' }[sanitizeKindFilter(filter)];
+}
+
+/**
+ * Text of a day's kind badge. Hotfix and patch days say "Hotfix" / "Patch";
+ * a dev-post day says "Dev Post", or "Dev Posts" when it holds several posts
+ * (`count` is the number of posts shown for that day, i.e. after filtering).
+ * The text, not only the colour, tells the kinds apart.
+ * @param {object} day
+ * @param {number} [count] lines shown for the day
+ * @returns {string}
+ */
+export function kindBadgeLabel(day, count = 1) {
+  const kind = dayKind(day);
+  if (kind === 'dev') return count > 1 ? 'Dev Posts' : 'Dev Post';
+  return kind === 'patch' ? 'Patch' : 'Hotfix';
 }
 
 /* ======================= 9. Line decoration ======================= */
@@ -1009,7 +1043,7 @@ export function filterSummary(state, available = CATEGORIES) {
     parts.push(state.spec ? `${className(state.cls)} › ${titleCase(state.spec)}` : className(state.cls));
   }
   const kind = sanitizeKindFilter(state.kind);
-  if (kind !== 'all') parts.push(kind === 'patch' ? 'Patches' : 'Hotfixes');
+  if (kind !== 'all') parts.push(kindFilterLabel(kind));
   if (state.cats) {
     if (!state.cats.length) parts.push('No categories');
     else if (state.cats.length === 1) {
@@ -1043,7 +1077,9 @@ export function emptyMessage(state) {
   }
   const notes = ['No changes match the current filters.'];
   const kind = sanitizeKindFilter(state.kind);
-  if (kind !== 'all') notes.push(`Only ${kind === 'patch' ? 'patch notes' : 'hotfixes'} are being shown; try "All" to include both.`);
+  // Lower-case kind name for the sentence ("Only dev posts are being shown").
+  const shown = { patch: 'patch notes', hotfix: 'hotfixes', dev: 'dev posts' }[kind];
+  if (kind !== 'all') notes.push(`Only ${shown} are being shown; try "All" to include every kind.`);
   if (hidden) notes.push('Class changes are hidden; choose "All classes" to include them.');
   return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false };
 }
