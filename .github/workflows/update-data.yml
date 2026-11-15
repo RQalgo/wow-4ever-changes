@@ -17,10 +17,15 @@ name: Update data
 
 on:
   schedule:
-    # Every 6 hours at minute 17 (UTC). Blizzard posts hotfixes at varying
-    # times, so polling several times a day catches them reasonably soon,
-    # and :17 avoids the congested top-of-the-hour slot.
-    - cron: '17 */6 * * *'
+    # Every 3 hours at minute 41 (UTC): 00:41, 03:41, ... 21:41. Blizzard
+    # posts hotfixes at varying times and staff forum posts (Dev Posts) appear
+    # several times a day, so polling every 3 hours catches them reasonably
+    # soon. Minute :41 is off-peak: GitHub delays or drops scheduled runs in
+    # the congested slots at and just after the top of the hour.
+    # Note: GitHub registers a schedule when the workflow file on the default
+    # branch changes. The previous line ('17 */6 * * *') never fired on its
+    # own; editing the cron expression makes GitHub register it afresh.
+    - cron: '41 */3 * * *'
   # Allow running it manually from the Actions tab.
   workflow_dispatch:
 

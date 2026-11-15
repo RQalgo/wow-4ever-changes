@@ -54,8 +54,9 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
 
 ## How the data stays current
 
-`.github/workflows/update-data.yml` runs every 6 hours (and on demand from the
-Actions tab). It downloads Blizzard's rolling hotfix post, parses it, looks up
+`.github/workflows/update-data.yml` runs every 3 hours, at minute 41 UTC
+(00:41, 03:41, ... 21:41; an off-peak minute, because GitHub delays or skips
+scheduled runs at busy times), and on demand from the Actions tab. It downloads Blizzard's rolling hotfix post, parses it, looks up
 icons, and commits `data/changes.json` when something changed. GitHub Pages
 (deploy from branch `main`, root) then republishes by itself. Days that
 Blizzard later drops from the post are kept.
