@@ -17,7 +17,7 @@
  */
 
 import {
-  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays,
+  CLASSES, flattenSections, relativeDay, classColor, defaultState, visibleDays,
   specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
   highlightSegments, buildSuggestions, encodeHash, decodeHash, sanitizeSelection,
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
@@ -236,48 +236,39 @@ function renderLines(changes) {
 }
 
 /**
- * Render a class section ("Paladin" with direct lines and per-spec
- * sub-headings such as "Paladin > Retribution").
- * @param {{class: string|null, label: string, direct: object[], specs: object[]}} sec
- * @returns {HTMLElement}
+ * Build a card heading from its title parts: "Druid › Restoration" or
+ * "Dungeons › The Deadmines". The first part is the strong one, later parts
+ * (tree / group) are lighter, so one line carries the whole path and nothing
+ * above it repeats the class or category name. General headings take part in
+ * search highlighting (category and group are searchable); class headings
+ * are plain.
+ * @param {string[]} title parts
+ * @param {boolean} highlight wrap search matches in <mark>
+ * @returns {HTMLElement} <h3>
  */
-function renderClassSection(sec) {
-  const box = el('section', 'group group-class');
-  // The class colour is exposed as a CSS variable and used only as an accent.
-  box.style.setProperty('--cc', classColor(sec.class) || 'var(--accent)');
-  box.append(el('h3', 'group-title', sec.label));
-  if (sec.direct.length) box.append(renderLines(sec.direct));
-  for (const sp of sec.specs) {
-    const sub = el('div', 'subgroup');
-    sub.append(el('h4', 'subgroup-title', `${sec.label} › ${sp.label}`), renderLines(sp.changes));
-    box.append(sub);
-  }
-  return box;
+function renderHeading(title, highlight) {
+  const h = el('h3', 'card-title');
+  title.forEach((part, i) => {
+    if (i) h.append(el('span', 'crumb-sep', ' › '));
+    const span = el('span', i ? 'crumb-sub' : 'crumb-main');
+    if (highlight) span.append(highlighted(part)); else span.textContent = part;
+    h.append(span);
+  });
+  return h;
 }
 
 /**
- * Render the General section: category headings, then optional group
- * headings (e.g. a dungeon name) with their lines.
- * @param {{category: string, groups: object[]}[]} general
+ * Render one card: a class (or "All classes") or one general category, with
+ * one or more sibling headings, each followed by its lines.
+ * @param {{kind: string, class: string|null, headings: object[]}} card from flattenSections
  * @returns {HTMLElement}
  */
-function renderGeneral(general) {
-  const box = el('section', 'group group-general');
-  box.append(el('h3', 'group-title', 'General'));
-  for (const cat of general) {
-    const sub = el('div', 'subgroup');
-    const catTitle = el('h4', 'subgroup-title');
-    catTitle.append(highlighted(cat.category));
-    sub.append(catTitle);
-    for (const g of cat.groups) {
-      if (g.group) {
-        const gl = el('h5', 'group-label');
-        gl.append(highlighted(g.group));
-        sub.append(gl);
-      }
-      sub.append(renderLines(g.changes));
-    }
-    box.append(sub);
+function renderCard(card) {
+  const box = el('section', `card card-${card.kind}`);
+  // The class colour is exposed as a CSS variable and used only as an accent.
+  box.style.setProperty('--cc', card.kind === 'class' ? (classColor(card.class) || 'var(--accent)') : 'var(--muted)');
+  for (const h of card.headings) {
+    box.append(renderHeading(h.title, card.kind === 'general'), renderLines(h.changes));
   }
   return box;
 }
@@ -313,7 +304,7 @@ function sourceLink(day) {
  * @returns {HTMLElement}
  */
 function renderDay(day, changes) {
-  const view = groupChanges(changes);
+  const view = flattenSections(changes);
   const kind = dayKind(day);
   const sec = el('section', `day day-${kind}`);
   // Date + kind: two days on the same date need different anchors.
@@ -334,8 +325,7 @@ function renderDay(day, changes) {
   if (src) head.append(src);
   head.append(el('span', 'day-count', `${view.count} ${view.count === 1 ? 'change' : 'changes'}`));
   sec.append(head);
-  for (const c of view.classSections) sec.append(renderClassSection(c));
-  if (view.general.length) sec.append(renderGeneral(view.general));
+  for (const card of view.cards) sec.append(renderCard(card));
   return sec;
 }
 
