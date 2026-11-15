@@ -130,3 +130,162 @@ const WEAK_CONNECTORS = new Set(['in', 'for', 'to', 'and']);
 
 const CLASS_AND_SPEC_SET = new Set(CLASS_AND_SPEC_WORDS);
 const GENERIC_SET = new Set(GENERIC_TERMS);
+
+// ---------------------------------------------------------------------------
+// CANDIDATE EXTRACTION
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalise a name for comparison and cache keys: curly apostrophes become
+ * straight ones, whitespace is collapsed and the result is lower-cased.
+ * @param {string} name
+ * @returns {string}
+ */
+export function normalizeName(name) {
+  return String(name)
+    .replace(/[‘’ʼ]/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Remove everything from a change line that must never yield a candidate:
+ *   - quoted text (quest names), curly or straight double quotes;
+ *   - parenthesised text such as "(was 3.3%)";
+ *   - rank suffixes ("Rank 1");
+ *   - a leading zone prefix "Zone Name - rest" (keeps only "rest").
+ * Removed spans are replaced by a space so neighbouring words cannot fuse.
+ * @param {string} text
+ * @returns {string}
+ */
+function cleanText(text) {
+  let s = String(text ?? '');
+  s = s.replace(/“[^”]*”/g, ' '); // “quest name”
+  s = s.replace(/"[^"]*"/g, ' ');                // "quest name"
+  s = s.replace(/\([^)]*\)/g, ' ');              // (was 3.3%)
+  s = s.replace(/\bRank\s+\d+\b/g, ' ');         // Siphon Life Rank 1
+  s = s.trim();
+  // Zone prefix: one or more Capitalised words (with of/the/and), then a SPACED
+  // dash. A hyphen inside a word ("Bind-on-Pickup") has no spaces so it is safe.
+  const zone = /^[A-Z][\w'’]*(?:\s+(?:of|the|and|[A-Z][\w'’]*))*\s+[-–—]\s+/;
+  s = s.replace(zone, '');
+  return s;
+}
+
+/**
+ * One capitalised word: ASCII capital first, then letters / digits / apostrophes
+ * (straight or curly) / hyphens, so "Zul'Farrak", "Mind-numbing" and "Eye’s"
+ * are single tokens.
+ */
+const WORD = String.raw`[A-Z][\p{L}\p{N}'’-]*`;
+
+/**
+ * A "run" is a Capitalised word followed by any number of further Capitalised
+ * words. Between two words we allow either ": " ("Shadow Word: Pain") or
+ * whitespace plus optional lower-case connectors ("Judgement of Command").
+ * Punctuation such as commas and full stops ends a run.
+ */
+const RUN_RE = new RegExp(
+  `${WORD}(?:(?::\\s+|\\s+(?:(?:${[...CONNECTORS].join('|')})\\s+)*)${WORD})*`,
+  'gu',
+);
+
+/**
+ * True when a token (colon stripped, lower-cased) is a single generic term.
+ * @param {string} token
+ * @returns {boolean}
+ */
+function isGenericToken(token) {
+  const t = normalizeName(token).replace(/:$/, '');
+  return GENERIC_SET.has(t) || CLASS_AND_SPEC_SET.has(t);
+}
+
+/**
+ * True when the whole phrase is not a candidate: it is itself a generic term
+ * ("Cooldown Manager", "Spell Power") or every word is generic ("Holy Mace").
+ * @param {string[]} tokens
+ * @returns {boolean}
+ */
+function isGenericPhrase(tokens) {
+  const phrase = normalizeName(tokens.join(' ')).replace(/:/g, '');
+  if (GENERIC_SET.has(phrase) || CLASS_AND_SPEC_SET.has(phrase)) return true;
+  return tokens.every((t) => isGenericToken(t));
+}
+
+/**
+ * Split one regex run into name segments and clean each of them:
+ *   - a possessive followed by a generic word ends the segment
+ *     ("Eye’s Spirit" -> "Eye", then "Spirit" which is dropped as generic);
+ *   - a trailing possessive is stripped ("Eye’s" -> "Eye");
+ *   - leading filler words are stripped ("Fixed Consecration" -> "Consecration");
+ *   - segments that are entirely generic vocabulary are discarded.
+ * @param {string} run
+ * @returns {string[]} cleaned names (possibly empty)
+ */
+function segmentsFromRun(run) {
+  const tokens = run.split(/\s+/);
+  const groups = [];
+  let current = [];
+  tokens.forEach((tok, i) => {
+    current.push(tok);
+    const possessive = /['’]s:?$/i.test(tok);
+    const next = tokens.slice(i + 1).find((t) => !CONNECTORS.has(t));
+    // Possessive in the middle of a run only splits when what follows is generic.
+    if (possessive && next !== undefined && isGenericToken(next)) {
+      groups.push(current);
+      current = [];
+    }
+  });
+  if (current.length) groups.push(current);
+
+  const names = [];
+  for (let g of groups) {
+    // Drop leading filler ("Fixed", "The", "Players", ...). Compare without colon.
+    while (g.length && FILLER_WORDS.has(normalizeName(g[0]).replace(/:$/, ''))) g = g.slice(1);
+    // A run cannot end on a connector, but a stripped colon may remain.
+    if (!g.length) continue;
+    g = [...g];
+    // Strip a trailing possessive / colon from the last word only.
+    g[g.length - 1] = g[g.length - 1].replace(/['’]s$/i, '').replace(/:$/, '');
+    if (!g[g.length - 1]) continue;
+    if (isGenericPhrase(g)) continue;
+    names.push(g.join(' '));
+  }
+  return names;
+}
+
+/**
+ * Find the skill / item names mentioned in one change line.
+ *
+ * Heuristic: runs of Capitalised Words (with lower-case connectors such as
+ * "of"/"the") that survive the stoplists, after removing quotes, parentheses,
+ * rank suffixes and zone prefixes. Single capitalised words count too unless
+ * they are filler or generic. Results keep order of appearance, are
+ * de-duplicated case-insensitively and capped at 4.
+ *
+ * Shrinking of long runs that miss on Wowhead (e.g. "Lesser Rock Elemental" ->
+ * "Rock Elemental") happens at lookup time in addSubjects, not here, so that
+ * this function stays a stable, easily tested "what looks like a name" step.
+ *
+ * @param {string} text  plain text of one change
+ * @param {{ classSlug?: string|null }} [opts]  classSlug is accepted for API
+ *   symmetry with lookupName; class names are already stoplisted globally.
+ * @returns {string[]} ordered candidate names
+ */
+export function extractCandidates(text, { classSlug } = {}) {
+  void classSlug; // reserved: every class name is already in the stoplist
+  const cleaned = cleanText(text);
+  const seen = new Set();
+  const out = [];
+  for (const m of cleaned.matchAll(RUN_RE)) {
+    for (const name of segmentsFromRun(m[0])) {
+      const key = normalizeName(name);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(name);
+      if (out.length >= MAX_CANDIDATES) return out;
+    }
+  }
+  return out;
+}
