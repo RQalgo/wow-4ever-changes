@@ -295,6 +295,8 @@ function renderDay(day, changes) {
 function renderResults() {
   terms = queryTerms(state.q);
   const days = visibleDays(data, state);
+  const total = days.reduce((n, d) => n + d.changes.length, 0);
+  $('live').textContent = `${total} ${total === 1 ? 'change' : 'changes'} shown`;
   if (!days.length) {
     showStatus('Nothing matches', 'No changes match the current filters.', {
       label: 'Clear filters', onClick: () => setState(defaultState()),
@@ -481,6 +483,18 @@ function renderSearch() {
   if (input.value !== state.q) input.value = state.q;
 }
 
+/**
+ * Publish the filter bar height as --bar-h so the sticky date headings sit
+ * right below the sticky bar on mobile (CSS ignores it on desktop).
+ * @param {HTMLElement} box the filter panel
+ */
+function watchBarHeight(box) {
+  const set = () => document.documentElement.style.setProperty('--bar-h', `${box.offsetHeight}px`);
+  set();
+  if ('ResizeObserver' in window) new ResizeObserver(set).observe(box);
+  else window.addEventListener('resize', set);
+}
+
 /** Build the (static) filter panel structure once. */
 function buildFilters() {
   const box = $('filters');
@@ -499,16 +513,24 @@ function buildFilters() {
   const gen = el('button', 'toggle');
   gen.type = 'button';
   gen.id = 'general-toggle';
-  gen.append(el('span', 'toggle-box'), el('span', 'toggle-label', 'Show General changes'));
+  // "Show " / " changes" are hidden on narrow screens (class "opt") to keep the bar compact.
+  const genLabel = el('span', 'toggle-label');
+  genLabel.append(el('span', 'opt', 'Show '), 'General', el('span', 'opt', ' changes'));
+  gen.append(el('span', 'toggle-box'), genLabel);
   gen.addEventListener('click', () => setState({ ...state, general: !state.general }));
   const clear = el('button', 'btn-clear');
   clear.type = 'button';
   clear.id = 'clear-filters';
-  clear.append(el('span', null, 'Clear filters'));
+  clear.append('Clear', el('span', 'opt', ' filters'));
   clear.addEventListener('click', () => setState(defaultState()));
   tools.append(buildSearch(), gen, clear);
 
-  box.replaceChildren(tools, classGroup, specGroup);
+  // Polite live region so screen readers hear how many changes are shown.
+  const live = el('p', 'visually-hidden');
+  live.id = 'live';
+  live.setAttribute('role', 'status');
+  box.replaceChildren(tools, classGroup, specGroup, live);
+  watchBarHeight(box);
 }
 
 /** Sync the General toggle and the clear button with the state. */
