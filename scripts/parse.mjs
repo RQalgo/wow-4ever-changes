@@ -290,24 +290,29 @@ function descend(ctx, heading) {
  * @param {object[]} out Changes of the current day, in published order.
  */
 function walkList(list, ctx, out) {
-  // The last change emitted by *this* list; a developer note in a sibling
-  // <li> attaches to it. It is deliberately not shared with nested or
-  // parent lists, so a note never jumps across a heading.
+  // The last change emitted directly by *this* list; a developer note in a
+  // sibling <li> attaches to it. It is not shared with nested or parent
+  // lists and is cleared after a heading item, so a note never jumps
+  // across a heading.
   let previous = null;
   for (const li of itemsOf(list)) {
     const { own, nested } = splitListItem(li);
     const text = textOf(own);
 
     // A heading item: only bold text plus a nested list -> class/spec/group.
+    // `previous` is reset so a note after the heading's block never jumps
+    // back over it to an earlier change; it is kept as a change instead.
     if (nested.length && isOnly(own, BOLD_TAGS)) {
       const inner = descend(ctx, text);
       for (const sub of nested) walkList(sub, inner, out);
+      previous = null;
       continue;
     }
 
     // A wrapper item with no text of its own: just walk its lists.
     if (!text) {
       for (const sub of nested) walkList(sub, ctx, out);
+      if (nested.length) previous = null;
       continue;
     }
 
