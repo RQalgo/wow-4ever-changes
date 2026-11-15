@@ -24,13 +24,25 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
 
 - Pick a class, then a talent tree. A tree view also shows the class-wide and
   all-class lines, since those affect the tree too.
+- Category chips (Items, Quests, Dungeons, PvP, ...) switch non-class changes
+  on and off; only categories that occur in the data are shown, with quick
+  *All* / *None*. A line can touch several classes: it is shown once, in its
+  published section, with small chips for the other classes, *Talent* and
+  other categories (tap a chip to filter by it). Up to four skill icons are
+  shown per line; talents carry a small diamond mark.
+- On phones the filters sit behind the filter button next to the search box
+  (a badge counts active filters; a one-line summary appears when something is
+  filtered). On wide screens they stay in the sidebar and cards flow in two
+  columns.
 - Tap the search box to get skill-name suggestions; type to narrow.
 - Each date shows a **Hotfix** or **Patch** badge (patch days also show the
   patch title and a Source link). Use the *All / Hotfixes / Patches* switch to
   show only one kind.
 - The view is stored in the URL, e.g.
-  `#class=paladin&spec=retribution` or `#kind=patch`, so it can be bookmarked
-  or shared.
+  `#class=paladin&spec=retribution`, `#kind=patch` or `#cats=items,quests`
+  (enabled categories; `cats=none` for none; the old `general=0` still works),
+  so it can be bookmarked or shared. `#filters=open` opens the filter sheet on
+  phones.
 
 ## How the data stays current
 
