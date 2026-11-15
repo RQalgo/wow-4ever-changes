@@ -177,6 +177,6 @@ test('decodeHash accepts the documented example and rejects junk', () => {
 });
 
 test('sanitizeSelection guards stored values', () => {
-  assert.deepEqual(L.sanitizeSelection('druid', 'feral-combat'), { cls: 'druid', spec: 'feral-combat' });
+  assert.deepEqual(L.sanitizeSelection('druid', 'feral'), { cls: 'druid', spec: 'feral' });
   assert.deepEqual(L.sanitizeSelection(5, 'x'), { cls: '', spec: '' });
 });
