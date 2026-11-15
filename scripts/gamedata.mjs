@@ -120,3 +120,251 @@ export function treeSlug(name) {
     .replace(/^-+|-+$/g, '');
   return slug === 'feral-combat' ? 'feral' : slug;
 }
+
+// ---------------------------------------------------------------------------
+// CSV parsing (RFC 4180, streaming)
+// ---------------------------------------------------------------------------
+
+/**
+ * Incremental CSV tokenizer. Feed it text chunks with push(); each call returns
+ * the records (arrays of strings) that were completed by that chunk. Call
+ * end() after the last chunk to get a final record that had no trailing
+ * newline. Chunk boundaries may fall anywhere, even inside a quoted field or
+ * between the two quotes of an escaped quote.
+ *
+ * State machine, per character:
+ *   unquoted : ',' ends the field; '\n' / '\r' ends the record; a '"' as the
+ *              very first character of a field switches to quoted mode (a
+ *              quote elsewhere in an unquoted field is kept literally).
+ *   quoted   : everything is literal (commas, newlines) until a '"'. A '"'
+ *              followed by another '"' is one literal quote; a '"' followed by
+ *              anything else closes the quoted part.
+ * Blank lines are skipped. "\r\n", "\n" and a lone "\r" all end a record.
+ */
+class CsvTokenizer {
+  constructor() {
+    this.record = []; // fields finished so far in the current record
+    this.field = ''; // text of the field being read
+    this.inQuotes = false;
+    this.quotePending = false; // chunk ended right after a '"' seen in quoted mode
+    this.skipLF = false; // chunk ended right after a '\r': swallow a following '\n'
+    this.fieldStarted = false; // any character (or opening quote) seen in this field
+  }
+
+  /** Finishes the current field. */
+  _endField() {
+    this.record.push(this.field);
+    this.field = '';
+    this.fieldStarted = false;
+  }
+
+  /**
+   * Finishes the current record and returns it, or null for a blank line.
+   * @returns {string[]|null}
+   */
+  _endRecord() {
+    // A blank line is a record with a single empty, never-started field.
+    const blank = this.record.length === 0 && !this.fieldStarted && this.field === '';
+    let out = null;
+    if (!blank) {
+      this._endField();
+      out = this.record;
+    }
+    this.record = [];
+    this.field = '';
+    this.fieldStarted = false;
+    return out;
+  }
+
+  /**
+   * @param {string} chunk
+   * @returns {string[][]} records completed by this chunk
+   */
+  push(chunk) {
+    const out = [];
+    const n = chunk.length;
+    let i = 0;
+
+    // Resume decisions that were waiting for the first character of this chunk.
+    if (this.skipLF) {
+      this.skipLF = false;
+      if (chunk.charCodeAt(0) === 10) i = 1;
+    }
+    if (this.quotePending && i < n) {
+      this.quotePending = false;
+      if (chunk.charCodeAt(i) === 34) {
+        this.field += '"'; // "" => literal quote, still in quoted mode
+        i++;
+      } else {
+        this.inQuotes = false; // the quote closed the quoted part
+      }
+    }
+
+    while (i < n) {
+      if (this.inQuotes) {
+        // Jump straight to the next quote; everything before it is literal.
+        const q = chunk.indexOf('"', i);
+        if (q === -1) {
+          this.field += chunk.slice(i);
+          i = n;
+          break;
+        }
+        this.field += chunk.slice(i, q);
+        i = q + 1;
+        if (i >= n) {
+          this.quotePending = true; // cannot tell "" from closing quote yet
+          break;
+        }
+        if (chunk.charCodeAt(i) === 34) {
+          this.field += '"';
+          i++;
+        } else {
+          this.inQuotes = false;
+        }
+        continue;
+      }
+
+      // Unquoted mode: copy a run of ordinary characters in one slice.
+      let j = i;
+      while (j < n) {
+        const c = chunk.charCodeAt(j);
+        if (c === 44 || c === 10 || c === 13 || c === 34) break;
+        j++;
+      }
+      if (j > i) {
+        this.field += chunk.slice(i, j);
+        this.fieldStarted = true;
+        i = j;
+        if (i >= n) break;
+      }
+      const c = chunk.charCodeAt(i);
+      i++;
+      if (c === 44) {
+        this.fieldStarted = true; // an empty field before a comma still counts
+        this._endField();
+      } else if (c === 10 || c === 13) {
+        const rec = this._endRecord();
+        if (rec) out.push(rec);
+        if (c === 13) {
+          if (i < n) {
+            if (chunk.charCodeAt(i) === 10) i++;
+          } else {
+            this.skipLF = true;
+          }
+        }
+      } else {
+        // c === 34, a double quote
+        if (!this.fieldStarted && this.field === '') {
+          this.inQuotes = true; // opening quote of a quoted field
+          this.fieldStarted = true;
+        } else {
+          this.field += '"'; // stray quote inside an unquoted field: literal
+        }
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Flushes a last record that had no trailing newline.
+   * @returns {string[][]}
+   */
+  end() {
+    const rec = this._endRecord();
+    return rec ? [rec] : [];
+  }
+}
+
+/**
+ * Turns the first record into a header and each later record into an object
+ * keyed by header name. Only the columns listed in `columns` are kept when
+ * given (keeps wide tables such as SpellMisc cheap). `required` columns must
+ * exist in the header or an Error is thrown.
+ */
+class RowBuilder {
+  /**
+   * @param {{columns?: string[], required?: string[]}} opts
+   */
+  constructor({ columns, required = [] } = {}) {
+    this.columns = columns ? new Set(columns) : null;
+    this.required = required;
+    /** @type {Array<[string, number]>|null} [name, index] pairs to keep */
+    this.picks = null;
+  }
+
+  /**
+   * @param {string[]} rec one tokenized record
+   * @returns {object|null} null for the header record itself
+   */
+  add(rec) {
+    if (!this.picks) {
+      // First record = header. Strip a UTF-8 BOM from the first name.
+      const header = rec.map((h, k) => (k === 0 ? h.replace(/^﻿/, '') : h).trim());
+      for (const name of this.required) {
+        if (!header.includes(name)) {
+          throw new Error(`missing column "${name}" (header: ${header.slice(0, 12).join(',')}…)`);
+        }
+      }
+      this.picks = [];
+      header.forEach((name, idx) => {
+        if (!this.columns || this.columns.has(name)) this.picks.push([name, idx]);
+      });
+      return null;
+    }
+    const row = {};
+    for (const [name, idx] of this.picks) row[name] = rec[idx] ?? '';
+    return row;
+  }
+}
+
+/**
+ * Parses a whole CSV text (convenience for tests and small inputs).
+ * @param {string} text
+ * @param {{columns?: string[], required?: string[]}} [opts]
+ * @returns {object[]} one object per data row, keyed by header name
+ */
+export function parseCsv(text, opts) {
+  const tok = new CsvTokenizer();
+  const builder = new RowBuilder(opts);
+  const rows = [];
+  const take = (recs) => {
+    for (const rec of recs) {
+      const row = builder.add(rec);
+      if (row) rows.push(row);
+    }
+  };
+  take(tok.push(String(text).replace(/^﻿/, '')));
+  take(tok.end());
+  return rows;
+}
+
+/**
+ * Streams CSV rows as objects keyed by header name.
+ * @param {string|AsyncIterable<string|Uint8Array>|Iterable<string|Uint8Array>} source
+ *   a string, or any (async) iterable of chunks: a fetch Response body, a
+ *   fs.createReadStream, an array of strings...
+ * @param {{columns?: string[], required?: string[]}} [opts]
+ *   columns: only keep these columns; required: throw if one is missing
+ * @yields {object}
+ */
+export async function* csvRows(source, opts) {
+  const tok = new CsvTokenizer();
+  const builder = new RowBuilder(opts);
+  // StringDecoder keeps multi-byte UTF-8 characters intact across chunk edges.
+  const decoder = new StringDecoder('utf8');
+  const chunks = typeof source === 'string' ? [source] : source;
+  for await (const chunk of chunks) {
+    const text = typeof chunk === 'string' ? chunk : decoder.write(Buffer.from(chunk));
+    for (const rec of tok.push(text)) {
+      const row = builder.add(rec);
+      if (row) yield row;
+    }
+  }
+  const tail = decoder.end();
+  const recs = tail ? tok.push(tail) : [];
+  recs.push(...tok.end());
+  for (const rec of recs) {
+    const row = builder.add(rec);
+    if (row) yield row;
+  }
+}
