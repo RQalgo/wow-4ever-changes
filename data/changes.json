@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T02:14:05Z",
+  "generatedAt": "2026-11-15T02:24:03Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -4581,7 +4581,13 @@
           "group": null,
           "text": "Blessing of Light has been removed.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Blessing of Light",
+              "type": "spell",
+              "icon": "spell_holy_prayerofhealing02"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p081",
@@ -4609,7 +4615,13 @@
           "group": null,
           "text": "Judgement of Fury’s duration reduced to 3 seconds (Was 4 seconds).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Judgement of Fury",
+              "type": "spell",
+              "icon": "spell_holy_retributionaura"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p083",
@@ -4620,7 +4632,13 @@
           "group": null,
           "text": "Spiritual Focus moved to Row 1 (Was Row 2). Changed to a 5-point talent (Was a 2-point talent). Max rank unchanged.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Spiritual Focus",
+              "type": "spell",
+              "icon": "spell_arcane_blink"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p084",
@@ -4648,7 +4666,13 @@
           "group": null,
           "text": "Reverence moved to Row 2 (Was Row 3). Changed to a 2-point talent (Was a 3-point talent). Max rank unchanged.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Reverence",
+              "type": "spell",
+              "icon": "spell_holy_divineillumination"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p086",
@@ -4659,7 +4683,13 @@
           "group": null,
           "text": "Unyielding Faith moved to Retribution.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Unyielding Faith",
+              "type": "spell",
+              "icon": "spell_holy_unyieldingfaith"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p087",
@@ -4670,7 +4700,13 @@
           "group": null,
           "text": "Purifying Power moved to Row 2 (Was Row 3).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Purifying Power",
+              "type": "spell",
+              "icon": "spell_holy_purifyingpower"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p088",
@@ -4681,7 +4717,13 @@
           "group": null,
           "text": "Voice of Truth removed.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Voice of Truth",
+              "type": "spell",
+              "icon": "inv_misc_horn_03"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p089",
@@ -4692,7 +4734,13 @@
           "group": null,
           "text": "Divine Favor moved to Row 3 (Was Row 4).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Divine Favor",
+              "type": "spell",
+              "icon": "spell_holy_heal"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p090",
@@ -4703,7 +4751,13 @@
           "group": null,
           "text": "Illumination moved to Row 3 (Was Row 4).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Illumination",
+              "type": "spell",
+              "icon": "spell_holy_greaterheal"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p091",
@@ -4711,10 +4765,21 @@
           "category": "Classes",
           "class": "paladin",
           "spec": "holy",
-          "group": null,
-          "text": "Holy Conduit moved",
+          "group": "Holy Conduit moved",
+          "text": "Divine Precision moved to Row 4 (Was Row 5). Changed to a 2-point talent granting 4/8% chance to hit with Holy spells (Was 6/12/18% chance to hit with Holy spells). Additionally, Divine Precision now also reduces the duration of Silence effects on you by 10/20%.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Divine Precision",
+              "type": "spell",
+              "icon": "spell_holy_mindsooth"
+            },
+            {
+              "name": "Silence",
+              "type": "spell",
+              "icon": "spell_shadow_impphaseshift"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p092",
@@ -4722,8 +4787,8 @@
           "category": "Classes",
           "class": "paladin",
           "spec": "holy",
-          "group": null,
-          "text": "Divine Precision moved to Row 4 (Was Row 5). Changed to a 2-point talent granting 4/8% chance to hit with Holy spells (Was 6/12/18% chance to hit with Holy spells). Additionally, Divine Precision now also reduces the duration of Silence effects on you by 10/20%.",
+          "group": "Holy Conduit moved",
+          "text": "New Talent Oath of Light in Row 4. 40-yard range, 8% of Base Mana cost. No cooldown. Swear an Oath to protect target ally for 5 min, increasing the healing of your Holy Light, Flash of Light, and Holy Shock spells. Only one Oath of Light may be sworn by the Paladin at any one time. The amount of bonus healing increases with the player’s level.",
           "notes": [],
           "subjects": []
         },
@@ -4733,10 +4798,16 @@
           "category": "Classes",
           "class": "paladin",
           "spec": "holy",
-          "group": null,
-          "text": "New Talent Oath of Light in Row 4. 40-yard range, 8% of Base Mana cost. No cooldown. Swear an Oath to protect target ally for 5 min, increasing the healing of your Holy Light, Flash of Light, and Holy Shock spells. Only one Oath of Light may be sworn by the Paladin at any one time. The amount of bonus healing increases with the player’s level.",
+          "group": "Holy Conduit moved",
+          "text": "New Talent Boundless Light in Row 5. Passive - Increases the critical strike chance of your Holy Shock spell by 15/30% when cast on allies not affected by your Oath of Light.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Holy Shock",
+              "type": "spell",
+              "icon": "spell_holy_searinglight"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p094",
@@ -4744,10 +4815,16 @@
           "category": "Classes",
           "class": "paladin",
           "spec": "holy",
-          "group": null,
-          "text": "New Talent Boundless Light in Row 5. Passive - Increases the critical strike chance of your Holy Shock spell by 15/30% when cast on allies not affected by your Oath of Light.",
+          "group": "Holy Conduit moved",
+          "text": "Holy Power changed to Increases the critical strike healing bonus of your Holy Spells by 10/20/30/40/50% (Was Increases the critical strike chance of your Holy Shock and Holy Strike spells by 3/6/9/12/15%, and all other spells by 1/2/3/4/5%).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Holy Power",
+              "type": "spell",
+              "icon": "spell_holy_power"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p095",
@@ -4755,21 +4832,33 @@
           "category": "Classes",
           "class": "paladin",
           "spec": "holy",
-          "group": null,
-          "text": "Holy Power changed to Increases the critical strike healing bonus of your Holy Spells by 10/20/30/40/50% (Was Increases the critical strike chance of your Holy Shock and Holy Strike spells by 3/6/9/12/15%, and all other spells by 1/2/3/4/5%).",
+          "group": "Holy Conduit moved",
+          "text": "Light’s Vigil is now only usable on friendly targets and has had its offensive capabilities removed. The tooltip has been reworded to reflect this.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Light's Vigil",
+              "type": "spell",
+              "icon": "ability_paladin_judgementofthepure"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p096",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
-          "spec": "holy",
+          "spec": "protection",
           "group": null,
-          "text": "Light’s Vigil is now only usable on friendly targets and has had its offensive capabilities removed. The tooltip has been reworded to reflect this.",
+          "text": "Reckoning will now correctly perform its number of attacks based on stacks, and Reckoning will no longer gain stacks while sitting.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Reckoning",
+              "type": "spell",
+              "icon": "spell_holy_blessingofstrength"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p097",
@@ -4778,9 +4867,15 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Reckoning will now correctly perform its number of attacks based on stacks, and Reckoning will no longer gain stacks while sitting.",
+          "text": "Divine Intellect moved to Row 1 of Protection (was Row 1 of Holy).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Divine Intellect",
+              "type": "spell",
+              "icon": "spell_nature_sleep"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p098",
@@ -4789,9 +4884,15 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Divine Intellect moved to Row 1 of Protection (was Row 1 of Holy).",
+          "text": "Sacred Duty moved to Row 2 (Was Row 3).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Sacred Duty",
+              "type": "spell",
+              "icon": "spell_holy_divineintervention"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p099",
@@ -4800,9 +4901,30 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Sacred Duty moved to Row 2 (Was Row 3).",
+          "text": "Sacred Duty no longer grants % increase to Stamina. In addition to its cooldown reduction on Divine Shield, Divine Protection, and Templar’s Bulwark by 30sec/1min, it now also reduces the duration of your Forbearance effect by 5/10 seconds.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Sacred Duty",
+              "type": "spell",
+              "icon": "spell_holy_divineintervention"
+            },
+            {
+              "name": "Divine Shield",
+              "type": "spell",
+              "icon": "spell_holy_divineintervention"
+            },
+            {
+              "name": "Divine Protection",
+              "type": "spell",
+              "icon": "spell_holy_restoration"
+            },
+            {
+              "name": "Templar's Bulwark",
+              "type": "spell",
+              "icon": "ability_paladin_shieldofthetemplar"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p100",
@@ -4811,9 +4933,15 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Sacred Duty no longer grants % increase to Stamina. In addition to its cooldown reduction on Divine Shield, Divine Protection, and Templar’s Bulwark by 30sec/1min, it now also reduces the duration of your Forbearance effect by 5/10 seconds.",
+          "text": "Improved Seal of Fury removed.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Seal of Fury",
+              "type": "spell",
+              "icon": "spell_holy_retributionaura"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p101",
@@ -4822,9 +4950,15 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Improved Seal of Fury removed.",
+          "text": "Templar’s Bulwark moved to Row 3 (Was Row 5).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Templar's Bulwark",
+              "type": "spell",
+              "icon": "ability_paladin_shieldofthetemplar"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p102",
@@ -4833,23 +4967,18 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Templar’s Bulwark moved to Row 3 (Was Row 5).",
+          "text": "Templar’s Bulwark is now a Magic effect and dispellable.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Templar's Bulwark",
+              "type": "spell",
+              "icon": "ability_paladin_shieldofthetemplar"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p103",
-          "scope": "class",
-          "category": "Classes",
-          "class": "paladin",
-          "spec": "protection",
-          "group": null,
-          "text": "Templar’s Bulwark is now a Magic effect and dispellable.",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-11-02-p104",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -4866,7 +4995,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p105",
+          "id": "2026-11-02-p104",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -4874,7 +5003,30 @@
           "group": null,
           "text": "Shield Specialization changed to a 2-point talent granting 15/30% increased shield block value, and a 50/100% chance to grant 4% of your Maximum Mana. (Unchanged at max rank).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Shield Specialization",
+              "type": "spell",
+              "icon": "inv_shield_06"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-02-p105",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": "protection",
+          "group": null,
+          "text": "Toughness moved to Row 3 (Was Row 1).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Toughness",
+              "type": "spell",
+              "icon": "spell_holy_devotion"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p106",
@@ -4883,9 +5035,15 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Toughness moved to Row 3 (Was Row 1).",
+          "text": "Anticipation moved to Row 4 (Was Row 2).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Anticipation",
+              "type": "spell",
+              "icon": "spell_magic_lesserinvisibilty"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p107",
@@ -4894,9 +5052,15 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Anticipation moved to Row 4 (Was Row 2).",
+          "text": "Swift Judgement changed to instantly unleash your active Seal. Does not share a cooldown with Judgement (Was resets the cooldown of your Judgement ability).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Swift Judgement",
+              "type": "spell",
+              "icon": "ability_paladin_judgementred"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p108",
@@ -4905,23 +5069,18 @@
           "class": "paladin",
           "spec": "protection",
           "group": null,
-          "text": "Swift Judgement changed to instantly unleash your active Seal. Does not share a cooldown with Judgement (Was resets the cooldown of your Judgement ability).",
+          "text": "One-Handed Weapon Specialization removed.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "One-Handed Weapon Specialization",
+              "type": "spell",
+              "icon": "inv_sword_20"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p109",
-          "scope": "class",
-          "category": "Classes",
-          "class": "paladin",
-          "spec": "protection",
-          "group": null,
-          "text": "One-Handed Weapon Specialization removed.",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-11-02-p110",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -4932,7 +5091,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p111",
+          "id": "2026-11-02-p110",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -4943,7 +5102,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p112",
+          "id": "2026-11-02-p111",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -4953,6 +5112,11 @@
           "notes": [],
           "subjects": [
             {
+              "name": "Iron Creed",
+              "type": "spell",
+              "icon": "spell_holy_improvedresistanceauras"
+            },
+            {
               "name": "Holy Strike",
               "type": "spell",
               "icon": "classicon_paladin"
@@ -4960,7 +5124,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p113",
+          "id": "2026-11-02-p112",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -4977,7 +5141,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p114",
+          "id": "2026-11-02-p113",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -4985,7 +5149,30 @@
           "group": null,
           "text": "Holy Conduit moved to the 3rd Row of the Holy Tree (was 2nd Row of Retribution).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Holy Conduit",
+              "type": "spell",
+              "icon": "spell_holy_devineaegis"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-02-p114",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": "retribution",
+          "group": null,
+          "text": "Sanctified Judgement has been moved to Row 2 (was Row 3).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Sanctified Judgement",
+              "type": "spell",
+              "icon": "ability_paladin_judgementblue"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p115",
@@ -4994,9 +5181,15 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Sanctified Judgement has been moved to Row 2 (was Row 3).",
+          "text": "Conviction moved to Row 2 (Was Row 3).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Conviction",
+              "type": "spell",
+              "icon": "spell_holy_retributionaura"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p116",
@@ -5005,9 +5198,15 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Conviction moved to Row 2 (Was Row 3).",
+          "text": "Conviction changed to grant 2/4/6% critical strike chance to all spells and attacks (Was 1/2/3/4/5% to just melee attacks).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Conviction",
+              "type": "spell",
+              "icon": "spell_holy_retributionaura"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p117",
@@ -5016,9 +5215,15 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Conviction changed to grant 2/4/6% critical strike chance to all spells and attacks (Was 1/2/3/4/5% to just melee attacks).",
+          "text": "Vindication no longer grants an increase to Attack Power (was 1/2/3% increased Attack Power.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Vindication",
+              "type": "spell",
+              "icon": "spell_holy_vindication"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p118",
@@ -5027,9 +5232,15 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Vindication no longer grants an increase to Attack Power (was 1/2/3% increased Attack Power.",
+          "text": "Unyielding Faith moved to Row 3 of Retribution (was Row 2 of Holy).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Unyielding Faith",
+              "type": "spell",
+              "icon": "spell_holy_unyieldingfaith"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p119",
@@ -5038,9 +5249,15 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Unyielding Faith moved to Row 3 of Retribution (was Row 2 of Holy).",
+          "text": "Two-Handed Weapon Specialization moved to Row 4 (was Row 5).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Two-Handed Weapon Specialization",
+              "type": "spell",
+              "icon": "inv_hammer_04"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p120",
@@ -5049,9 +5266,15 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Two-Handed Weapon Specialization moved to Row 4 (was Row 5).",
+          "text": "Two-Handed Weapon Specialization changed to increase both Holy and Physical damage by 2/4/6% (Was just Physical damage).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Two-Handed Weapon Specialization",
+              "type": "spell",
+              "icon": "inv_hammer_04"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p121",
@@ -5060,23 +5283,23 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Two-Handed Weapon Specialization changed to increase both Holy and Physical damage by 2/4/6% (Was just Physical damage).",
+          "text": "Two-Handed Weapon Specialization changed to also reduce the Threat generated by the Paladin by 7/14/20% while wearing a two-handed melee weapon.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Two-Handed Weapon Specialization",
+              "type": "spell",
+              "icon": "inv_hammer_04"
+            },
+            {
+              "name": "Threat",
+              "type": "spell",
+              "icon": "temp"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p122",
-          "scope": "class",
-          "category": "Classes",
-          "class": "paladin",
-          "spec": "retribution",
-          "group": null,
-          "text": "Two-Handed Weapon Specialization changed to also reduce the Threat generated by the Paladin by 7/14/20% while wearing a two-handed melee weapon.",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-11-02-p123",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -5087,7 +5310,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p124",
+          "id": "2026-11-02-p123",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -5095,7 +5318,35 @@
           "group": null,
           "text": "Champion of the Light changed to increasing the Paladin’s spell damage by 12/24/36/48/60% of their Intellect and also reduces the cast time of Hammer of Wrath by 0.2/0.4/0.6/0.8/1.0 seconds.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Champion of the Light",
+              "type": "spell",
+              "icon": "ability_paladin_enlightenedjudgements"
+            },
+            {
+              "name": "Hammer of Wrath",
+              "type": "spell",
+              "icon": "ability_thunderclap"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-02-p124",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": "retribution",
+          "group": null,
+          "text": "Vengeance changed to stacking up to 5 times (Was stacking up to 3 times).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Vengeance",
+              "type": "spell",
+              "icon": "ability_racial_avatar"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p125",
@@ -5104,9 +5355,20 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Vengeance changed to stacking up to 5 times (Was stacking up to 3 times).",
+          "text": "Vengeance now requires Seal of Command (was requiring Sanctified Judgement).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Vengeance",
+              "type": "spell",
+              "icon": "ability_racial_avatar"
+            },
+            {
+              "name": "Seal of Command",
+              "type": "spell",
+              "icon": "ability_warrior_innerrage"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p126",
@@ -5115,23 +5377,18 @@
           "class": "paladin",
           "spec": "retribution",
           "group": null,
-          "text": "Vengeance now requires Seal of Command (was requiring Sanctified Judgement).",
+          "text": "New Talent added to Row 5, Turn Evil - Reduces the cast time of your Turn Undead spell by 0.5/1.0 sec, its cooldown by 5/10 sec, and allows it to affect Demons.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Turn Evil",
+              "type": "spell",
+              "icon": "spell_holy_turnundead"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p127",
-          "scope": "class",
-          "category": "Classes",
-          "class": "paladin",
-          "spec": "retribution",
-          "group": null,
-          "text": "New Talent added to Row 5, Turn Evil - Reduces the cast time of your Turn Undead spell by 0.5/1.0 sec, its cooldown by 5/10 sec, and allows it to affect Demons.",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-11-02-p128",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -5142,7 +5399,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p129",
+          "id": "2026-11-02-p128",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -5150,10 +5407,16 @@
           "group": null,
           "text": "Unsealed Wrath is the new 31st talent. Your melee attacks store a copy of your active Seal for 15 sec, stacking up to 3 times. Landing an attack with a different Seal consumes all stacks, giving the stored Seal its normal chance to activate once per stack.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Unsealed Wrath",
+              "type": "spell",
+              "icon": "spell_holy_blessedresillience"
+            }
+          ]
         },
         {
-          "id": "2026-11-02-p130",
+          "id": "2026-11-02-p129",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -5161,7 +5424,35 @@
           "group": null,
           "text": "Unsealed Wrath now requires Repentance.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Unsealed Wrath",
+              "type": "spell",
+              "icon": "spell_holy_blessedresillience"
+            },
+            {
+              "name": "Repentance",
+              "type": "spell",
+              "icon": "spell_holy_prayerofhealing"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-02-p130",
+          "scope": "class",
+          "category": "Classes",
+          "class": "priest",
+          "spec": null,
+          "group": null,
+          "text": "Power Word: Shield can now correctly be replaced by a Power Word: Shield of equal or greater rank.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Power Word: Shield",
+              "type": "spell",
+              "icon": "spell_holy_powerwordshield"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p131",
@@ -5170,9 +5461,15 @@
           "class": "priest",
           "spec": null,
           "group": null,
-          "text": "Power Word: Shield can now correctly be replaced by a Power Word: Shield of equal or greater rank.",
+          "text": "Shadow Word: Death now causes 30% of maximum Health damage to the Priest if it fails to kill the target, up from 10%. Shadow Word: Death will no longer damage the Priest when the spell misses.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Shadow Word: Death",
+              "type": "spell",
+              "icon": "spell_shadow_demonicfortitude"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p132",
@@ -5181,20 +5478,32 @@
           "class": "priest",
           "spec": null,
           "group": null,
-          "text": "Shadow Word: Death now causes 30% of maximum Health damage to the Priest if it fails to kill the target, up from 10%. Shadow Word: Death will no longer damage the Priest when the spell misses.",
+          "text": "Fixed an issue causing Undead Priest’s Dark Sacrifice to still break crowd control effects.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dark Sacrifice",
+              "type": "spell",
+              "icon": "spell_holy_powerinfusion_shadow"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p133",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
-          "spec": null,
+          "spec": "holy",
           "group": null,
-          "text": "Fixed an issue causing Undead Priest’s Dark Sacrifice to still break crowd control effects.",
+          "text": "Binding Heal removed.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Binding Heal",
+              "type": "spell",
+              "icon": "spell_holy_blindingheal"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p134",
@@ -5203,23 +5512,28 @@
           "class": "priest",
           "spec": "holy",
           "group": null,
-          "text": "Binding Heal removed.",
+          "text": "New talent in Binding Heal’s slot: Holy Binding. When the Priest heals a target other than themselves with Flash Heal, 50% of the healing done by the Flash Heal is also done to the Priest. This healing generates no threat.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Binding Heal",
+              "type": "spell",
+              "icon": "spell_holy_blindingheal"
+            },
+            {
+              "name": "Holy Binding",
+              "type": "spell",
+              "icon": "spell_holy_blindingheal"
+            },
+            {
+              "name": "Flash Heal",
+              "type": "spell",
+              "icon": "spell_holy_flashheal"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p135",
-          "scope": "class",
-          "category": "Classes",
-          "class": "priest",
-          "spec": "holy",
-          "group": null,
-          "text": "New talent in Binding Heal’s slot: Holy Binding. When the Priest heals a target other than themselves with Flash Heal, 50% of the healing done by the Flash Heal is also done to the Priest. This healing generates no threat.",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-11-02-p136",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -5227,10 +5541,21 @@
           "group": null,
           "text": "Devouring Contagion no longer spreads Devouring Plague if it is spreading from a critter.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Devouring Contagion",
+              "type": "spell",
+              "icon": "spell_shadow_devouringplague"
+            },
+            {
+              "name": "Devouring Plague",
+              "type": "spell",
+              "icon": "spell_shadow_devouringplague"
+            }
+          ]
         },
         {
-          "id": "2026-11-02-p137",
+          "id": "2026-11-02-p136",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -5241,7 +5566,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p138",
+          "id": "2026-11-02-p137",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -5251,9 +5576,31 @@
           "notes": [],
           "subjects": [
             {
+              "name": "Cure Disease",
+              "type": "spell",
+              "icon": "spell_holy_nullifydisease"
+            },
+            {
               "name": "Shadowform",
               "type": "spell",
               "icon": "spell_shadow_shadowform"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-02-p138",
+          "scope": "class",
+          "category": "Classes",
+          "class": "rogue",
+          "spec": null,
+          "group": null,
+          "text": "Casting Slice and Dice no longer causes the target to stand up if sitting.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Slice and Dice",
+              "type": "spell",
+              "icon": "ability_rogue_slicedice"
             }
           ]
         },
@@ -5264,7 +5611,7 @@
           "class": "rogue",
           "spec": null,
           "group": null,
-          "text": "Casting Slice and Dice no longer causes the target to stand up if sitting.",
+          "text": "Poised: New passive ability learned at level 18. “When you are not in combat and have your maximum Energy, you will gain Poised. Poised reduces the Energy cost of your next Energy ability by 10.”",
           "notes": [],
           "subjects": []
         },
@@ -5275,7 +5622,7 @@
           "class": "rogue",
           "spec": null,
           "group": null,
-          "text": "Poised: New passive ability learned at level 18. “When you are not in combat and have your maximum Energy, you will gain Poised. Poised reduces the Energy cost of your next Energy ability by 10.”",
+          "text": "New Spell Added: Shank. Learned at level 24. 5 Energy cost. 10 second cooldown. Melee range. Instantly strike with your off-hand weapon, dealing 50% weapon damage and generating 15 Energy. Shank cannot Miss. Rank 2 learned at level 44 and generates 25 Energy.",
           "notes": [],
           "subjects": []
         },
@@ -5286,7 +5633,7 @@
           "class": "rogue",
           "spec": null,
           "group": null,
-          "text": "New Spell Added: Shank. Learned at level 24. 5 Energy cost. 10 second cooldown. Melee range. Instantly strike with your off-hand weapon, dealing 50% weapon damage and generating 15 Energy. Shank cannot Miss. Rank 2 learned at level 44 and generates 25 Energy.",
+          "text": "Deadly Poison Attack Power coefficient increased to 0.009 (Was 0.0045)",
           "notes": [],
           "subjects": []
         },
@@ -5297,7 +5644,7 @@
           "class": "rogue",
           "spec": null,
           "group": null,
-          "text": "Deadly Poison Attack Power coefficient increased to 0.009 (Was 0.0045)",
+          "text": "Instant Poison Attack Power coefficient increased to 0.01 (Was 0.005)",
           "notes": [],
           "subjects": []
         },
@@ -5306,11 +5653,17 @@
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
-          "spec": null,
+          "spec": "assassination",
           "group": null,
-          "text": "Instant Poison Attack Power coefficient increased to 0.01 (Was 0.005)",
+          "text": "The Ruthlessness talent activating no longer causes the target to stand up if sitting.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Ruthlessness",
+              "type": "spell",
+              "icon": "ability_druid_disembowel"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p144",
@@ -5319,9 +5672,15 @@
           "class": "rogue",
           "spec": "assassination",
           "group": null,
-          "text": "The Ruthlessness talent activating no longer causes the target to stand up if sitting.",
+          "text": "Improved Expose Armor moved to Row 2 (Was Row 3).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Expose Armor",
+              "type": "spell",
+              "icon": "ability_warrior_riposte"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p145",
@@ -5330,9 +5689,15 @@
           "class": "rogue",
           "spec": "assassination",
           "group": null,
-          "text": "Improved Expose Armor moved to Row 2 (Was Row 3).",
+          "text": "Murder has been removed.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Murder",
+              "type": "spell",
+              "icon": "spell_shadow_deathscream"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p146",
@@ -5341,9 +5706,20 @@
           "class": "rogue",
           "spec": "assassination",
           "group": null,
-          "text": "Murder has been removed.",
+          "text": "Lethality changed to a 2-point talent granting 10/20% increased Critical Strike damage to the abilities listed (Was a 5-point talent granting 4/8/12/16/20%).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Lethality",
+              "type": "spell",
+              "icon": "ability_criticalstrike"
+            },
+            {
+              "name": "Critical Strike",
+              "type": "spell",
+              "icon": "ability_criticalstrike"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p147",
@@ -5352,9 +5728,15 @@
           "class": "rogue",
           "spec": "assassination",
           "group": null,
-          "text": "Lethality changed to a 2-point talent granting 10/20% increased Critical Strike damage to the abilities listed (Was a 5-point talent granting 4/8/12/16/20%).",
+          "text": "Vigor moved to Row 3 (Was Row 5).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Vigor",
+              "type": "spell",
+              "icon": "spell_nature_earthbindtotem"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p148",
@@ -5363,9 +5745,15 @@
           "class": "rogue",
           "spec": "assassination",
           "group": null,
-          "text": "Vigor moved to Row 3 (Was Row 5).",
+          "text": "New Talent: Blood Splatter. Passive. 1 point talent in Row 3. Increases the duration of your Rupture ability by 6 seconds and your Garrote ability by 9 seconds.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Blood Splatter",
+              "type": "spell",
+              "icon": "ability_rogue_rupture"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p149",
@@ -5374,9 +5762,15 @@
           "class": "rogue",
           "spec": "assassination",
           "group": null,
-          "text": "New Talent: Blood Splatter. Passive. 1 point talent in Row 3. Increases the duration of your Rupture ability by 6 seconds and your Garrote ability by 9 seconds.",
+          "text": "Relentless Strikes moved to Row 5 (was Row 3).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Relentless Strikes",
+              "type": "spell",
+              "icon": "ability_warrior_decisivestrike"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p150",
@@ -5385,23 +5779,18 @@
           "class": "rogue",
           "spec": "assassination",
           "group": null,
-          "text": "Relentless Strikes moved to Row 5 (was Row 3).",
+          "text": "Relentless Strikes change to a 5-point talent granting a 4/8/12/16/20% chance per Combo Point to restore 25 Energy (was 1 point granting 20% per combo point).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Relentless Strikes",
+              "type": "spell",
+              "icon": "ability_warrior_decisivestrike"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p151",
-          "scope": "class",
-          "category": "Classes",
-          "class": "rogue",
-          "spec": "assassination",
-          "group": null,
-          "text": "Relentless Strikes change to a 5-point talent granting a 4/8/12/16/20% chance per Combo Point to restore 25 Energy (was 1 point granting 20% per combo point).",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-11-02-p152",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5412,7 +5801,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p153",
+          "id": "2026-11-02-p152",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5425,6 +5814,28 @@
               "name": "Shank",
               "type": "spell",
               "icon": "ability_theblackarrow"
+            },
+            {
+              "name": "Poison",
+              "type": "spell",
+              "icon": "spell_shadow_corpseexplode"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-02-p153",
+          "scope": "class",
+          "category": "Classes",
+          "class": "rogue",
+          "spec": "assassination",
+          "group": null,
+          "text": "Seal Fate changed to a 3-point talent granting your critical strikes from abilities that add Combo Points a 33/66/100% chance to add an additional Combo Point.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Seal Fate",
+              "type": "spell",
+              "icon": "spell_shadow_chilltouch"
             }
           ]
         },
@@ -5435,23 +5846,18 @@
           "class": "rogue",
           "spec": "assassination",
           "group": null,
-          "text": "Seal Fate changed to a 3-point talent granting your critical strikes from abilities that add Combo Points a 33/66/100% chance to add an additional Combo Point.",
+          "text": "Mutilate moved to Row 7 (was Row 9).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Mutilate",
+              "type": "spell",
+              "icon": "ability_rogue_deadlybrew"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p155",
-          "scope": "class",
-          "category": "Classes",
-          "class": "rogue",
-          "spec": "assassination",
-          "group": null,
-          "text": "Mutilate moved to Row 7 (was Row 9).",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-11-02-p156",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5462,7 +5868,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p157",
+          "id": "2026-11-02-p156",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5470,10 +5876,21 @@
           "group": null,
           "text": "Improved Eviscerate has been renamed Coup de Grace, Increasing the damage done by your Eviscerate ability by 7/13/20%, and the damage and storage rate of your Death Mark ability by 7/13/20%.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Eviscerate",
+              "type": "spell",
+              "icon": "ability_rogue_eviscerate"
+            },
+            {
+              "name": "Coup",
+              "type": "spell",
+              "icon": "inv_sword_87"
+            }
+          ]
         },
         {
-          "id": "2026-11-02-p158",
+          "id": "2026-11-02-p157",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5481,10 +5898,21 @@
           "group": null,
           "text": "Improved Sinister Strike renamed to Efficient Strikes and now reduces the Energy costs of Sinister Strike and Hemorrhage by 3/5 (was just Sinister Strike discounted).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Sinister Strike",
+              "type": "spell",
+              "icon": "spell_shadow_ritualofsacrifice"
+            },
+            {
+              "name": "Efficient Strikes",
+              "type": "spell",
+              "icon": "spell_shadow_ritualofsacrifice"
+            }
+          ]
         },
         {
-          "id": "2026-11-02-p159",
+          "id": "2026-11-02-p158",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5501,7 +5929,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p160",
+          "id": "2026-11-02-p159",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5512,7 +5940,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p161",
+          "id": "2026-11-02-p160",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5520,7 +5948,30 @@
           "group": null,
           "text": "Flawless Execution energy cost reduction increased to 15 (was 10).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Flawless Execution",
+              "type": "spell",
+              "icon": "inv_sword_35"
+            }
+          ]
+        },
+        {
+          "id": "2026-11-02-p161",
+          "scope": "class",
+          "category": "Classes",
+          "class": "rogue",
+          "spec": "combat",
+          "group": null,
+          "text": "Weapon Expertise moved to Row 4 (was Row 6).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Weapon Expertise",
+              "type": "spell",
+              "icon": "spell_holy_blessingofstrength"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p162",
@@ -5529,9 +5980,15 @@
           "class": "rogue",
           "spec": "combat",
           "group": null,
-          "text": "Weapon Expertise moved to Row 4 (was Row 6).",
+          "text": "Aggression moved to Row 4 (was Row 6).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Aggression",
+              "type": "spell",
+              "icon": "ability_racial_avatar"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p163",
@@ -5540,9 +5997,20 @@
           "class": "rogue",
           "spec": "combat",
           "group": null,
-          "text": "Aggression moved to Row 4 (was Row 6).",
+          "text": "Aggression changed to increasing the damage of Sinister Strike and Eviscerate by 5/10/15% (was Sinister Strike, Eviscerate, and Backstab by 2/4/6%).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Aggression",
+              "type": "spell",
+              "icon": "ability_racial_avatar"
+            },
+            {
+              "name": "Sinister Strike",
+              "type": "spell",
+              "icon": "spell_shadow_ritualofsacrifice"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p164",
@@ -5551,9 +6019,15 @@
           "class": "rogue",
           "spec": "combat",
           "group": null,
-          "text": "Aggression changed to increasing the damage of Sinister Strike and Eviscerate by 5/10/15% (was Sinister Strike, Eviscerate, and Backstab by 2/4/6%).",
+          "text": "Dual Wield Specialization moved to Row 5 (was Row 4).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dual Wield Specialization",
+              "type": "spell",
+              "icon": "ability_dualwield"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p165",
@@ -5562,9 +6036,15 @@
           "class": "rogue",
           "spec": "combat",
           "group": null,
-          "text": "Dual Wield Specialization moved to Row 5 (was Row 4).",
+          "text": "Dual Wield Specialization changed to a 2-point talent granting 25/50% increased off-hand weapon damage (was 5 a points granting 5/10/15/20/25% off-hand weapon damage).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dual Wield Specialization",
+              "type": "spell",
+              "icon": "ability_dualwield"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p166",
@@ -5573,20 +6053,32 @@
           "class": "rogue",
           "spec": "combat",
           "group": null,
-          "text": "Dual Wield Specialization changed to a 2-point talent granting 25/50% increased off-hand weapon damage (was 5 a points granting 5/10/15/20/25% off-hand weapon damage).",
+          "text": "New Talent: Flash of Steel. Passive. 5-point talent in Row 6. Increases the energy generated by your Shank ability by 3/6/9/12/15 and reduces its cooldown by 0.4/0.8/1.2/1.6/2.0 seconds.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Flash of Steel",
+              "type": "spell",
+              "icon": "ability_rogue_restlessblades"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p167",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
-          "spec": "combat",
+          "spec": "subtlety",
           "group": null,
-          "text": "New Talent: Flash of Steel. Passive. 5-point talent in Row 6. Increases the energy generated by your Shank ability by 3/6/9/12/15 and reduces its cooldown by 0.4/0.8/1.2/1.6/2.0 seconds.",
+          "text": "Fixed an issue where Hemorrhage and Ghostly Strike were dealing much more damage than intended when using a Dagger.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Ghostly Strike",
+              "type": "spell",
+              "icon": "spell_shadow_curse"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p168",
@@ -5595,9 +6087,15 @@
           "class": "rogue",
           "spec": "subtlety",
           "group": null,
-          "text": "Fixed an issue where Hemorrhage and Ghostly Strike were dealing much more damage than intended when using a Dagger.",
+          "text": "Setup moved to Row 1 (was Row 2).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Setup",
+              "type": "spell",
+              "icon": "spell_nature_mirrorimage"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p169",
@@ -5606,9 +6104,15 @@
           "class": "rogue",
           "spec": "subtlety",
           "group": null,
-          "text": "Setup moved to Row 1 (was Row 2).",
+          "text": "Setup changed to a 15/30/45% chance to add a Combo Point to your target after Dodging their attack or fully resisting one of their spells (was 33/66/100% chance).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Setup",
+              "type": "spell",
+              "icon": "spell_nature_mirrorimage"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p170",
@@ -5617,9 +6121,30 @@
           "class": "rogue",
           "spec": "subtlety",
           "group": null,
-          "text": "Setup changed to a 15/30/45% chance to add a Combo Point to your target after Dodging their attack or fully resisting one of their spells (was 33/66/100% chance).",
+          "text": "Opportunity changed to a 5-point talent granting 4/8/12/16/20% increased damage to Backstab, Garrote, Ambush, and Mutilate (was 2 points granting 5/10%).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Opportunity",
+              "type": "spell",
+              "icon": "ability_warrior_warcry"
+            },
+            {
+              "name": "Backstab",
+              "type": "spell",
+              "icon": "ability_backstab"
+            },
+            {
+              "name": "Garrote",
+              "type": "spell",
+              "icon": "ability_rogue_garrote"
+            },
+            {
+              "name": "Ambush",
+              "type": "spell",
+              "icon": "ability_rogue_ambush"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p171",
@@ -5628,9 +6153,15 @@
           "class": "rogue",
           "spec": "subtlety",
           "group": null,
-          "text": "Opportunity changed to a 5-point talent granting 4/8/12/16/20% increased damage to Backstab, Garrote, Ambush, and Mutilate (was 2 points granting 5/10%).",
+          "text": "Dirty Deeds moved to Row 2 (was Row 5).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dirty Deeds",
+              "type": "spell",
+              "icon": "spell_shadow_summonsuccubus"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p172",
@@ -5639,9 +6170,15 @@
           "class": "rogue",
           "spec": "subtlety",
           "group": null,
-          "text": "Dirty Deeds moved to Row 2 (was Row 5).",
+          "text": "Camouflage moved to Row 2 (was Row 1).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Camouflage",
+              "type": "spell",
+              "icon": "ability_stealth"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p173",
@@ -5650,9 +6187,15 @@
           "class": "rogue",
           "spec": "subtlety",
           "group": null,
-          "text": "Camouflage moved to Row 2 (was Row 1).",
+          "text": "Camouflage changed to a 3-point talent granting 5/10/15% increased movement speed in stealth and reduces stealth’s cooldown by 2/4/6 seconds (was 5 points granting 3/6/9/12/15% and 2/3/4/5/6).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Camouflage",
+              "type": "spell",
+              "icon": "ability_stealth"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p174",
@@ -5661,9 +6204,15 @@
           "class": "rogue",
           "spec": "subtlety",
           "group": null,
-          "text": "Camouflage changed to a 3-point talent granting 5/10/15% increased movement speed in stealth and reduces stealth’s cooldown by 2/4/6 seconds (was 5 points granting 3/6/9/12/15% and 2/3/4/5/6).",
+          "text": "Premeditation moved to Row 3 (was Row 4).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Premeditation",
+              "type": "spell",
+              "icon": "spell_shadow_possession"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p175",
@@ -5672,23 +6221,18 @@
           "class": "rogue",
           "spec": "subtlety",
           "group": null,
-          "text": "Premeditation moved to Row 3 (was Row 4).",
+          "text": "Serrated Blades moved to Row 3 (was Row 4).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Serrated Blades",
+              "type": "spell",
+              "icon": "inv_sword_17"
+            }
+          ]
         },
         {
           "id": "2026-11-02-p176",
-          "scope": "class",
-          "category": "Classes",
-          "class": "rogue",
-          "spec": "subtlety",
-          "group": null,
-          "text": "Serrated Blades moved to Row 3 (was Row 4).",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-11-02-p177",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5699,7 +6243,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p178",
+          "id": "2026-11-02-p177",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5707,10 +6251,16 @@
           "group": null,
           "text": "Ghostly Strike moved to Row 4 (was Row 3).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Ghostly Strike",
+              "type": "spell",
+              "icon": "spell_shadow_curse"
+            }
+          ]
         },
         {
-          "id": "2026-11-02-p179",
+          "id": "2026-11-02-p178",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5718,10 +6268,26 @@
           "group": null,
           "text": "Ghostly Strike now also causes your next Ambush or Garrote cast within 7 seconds to not require Stealth.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Ghostly Strike",
+              "type": "spell",
+              "icon": "spell_shadow_curse"
+            },
+            {
+              "name": "Ambush",
+              "type": "spell",
+              "icon": "ability_rogue_ambush"
+            },
+            {
+              "name": "Garrote",
+              "type": "spell",
+              "icon": "ability_rogue_garrote"
+            }
+          ]
         },
         {
-          "id": "2026-11-02-p180",
+          "id": "2026-11-02-p179",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5732,7 +6298,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p181",
+          "id": "2026-11-02-p180",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5743,7 +6309,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p182",
+          "id": "2026-11-02-p181",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5754,7 +6320,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p183",
+          "id": "2026-11-02-p182",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5765,7 +6331,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p184",
+          "id": "2026-11-02-p183",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5776,7 +6342,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p185",
+          "id": "2026-11-02-p184",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5787,7 +6353,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p186",
+          "id": "2026-11-02-p185",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5798,7 +6364,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p187",
+          "id": "2026-11-02-p186",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5809,7 +6375,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p188",
+          "id": "2026-11-02-p187",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -5820,7 +6386,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p189",
+          "id": "2026-11-02-p188",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5831,7 +6397,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p190",
+          "id": "2026-11-02-p189",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5848,7 +6414,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p191",
+          "id": "2026-11-02-p190",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5859,7 +6425,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p192",
+          "id": "2026-11-02-p191",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5870,7 +6436,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p193",
+          "id": "2026-11-02-p192",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5887,7 +6453,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p194",
+          "id": "2026-11-02-p193",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5898,7 +6464,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p195",
+          "id": "2026-11-02-p194",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5909,7 +6475,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p196",
+          "id": "2026-11-02-p195",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5920,7 +6486,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p197",
+          "id": "2026-11-02-p196",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5937,7 +6503,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p198",
+          "id": "2026-11-02-p197",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5948,7 +6514,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p199",
+          "id": "2026-11-02-p198",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5965,7 +6531,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p200",
+          "id": "2026-11-02-p199",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5976,7 +6542,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p201",
+          "id": "2026-11-02-p200",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5987,7 +6553,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p202",
+          "id": "2026-11-02-p201",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -5998,7 +6564,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p203",
+          "id": "2026-11-02-p202",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -6009,7 +6575,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p204",
+          "id": "2026-11-02-p203",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -6020,7 +6586,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p205",
+          "id": "2026-11-02-p204",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -6031,7 +6597,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p206",
+          "id": "2026-11-02-p205",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -6042,7 +6608,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p207",
+          "id": "2026-11-02-p206",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -6059,7 +6625,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p208",
+          "id": "2026-11-02-p207",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -6070,7 +6636,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p209",
+          "id": "2026-11-02-p208",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -6081,7 +6647,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p210",
+          "id": "2026-11-02-p209",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -6098,7 +6664,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p211",
+          "id": "2026-11-02-p210",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -6109,7 +6675,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p212",
+          "id": "2026-11-02-p211",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -6120,7 +6686,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p213",
+          "id": "2026-11-02-p212",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6131,7 +6697,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p214",
+          "id": "2026-11-02-p213",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6142,7 +6708,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p215",
+          "id": "2026-11-02-p214",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6153,7 +6719,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p216",
+          "id": "2026-11-02-p215",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6164,7 +6730,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p217",
+          "id": "2026-11-02-p216",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6172,10 +6738,16 @@
           "group": null,
           "text": "Two-Handed Weapon Specialization changed to grant 2/4/6% increased damage when using a two-handed melee weapon (was 1/2/3% increased damage).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Two-Handed Weapon Specialization",
+              "type": "spell",
+              "icon": "inv_hammer_04"
+            }
+          ]
         },
         {
-          "id": "2026-11-02-p218",
+          "id": "2026-11-02-p217",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6186,7 +6758,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p219",
+          "id": "2026-11-02-p218",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6197,7 +6769,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p220",
+          "id": "2026-11-02-p219",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6208,7 +6780,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p221",
+          "id": "2026-11-02-p220",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6219,7 +6791,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p222",
+          "id": "2026-11-02-p221",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6230,7 +6802,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p223",
+          "id": "2026-11-02-p222",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6241,7 +6813,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p224",
+          "id": "2026-11-02-p223",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6252,7 +6824,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p225",
+          "id": "2026-11-02-p224",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6269,7 +6841,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p226",
+          "id": "2026-11-02-p225",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6280,7 +6852,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p227",
+          "id": "2026-11-02-p226",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6291,7 +6863,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p228",
+          "id": "2026-11-02-p227",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6302,7 +6874,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p229",
+          "id": "2026-11-02-p228",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6313,7 +6885,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p230",
+          "id": "2026-11-02-p229",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -6324,7 +6896,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p231",
+          "id": "2026-11-02-p230",
           "scope": "general",
           "category": "Player versus Player",
           "class": null,
@@ -6335,7 +6907,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p232",
+          "id": "2026-11-02-p231",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6346,7 +6918,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p233",
+          "id": "2026-11-02-p232",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6357,7 +6929,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p234",
+          "id": "2026-11-02-p233",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6368,7 +6940,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p235",
+          "id": "2026-11-02-p234",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6379,7 +6951,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p236",
+          "id": "2026-11-02-p235",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6390,7 +6962,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p237",
+          "id": "2026-11-02-p236",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6401,7 +6973,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p238",
+          "id": "2026-11-02-p237",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6412,7 +6984,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p239",
+          "id": "2026-11-02-p238",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6423,7 +6995,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p240",
+          "id": "2026-11-02-p239",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6434,7 +7006,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p241",
+          "id": "2026-11-02-p240",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6445,7 +7017,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p242",
+          "id": "2026-11-02-p241",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6456,7 +7028,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p243",
+          "id": "2026-11-02-p242",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6467,7 +7039,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p244",
+          "id": "2026-11-02-p243",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6484,7 +7056,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p245",
+          "id": "2026-11-02-p244",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6501,7 +7073,7 @@
           ]
         },
         {
-          "id": "2026-11-02-p246",
+          "id": "2026-11-02-p245",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6512,7 +7084,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p247",
+          "id": "2026-11-02-p246",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6523,7 +7095,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p248",
+          "id": "2026-11-02-p247",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6534,7 +7106,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p249",
+          "id": "2026-11-02-p248",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6545,7 +7117,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p250",
+          "id": "2026-11-02-p249",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6556,7 +7128,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p251",
+          "id": "2026-11-02-p250",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -6567,7 +7139,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p252",
+          "id": "2026-11-02-p251",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6578,7 +7150,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p253",
+          "id": "2026-11-02-p252",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6589,7 +7161,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p254",
+          "id": "2026-11-02-p253",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6602,7 +7174,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p255",
+          "id": "2026-11-02-p254",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6613,7 +7185,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p256",
+          "id": "2026-11-02-p255",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6624,7 +7196,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p257",
+          "id": "2026-11-02-p256",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6635,7 +7207,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p258",
+          "id": "2026-11-02-p257",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6646,7 +7218,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p259",
+          "id": "2026-11-02-p258",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6657,7 +7229,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p260",
+          "id": "2026-11-02-p259",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6668,7 +7240,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p261",
+          "id": "2026-11-02-p260",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6679,7 +7251,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p262",
+          "id": "2026-11-02-p261",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6690,7 +7262,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p263",
+          "id": "2026-11-02-p262",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6707,7 +7279,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p264",
+          "id": "2026-11-02-p263",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6718,7 +7290,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p265",
+          "id": "2026-11-02-p264",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6729,7 +7301,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p266",
+          "id": "2026-11-02-p265",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6740,7 +7312,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p267",
+          "id": "2026-11-02-p266",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6754,7 +7326,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p268",
+          "id": "2026-11-02-p267",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6768,7 +7340,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p269",
+          "id": "2026-11-02-p268",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6782,7 +7354,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p270",
+          "id": "2026-11-02-p269",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6796,7 +7368,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p271",
+          "id": "2026-11-02-p270",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6807,7 +7379,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p272",
+          "id": "2026-11-02-p271",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6818,7 +7390,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p273",
+          "id": "2026-11-02-p272",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6829,7 +7401,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p274",
+          "id": "2026-11-02-p273",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6840,7 +7412,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p275",
+          "id": "2026-11-02-p274",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6853,7 +7425,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p276",
+          "id": "2026-11-02-p275",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6864,7 +7436,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p277",
+          "id": "2026-11-02-p276",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6877,7 +7449,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p278",
+          "id": "2026-11-02-p277",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6888,7 +7460,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p279",
+          "id": "2026-11-02-p278",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6901,7 +7473,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p280",
+          "id": "2026-11-02-p279",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6912,7 +7484,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p281",
+          "id": "2026-11-02-p280",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6923,7 +7495,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p282",
+          "id": "2026-11-02-p281",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6934,7 +7506,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p283",
+          "id": "2026-11-02-p282",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6945,7 +7517,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p284",
+          "id": "2026-11-02-p283",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6956,7 +7528,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p285",
+          "id": "2026-11-02-p284",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6967,7 +7539,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p286",
+          "id": "2026-11-02-p285",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -6978,7 +7550,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p287",
+          "id": "2026-11-02-p286",
           "scope": "general",
           "category": "Items",
           "class": null,
@@ -6989,7 +7561,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p288",
+          "id": "2026-11-02-p287",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7002,7 +7574,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p289",
+          "id": "2026-11-02-p288",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7013,7 +7585,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p290",
+          "id": "2026-11-02-p289",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7024,7 +7596,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p291",
+          "id": "2026-11-02-p290",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7035,7 +7607,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p292",
+          "id": "2026-11-02-p291",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7046,7 +7618,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p293",
+          "id": "2026-11-02-p292",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7057,7 +7629,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p294",
+          "id": "2026-11-02-p293",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7068,7 +7640,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p295",
+          "id": "2026-11-02-p294",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7079,7 +7651,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p296",
+          "id": "2026-11-02-p295",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7090,7 +7662,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p297",
+          "id": "2026-11-02-p296",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7101,7 +7673,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p298",
+          "id": "2026-11-02-p297",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7112,7 +7684,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p299",
+          "id": "2026-11-02-p298",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7123,7 +7695,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p300",
+          "id": "2026-11-02-p299",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7134,7 +7706,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p301",
+          "id": "2026-11-02-p300",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7145,7 +7717,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p302",
+          "id": "2026-11-02-p301",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7156,7 +7728,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p303",
+          "id": "2026-11-02-p302",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7167,7 +7739,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p304",
+          "id": "2026-11-02-p303",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7178,7 +7750,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p305",
+          "id": "2026-11-02-p304",
           "scope": "general",
           "category": "Quests and World",
           "class": null,
@@ -7189,7 +7761,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p306",
+          "id": "2026-11-02-p305",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7200,7 +7772,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p307",
+          "id": "2026-11-02-p306",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7211,7 +7783,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p308",
+          "id": "2026-11-02-p307",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7222,7 +7794,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p309",
+          "id": "2026-11-02-p308",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7233,7 +7805,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p310",
+          "id": "2026-11-02-p309",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7244,7 +7816,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p311",
+          "id": "2026-11-02-p310",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7255,7 +7827,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p312",
+          "id": "2026-11-02-p311",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7266,7 +7838,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p313",
+          "id": "2026-11-02-p312",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7277,7 +7849,7 @@
           "subjects": []
         },
         {
-          "id": "2026-11-02-p314",
+          "id": "2026-11-02-p313",
           "scope": "general",
           "category": "User Interface and Accessibility",
           "class": null,
@@ -7910,13 +8482,9 @@
           "category": "Classes",
           "class": "hunter",
           "spec": null,
-          "group": "Pets",
-          "text": "Dismember (Crocolisk)",
-          "notes": [
-            "Healing reduction reduced to 25% (was 50%).",
-            "Duration reduced to 6 seconds (was 10 seconds).",
-            "Cooldown increased to 15 seconds (was 6 seconds)."
-          ],
+          "group": "Pets > Dismember (Crocolisk)",
+          "text": "Healing reduction reduced to 25% (was 50%).",
+          "notes": [],
           "subjects": []
         },
         {
@@ -7925,17 +8493,57 @@
           "category": "Classes",
           "class": "hunter",
           "spec": null,
-          "group": "Pets",
-          "text": "Sonic Blast (Bat)",
-          "notes": [
-            "Cast speed reduction reduced to 30% (was 60%).",
-            "Duration reduced to 20 seconds (was 30 seconds).",
-            "Cooldown increased to 60 seconds (was 30 seconds)."
-          ],
+          "group": "Pets > Dismember (Crocolisk)",
+          "text": "Duration reduced to 6 seconds (was 10 seconds).",
+          "notes": [],
           "subjects": []
         },
         {
           "id": "2026-10-15-p030",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": null,
+          "group": "Pets > Dismember (Crocolisk)",
+          "text": "Cooldown increased to 15 seconds (was 6 seconds).",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p031",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": null,
+          "group": "Pets > Sonic Blast (Bat)",
+          "text": "Cast speed reduction reduced to 30% (was 60%).",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p032",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": null,
+          "group": "Pets > Sonic Blast (Bat)",
+          "text": "Duration reduced to 20 seconds (was 30 seconds).",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p033",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": null,
+          "group": "Pets > Sonic Blast (Bat)",
+          "text": "Cooldown increased to 60 seconds (was 30 seconds).",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p034",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -7949,7 +8557,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p031",
+          "id": "2026-10-15-p035",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -7966,7 +8574,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p032",
+          "id": "2026-10-15-p036",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -7983,7 +8591,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p033",
+          "id": "2026-10-15-p037",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -7994,7 +8602,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p034",
+          "id": "2026-10-15-p038",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -8005,7 +8613,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p035",
+          "id": "2026-10-15-p039",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -8016,7 +8624,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p036",
+          "id": "2026-10-15-p040",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -8027,7 +8635,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p037",
+          "id": "2026-10-15-p041",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -8038,7 +8646,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p038",
+          "id": "2026-10-15-p042",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -8051,7 +8659,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p039",
+          "id": "2026-10-15-p043",
           "scope": "class",
           "category": "Classes",
           "class": "hunter",
@@ -8062,7 +8670,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p040",
+          "id": "2026-10-15-p044",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8075,7 +8683,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p041",
+          "id": "2026-10-15-p045",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8086,7 +8694,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p042",
+          "id": "2026-10-15-p046",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8108,7 +8716,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p043",
+          "id": "2026-10-15-p047",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8130,7 +8738,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p044",
+          "id": "2026-10-15-p048",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8147,7 +8755,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p045",
+          "id": "2026-10-15-p049",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8158,27 +8766,98 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p046",
+          "id": "2026-10-15-p050",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
-          "spec": null,
+          "spec": "fire",
           "group": null,
-          "text": "Fire",
+          "text": "Heating Up is no longer consumed if the Mage also had Presence of Mind active for the Pyroblast cast. Heating up also always gains an additional charge each time the Mage casts Fire Blast. This does mean Fire Blast critical strikes generate 2 charges.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p051",
+          "scope": "class",
+          "category": "Classes",
+          "class": "mage",
+          "spec": "fire",
+          "group": null,
+          "text": "Wake of Fire: Talent reverted back to Improved Fire Blast and no longer grants a bonus when the Mage kills a target. It also now increases the range of Fireblast by 8/15 yards.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Fire Blast",
+              "type": "spell",
+              "icon": "spell_fire_fireball"
+            }
+          ]
+        },
+        {
+          "id": "2026-10-15-p052",
+          "scope": "class",
+          "category": "Classes",
+          "class": "mage",
+          "spec": "fire",
+          "group": null,
+          "text": "Critical Mass: Mages can now spend up to 5 points in this talent for 10% total critical strike increase.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p053",
+          "scope": "class",
+          "category": "Classes",
+          "class": "mage",
+          "spec": "fire",
+          "group": null,
+          "text": "Fire Power: Redesigned. Now only 3 talent points. Increases damage done by Fire spells by 1/2/3% per the Mage’s Fire effects on the target, up to a maximum increase of 12%. Spells that mix multiple schools of magic do not grant this bonus.",
           "notes": [
-            "Heating Up is no longer consumed if the Mage also had Presence of Mind active for the Pyroblast cast. Heating up also always gains an additional charge each time the Mage casts Fire Blast. This does mean Fire Blast critical strikes generate 2 charges.",
-            "Wake of Fire: Talent reverted back to Improved Fire Blast and no longer grants a bonus when the Mage kills a target. It also now increases the range of Fireblast by 8/15 yards.",
-            "Critical Mass: Mages can now spend up to 5 points in this talent for 10% total critical strike increase.",
-            "Fire Power: Redesigned. Now only 3 talent points. Increases damage done by Fire spells by 1/2/3% per the Mage’s Fire effects on the target, up to a maximum increase of 12%. Spells that mix multiple schools of magic do not grant this bonus.",
-            "Developers’ notes: Specifically, the effects which can grant increased Fire damage from this talent are Ignite, Improved Scorch, Fireball, and Pyroblast, and Impact. Frostfire Bolt does not grant the damage increase but can benefit from it.",
-            "Frost Channeling now correctly reduces the Mage’s threat.",
-            "Fixed an issue where Ice Block was too transparent.",
-            "Fixed various issues around Clearcasting. Clearingcast now correctly does not roll for every target struck by a spell. Clearcasting no longer has a chance to activate off of Dampen Magic and Amplify Magic. Clearcasting no longer has a chance to be activated by abilities cast when not in combat."
+            "Developers’ notes: Specifically, the effects which can grant increased Fire damage from this talent are Ignite, Improved Scorch, Fireball, and Pyroblast, and Impact. Frostfire Bolt does not grant the damage increase but can benefit from it."
           ],
           "subjects": []
         },
         {
-          "id": "2026-10-15-p047",
+          "id": "2026-10-15-p054",
+          "scope": "class",
+          "category": "Classes",
+          "class": "mage",
+          "spec": "fire",
+          "group": null,
+          "text": "Frost Channeling now correctly reduces the Mage’s threat.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p055",
+          "scope": "class",
+          "category": "Classes",
+          "class": "mage",
+          "spec": "fire",
+          "group": null,
+          "text": "Fixed an issue where Ice Block was too transparent.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p056",
+          "scope": "class",
+          "category": "Classes",
+          "class": "mage",
+          "spec": "fire",
+          "group": null,
+          "text": "Fixed various issues around Clearcasting. Clearingcast now correctly does not roll for every target struck by a spell. Clearcasting no longer has a chance to activate off of Dampen Magic and Amplify Magic. Clearcasting no longer has a chance to be activated by abilities cast when not in combat.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Clearcasting",
+              "type": "spell",
+              "icon": "spell_shadow_manaburn"
+            }
+          ]
+        },
+        {
+          "id": "2026-10-15-p057",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8189,7 +8868,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p048",
+          "id": "2026-10-15-p058",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8211,7 +8890,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p049",
+          "id": "2026-10-15-p059",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8224,7 +8903,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p050",
+          "id": "2026-10-15-p060",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8241,7 +8920,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p051",
+          "id": "2026-10-15-p061",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8258,7 +8937,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p052",
+          "id": "2026-10-15-p062",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8269,7 +8948,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p053",
+          "id": "2026-10-15-p063",
           "scope": "class",
           "category": "Classes",
           "class": "mage",
@@ -8280,7 +8959,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p054",
+          "id": "2026-10-15-p064",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8288,10 +8967,21 @@
           "group": null,
           "text": "Seal of Fury is no longer overwritten by Power Word: Shield.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Seal of Fury",
+              "type": "spell",
+              "icon": "spell_holy_retributionaura"
+            },
+            {
+              "name": "Power Word: Shield",
+              "type": "spell",
+              "icon": "spell_holy_powerwordshield"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p055",
+          "id": "2026-10-15-p065",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8302,7 +8992,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p056",
+          "id": "2026-10-15-p066",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8315,7 +9005,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p057",
+          "id": "2026-10-15-p067",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8326,7 +9016,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p058",
+          "id": "2026-10-15-p068",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8337,7 +9027,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p059",
+          "id": "2026-10-15-p069",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8348,7 +9038,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p060",
+          "id": "2026-10-15-p070",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8359,7 +9049,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p061",
+          "id": "2026-10-15-p071",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8376,7 +9066,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p062",
+          "id": "2026-10-15-p072",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8384,10 +9074,16 @@
           "group": null,
           "text": "Seal of Fury Rank 3 is now correctly available for training at level 26 (was incorrectly level 25).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Seal of Fury",
+              "type": "spell",
+              "icon": "spell_holy_retributionaura"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p063",
+          "id": "2026-10-15-p073",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8395,10 +9091,16 @@
           "group": null,
           "text": "Fixed an issue where using a focus macro to cast Light’s Vigil was causing it to not go onto the appropriate target.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Light's Vigil",
+              "type": "spell",
+              "icon": "ability_paladin_judgementofthepure"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p064",
+          "id": "2026-10-15-p074",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8406,10 +9108,16 @@
           "group": null,
           "text": "Fixed an issue causing Infusion of Light to grant Holy Shock 50% increased damage against enemies.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Holy Shock",
+              "type": "spell",
+              "icon": "spell_holy_searinglight"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p065",
+          "id": "2026-10-15-p075",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8420,7 +9128,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p066",
+          "id": "2026-10-15-p076",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8430,10 +9138,16 @@
           "notes": [
             "This restores the Classic Era functionality of storing up to 4 charges and delays all the triggers until your next swing so that it does not cause the auto attack timer to be reset by instant attacks."
           ],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Reckoning",
+              "type": "spell",
+              "icon": "spell_holy_blessingofstrength"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p067",
+          "id": "2026-10-15-p077",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8441,10 +9155,16 @@
           "group": null,
           "text": "Champion of the Light now increases your spell damage by 10/20/30% of your Intellect (was 20/40/60%).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Champion of the Light",
+              "type": "spell",
+              "icon": "ability_paladin_enlightenedjudgements"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p068",
+          "id": "2026-10-15-p078",
           "scope": "class",
           "category": "Classes",
           "class": "paladin",
@@ -8452,10 +9172,16 @@
           "group": null,
           "text": "Sanctified Judgement’s Mana restore effect no longer generates threat.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Sanctified Judgement",
+              "type": "spell",
+              "icon": "ability_paladin_judgementblue"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p069",
+          "id": "2026-10-15-p079",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8466,7 +9192,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p070",
+          "id": "2026-10-15-p080",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8477,7 +9203,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p071",
+          "id": "2026-10-15-p081",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8485,10 +9211,16 @@
           "group": null,
           "text": "Power Word: Shield will now correctly tell the player they can’t replace a Power Word: Shield on a target if the Power Word: Shield they have is stronger.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Power Word: Shield",
+              "type": "spell",
+              "icon": "spell_holy_powerwordshield"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p072",
+          "id": "2026-10-15-p082",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8496,10 +9228,16 @@
           "group": null,
           "text": "Fixed an issue where casting Power Word: Shield would say SHIELDED twice in your scrolling combat text.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Power Word: Shield",
+              "type": "spell",
+              "icon": "spell_holy_powerwordshield"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p073",
+          "id": "2026-10-15-p083",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8507,10 +9245,16 @@
           "group": null,
           "text": "Devouring Plague cooldown reduced to 24 seconds (was 1 minute).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Devouring Plague",
+              "type": "spell",
+              "icon": "spell_shadow_devouringplague"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p074",
+          "id": "2026-10-15-p084",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8518,10 +9262,16 @@
           "group": null,
           "text": "Shadow Word: Death cooldown increased to 18 seconds (was 12 seconds).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Shadow Word: Death",
+              "type": "spell",
+              "icon": "spell_shadow_demonicfortitude"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p075",
+          "id": "2026-10-15-p085",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8532,7 +9282,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p076",
+          "id": "2026-10-15-p086",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8543,7 +9293,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p077",
+          "id": "2026-10-15-p087",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8554,7 +9304,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p078",
+          "id": "2026-10-15-p088",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8565,7 +9315,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p079",
+          "id": "2026-10-15-p089",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8576,7 +9326,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p080",
+          "id": "2026-10-15-p090",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8587,7 +9337,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p081",
+          "id": "2026-10-15-p091",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8598,7 +9348,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p082",
+          "id": "2026-10-15-p092",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8606,10 +9356,16 @@
           "group": null,
           "text": "Improved Power Word: Shield moved to Row 3 from Row 2.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Power Word: Shield",
+              "type": "spell",
+              "icon": "spell_holy_powerwordshield"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p083",
+          "id": "2026-10-15-p093",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8617,10 +9373,16 @@
           "group": null,
           "text": "Twin Disciplines now correctly benefits Shadow Word: Death, Mind Flay, Starshards and Penance.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Shadow Word: Death",
+              "type": "spell",
+              "icon": "spell_shadow_demonicfortitude"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p084",
+          "id": "2026-10-15-p094",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8630,6 +9392,11 @@
           "notes": [],
           "subjects": [
             {
+              "name": "Shadow Word: Death",
+              "type": "spell",
+              "icon": "spell_shadow_demonicfortitude"
+            },
+            {
               "name": "Shadowform",
               "type": "spell",
               "icon": "spell_shadow_shadowform"
@@ -8637,7 +9404,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p085",
+          "id": "2026-10-15-p095",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8645,10 +9412,21 @@
           "group": null,
           "text": "Fixed an issue where Devouring Contagion was causing the bounced Devouring Plague to cost Mana, perform a cast animation, and put the caster’s Devouring Plague back on full cooldown.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Devouring Contagion",
+              "type": "spell",
+              "icon": "spell_shadow_devouringplague"
+            },
+            {
+              "name": "Devouring Plague",
+              "type": "spell",
+              "icon": "spell_shadow_devouringplague"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p086",
+          "id": "2026-10-15-p096",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8665,7 +9443,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p087",
+          "id": "2026-10-15-p097",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8682,7 +9460,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p088",
+          "id": "2026-10-15-p098",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8693,7 +9471,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p089",
+          "id": "2026-10-15-p099",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8704,7 +9482,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p090",
+          "id": "2026-10-15-p100",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8715,7 +9493,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p091",
+          "id": "2026-10-15-p101",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8726,7 +9504,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p092",
+          "id": "2026-10-15-p102",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8737,7 +9515,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p093",
+          "id": "2026-10-15-p103",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8745,10 +9523,16 @@
           "group": null,
           "text": "Devouring Contagion now spreads to 2 targets.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Devouring Contagion",
+              "type": "spell",
+              "icon": "spell_shadow_devouringplague"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p094",
+          "id": "2026-10-15-p104",
           "scope": "class",
           "category": "Classes",
           "class": "priest",
@@ -8759,7 +9543,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p095",
+          "id": "2026-10-15-p105",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -8770,7 +9554,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p096",
+          "id": "2026-10-15-p106",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -8787,7 +9571,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p097",
+          "id": "2026-10-15-p107",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -8798,7 +9582,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p098",
+          "id": "2026-10-15-p108",
           "scope": "class",
           "category": "Classes",
           "class": "rogue",
@@ -8806,10 +9590,16 @@
           "group": null,
           "text": "Cold Blood is now correctly consumed when Mutilate lands a critical strike.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Mutilate",
+              "type": "spell",
+              "icon": "ability_rogue_deadlybrew"
+            }
+          ]
         },
         {
-          "id": "2026-10-15-p099",
+          "id": "2026-10-15-p109",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8820,7 +9610,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p100",
+          "id": "2026-10-15-p110",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8831,7 +9621,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p101",
+          "id": "2026-10-15-p111",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8842,7 +9632,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p102",
+          "id": "2026-10-15-p112",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8855,7 +9645,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p103",
+          "id": "2026-10-15-p113",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8877,7 +9667,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p104",
+          "id": "2026-10-15-p114",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8888,7 +9678,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p105",
+          "id": "2026-10-15-p115",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8899,7 +9689,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p106",
+          "id": "2026-10-15-p116",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8910,7 +9700,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p107",
+          "id": "2026-10-15-p117",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8921,7 +9711,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p108",
+          "id": "2026-10-15-p118",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8932,7 +9722,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p109",
+          "id": "2026-10-15-p119",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8943,7 +9733,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p110",
+          "id": "2026-10-15-p120",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8954,7 +9744,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p111",
+          "id": "2026-10-15-p121",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8965,7 +9755,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p112",
+          "id": "2026-10-15-p122",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8976,7 +9766,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p113",
+          "id": "2026-10-15-p123",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -8993,7 +9783,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p114",
+          "id": "2026-10-15-p124",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9004,7 +9794,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p115",
+          "id": "2026-10-15-p125",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9015,7 +9805,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p116",
+          "id": "2026-10-15-p126",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9026,7 +9816,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p117",
+          "id": "2026-10-15-p127",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9037,7 +9827,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p118",
+          "id": "2026-10-15-p128",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9048,7 +9838,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p119",
+          "id": "2026-10-15-p129",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9059,7 +9849,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p120",
+          "id": "2026-10-15-p130",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9070,7 +9860,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p121",
+          "id": "2026-10-15-p131",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9081,7 +9871,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p122",
+          "id": "2026-10-15-p132",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9103,7 +9893,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p123",
+          "id": "2026-10-15-p133",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9114,7 +9904,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p124",
+          "id": "2026-10-15-p134",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9125,7 +9915,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p125",
+          "id": "2026-10-15-p135",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9142,7 +9932,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p126",
+          "id": "2026-10-15-p136",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9159,7 +9949,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p127",
+          "id": "2026-10-15-p137",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9170,7 +9960,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p128",
+          "id": "2026-10-15-p138",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9181,7 +9971,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p129",
+          "id": "2026-10-15-p139",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9192,7 +9982,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p130",
+          "id": "2026-10-15-p140",
           "scope": "class",
           "category": "Classes",
           "class": "shaman",
@@ -9203,7 +9993,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p131",
+          "id": "2026-10-15-p141",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -9214,7 +10004,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p132",
+          "id": "2026-10-15-p142",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -9225,7 +10015,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p133",
+          "id": "2026-10-15-p143",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -9236,7 +10026,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p134",
+          "id": "2026-10-15-p144",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -9247,7 +10037,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p135",
+          "id": "2026-10-15-p145",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -9258,7 +10048,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p136",
+          "id": "2026-10-15-p146",
           "scope": "class",
           "category": "Classes",
           "class": "warlock",
@@ -9269,7 +10059,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p137",
+          "id": "2026-10-15-p147",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -9280,7 +10070,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p138",
+          "id": "2026-10-15-p148",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -9291,7 +10081,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p139",
+          "id": "2026-10-15-p149",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -9302,7 +10092,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p140",
+          "id": "2026-10-15-p150",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -9313,7 +10103,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p141",
+          "id": "2026-10-15-p151",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -9324,7 +10114,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p142",
+          "id": "2026-10-15-p152",
           "scope": "class",
           "category": "Classes",
           "class": "warrior",
@@ -9341,7 +10131,7 @@
           ]
         },
         {
-          "id": "2026-10-15-p143",
+          "id": "2026-10-15-p153",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9352,7 +10142,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p144",
+          "id": "2026-10-15-p154",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9363,7 +10153,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p145",
+          "id": "2026-10-15-p155",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9374,7 +10164,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p146",
+          "id": "2026-10-15-p156",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9385,7 +10175,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p147",
+          "id": "2026-10-15-p157",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9396,7 +10186,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p148",
+          "id": "2026-10-15-p158",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9407,7 +10197,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p149",
+          "id": "2026-10-15-p159",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9418,7 +10208,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p150",
+          "id": "2026-10-15-p160",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9429,7 +10219,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p151",
+          "id": "2026-10-15-p161",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9440,7 +10230,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p152",
+          "id": "2026-10-15-p162",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9451,7 +10241,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p153",
+          "id": "2026-10-15-p163",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9462,7 +10252,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p154",
+          "id": "2026-10-15-p164",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9473,7 +10263,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p155",
+          "id": "2026-10-15-p165",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9484,7 +10274,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p156",
+          "id": "2026-10-15-p166",
           "scope": "general",
           "category": "Gamepad Support",
           "class": null,
@@ -9495,7 +10285,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p157",
+          "id": "2026-10-15-p167",
           "scope": "general",
           "category": "Items",
           "class": null,
@@ -9506,7 +10296,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p158",
+          "id": "2026-10-15-p168",
           "scope": "general",
           "category": "Items",
           "class": null,
@@ -9517,7 +10307,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p159",
+          "id": "2026-10-15-p169",
           "scope": "general",
           "category": "Items",
           "class": null,
@@ -9528,7 +10318,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p160",
+          "id": "2026-10-15-p170",
           "scope": "general",
           "category": "Items",
           "class": null,
@@ -9539,7 +10329,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p161",
+          "id": "2026-10-15-p171",
           "scope": "general",
           "category": "Items",
           "class": null,
@@ -9550,7 +10340,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p162",
+          "id": "2026-10-15-p172",
           "scope": "general",
           "category": "Items",
           "class": null,
@@ -9561,7 +10351,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p163",
+          "id": "2026-10-15-p173",
           "scope": "general",
           "category": "Legacy System",
           "class": null,
@@ -9572,7 +10362,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p164",
+          "id": "2026-10-15-p174",
           "scope": "general",
           "category": "Legacy System",
           "class": null,
@@ -9585,7 +10375,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p165",
+          "id": "2026-10-15-p175",
           "scope": "general",
           "category": "Legacy System",
           "class": null,
@@ -9596,150 +10386,128 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p166",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "General",
-          "notes": [
-            "Fixed several quest items that were multi-drop and should not be."
-          ],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p167",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "Ashenvale",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p168",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "There are more Bloodtooth Guards available during the quest “Raene’s Cleansing”",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p169",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "Dalaran",
-          "notes": [
-            "Members of the Horde are no longer welcome in Dalaran under any circumstances and will be attacked on sight. This does not affect access to the City of Dalaran dungeon, but the Horde questline to obtain the Dalaran Sewer Key no longer grants unrestricted access to the city in the open world."
-          ],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p170",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "Darkshore",
-          "notes": [
-            "Fixed an issue where many of the furbolg camps would not grant credit for the quest “How Big a Threat?”",
-            "The quest “For Love Eternal” can now be turned in to Cerellian Whiteclaw at all times.",
-            "“Body and Heart”: Cenarion Moondust is no longer used up when you sprinkle it on the stone, so if you need to try again, you can come back later and use it again to re-summon Lunaclaw."
-          ],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p171",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "Mulgore",
-          "notes": [
-            "The Novice Warriors will no longer flag players for PvP during the quest “Sparring Match”."
-          ],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p172",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "Stormwind",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p173",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "“The Attack!” is no longer an escort quest and is now shareable, even while the event is active. Speak to Tyrion to begin the event if it is not active.",
-          "notes": [],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p174",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "Teldrassil",
-          "notes": [
-            "Lord Melenas no longer evades at low health during the quest “Twisted Hatred”."
-          ],
-          "subjects": []
-        },
-        {
-          "id": "2026-10-15-p175",
-          "scope": "general",
-          "category": "Quests",
-          "class": null,
-          "spec": null,
-          "group": null,
-          "text": "Wetlands",
-          "notes": [
-            "Several areas have had their respawn rates increased and evened out, including Dragonmaw Orcs, Gnolls, and Incendicite Ore."
-          ],
-          "subjects": []
-        },
-        {
           "id": "2026-10-15-p176",
           "scope": "general",
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Zephras Isle",
-          "notes": [
-            "Addressed an issue that could prevent players from using Halaan’s Gift to scry on the anchors of Zephras and progress the quest “The Anchors of Zephras.”"
-          ],
-          "subjects": [
-            {
-              "name": "Zephras Isle",
-              "type": "spell",
-              "icon": "achievement_dungeon_skywall"
-            }
-          ]
+          "group": "General",
+          "text": "Fixed several quest items that were multi-drop and should not be.",
+          "notes": [],
+          "subjects": []
         },
         {
           "id": "2026-10-15-p177",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Ashenvale",
+          "text": "There are more Bloodtooth Guards available during the quest “Raene’s Cleansing”",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p178",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Dalaran",
+          "text": "Members of the Horde are no longer welcome in Dalaran under any circumstances and will be attacked on sight. This does not affect access to the City of Dalaran dungeon, but the Horde questline to obtain the Dalaran Sewer Key no longer grants unrestricted access to the city in the open world.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p179",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Darkshore",
+          "text": "Fixed an issue where many of the furbolg camps would not grant credit for the quest “How Big a Threat?”",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p180",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Darkshore",
+          "text": "The quest “For Love Eternal” can now be turned in to Cerellian Whiteclaw at all times.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p181",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Darkshore",
+          "text": "“Body and Heart”: Cenarion Moondust is no longer used up when you sprinkle it on the stone, so if you need to try again, you can come back later and use it again to re-summon Lunaclaw.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p182",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Mulgore",
+          "text": "The Novice Warriors will no longer flag players for PvP during the quest “Sparring Match”.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p183",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Stormwind",
+          "text": "“The Attack!” is no longer an escort quest and is now shareable, even while the event is active. Speak to Tyrion to begin the event if it is not active.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p184",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Teldrassil",
+          "text": "Lord Melenas no longer evades at low health during the quest “Twisted Hatred”.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p185",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Wetlands",
+          "text": "Several areas have had their respawn rates increased and evened out, including Dragonmaw Orcs, Gnolls, and Incendicite Ore.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p186",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Zephras Isle",
+          "text": "Addressed an issue that could prevent players from using Halaan’s Gift to scry on the anchors of Zephras and progress the quest “The Anchors of Zephras.”",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-15-p187",
           "scope": "general",
           "category": "Player versus Player",
           "class": null,
@@ -9750,7 +10518,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p178",
+          "id": "2026-10-15-p188",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9761,7 +10529,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p179",
+          "id": "2026-10-15-p189",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9772,7 +10540,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p180",
+          "id": "2026-10-15-p190",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9783,7 +10551,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p181",
+          "id": "2026-10-15-p191",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9794,7 +10562,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p182",
+          "id": "2026-10-15-p192",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9805,7 +10573,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p183",
+          "id": "2026-10-15-p193",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9816,7 +10584,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p184",
+          "id": "2026-10-15-p194",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9827,7 +10595,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p185",
+          "id": "2026-10-15-p195",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9838,7 +10606,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p186",
+          "id": "2026-10-15-p196",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9849,7 +10617,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p187",
+          "id": "2026-10-15-p197",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9860,7 +10628,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p188",
+          "id": "2026-10-15-p198",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9871,7 +10639,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p189",
+          "id": "2026-10-15-p199",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9882,7 +10650,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p190",
+          "id": "2026-10-15-p200",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9893,7 +10661,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p191",
+          "id": "2026-10-15-p201",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -9904,7 +10672,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-15-p192",
+          "id": "2026-10-15-p202",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -10469,7 +11237,13 @@
           "group": null,
           "text": "Fixed an issue where Seal of Fury was granting Mana back to the Paladin even if the Improved Seal of Fury talent was not active.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Seal of Fury",
+              "type": "spell",
+              "icon": "spell_holy_retributionaura"
+            }
+          ]
         },
         {
           "id": "2026-10-08-p048",
@@ -10907,11 +11681,9 @@
           "category": "Races",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Undead",
-          "notes": [
-            "Fixed an issue where Will of the Forsaken could sometimes not be used while asleep or charmed."
-          ],
+          "group": "Undead",
+          "text": "Fixed an issue where Will of the Forsaken could sometimes not be used while asleep or charmed.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -10959,12 +11731,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Barrens",
-          "notes": [
-            "The Horn of Echeyakee is no longer consumed on use during the quest “Echeyakee”.",
-            "There is now a map marker for the quest “The Principal Source”."
-          ],
+          "group": "Barrens",
+          "text": "The Horn of Echeyakee is no longer consumed on use during the quest “Echeyakee”.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -10973,12 +11742,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Desolace",
-          "notes": [
-            "The new quests for the Gelkis and the Magram beginning with “Valley of Bones” now require a minimum level of 35 (was 30).",
-            "The power of these rewards have been adjusted. See Items section for more details."
-          ],
+          "group": "Barrens",
+          "text": "There is now a map marker for the quest “The Principal Source”.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -10987,10 +11753,10 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Dun Morogh",
+          "group": "Desolace",
+          "text": "The new quests for the Gelkis and the Magram beginning with “Valley of Bones” now require a minimum level of 35 (was 30).",
           "notes": [
-            "Moving and turning inputs no longer cancel Far Sight during the quest “Farsen’s Watch”. It can still be right-click cancelled at any time."
+            "The power of these rewards have been adjusted. See Items section for more details."
           ],
           "subjects": []
         },
@@ -11000,12 +11766,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Durotar",
-          "notes": [
-            "The Taillasher Eggs for the quest “Break A Few Eggs” now respawn more quickly, and there are more eggs available.",
-            "Lazy Peons are now lazier for the quest “Lazy Peons”, and the map marker now includes the super secret northern peons."
-          ],
+          "group": "Dun Morogh",
+          "text": "Moving and turning inputs no longer cancel Far Sight during the quest “Farsen’s Watch”. It can still be right-click cancelled at any time.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11014,11 +11777,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Duskwood",
-          "notes": [
-            "Stitches is once again hostile as he enters the unsuspecting town of Darkshire. DARKSHIRE…I HUNGER!!"
-          ],
+          "group": "Durotar",
+          "text": "The Taillasher Eggs for the quest “Break A Few Eggs” now respawn more quickly, and there are more eggs available.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11027,11 +11788,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Excavation Site: Wetlands",
-          "notes": [
-            "The Titan Relic item from the quest “Elder Knowledge” or “Lost Relic Carry” is given back to players for the follow-ups “Earthen Echo” or “Prehistoric Prism”, so that you do not need to get another relic."
-          ],
+          "group": "Durotar",
+          "text": "Lazy Peons are now lazier for the quest “Lazy Peons”, and the map marker now includes the super secret northern peons.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11040,11 +11799,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Hillsbrad Foothills",
-          "notes": [
-            "During the quest “Elixir of Pain” Stanley no longer gives XP, and the quest now gives the XP that formerly came from him."
-          ],
+          "group": "Duskwood",
+          "text": "Stitches is once again hostile as he enters the unsuspecting town of Darkshire. DARKSHIRE…I HUNGER!!",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11053,11 +11810,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Loch Modan",
-          "notes": [
-            "Reduced the frequency of Dark Iron Ambushers at Miran’s camp during the quest “Resupplying the Excavation.”"
-          ],
+          "group": "Excavation Site: Wetlands",
+          "text": "The Titan Relic item from the quest “Elder Knowledge” or “Lost Relic Carry” is given back to players for the follow-ups “Earthen Echo” or “Prehistoric Prism”, so that you do not need to get another relic.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11066,12 +11821,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Mulgore",
-          "notes": [
-            "The turn-in marker for “Grim Tidings” has been updated for accuracy.",
-            "Creatures in Gloomrise now respawn more evenly, and Gloomrise Hatchlings give appropriate XP for their difficulty."
-          ],
+          "group": "Hillsbrad Foothills",
+          "text": "During the quest “Elixir of Pain” Stanley no longer gives XP, and the quest now gives the XP that formerly came from him.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11080,11 +11832,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Orgrimmar",
-          "notes": [
-            "Neeru Fireblade now has a map marker and mouseover tooltip during the quest “Hidden Enemies”. Ironic."
-          ],
+          "group": "Loch Modan",
+          "text": "Reduced the frequency of Dark Iron Ambushers at Miran’s camp during the quest “Resupplying the Excavation.”",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11093,11 +11843,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Redridge Mountains",
-          "notes": [
-            "Increased the respawn rate of the Weapon Racks, Stolen Weapons, and Blackrock Supplies for the quest “Blackrock Blockade”."
-          ],
+          "group": "Mulgore",
+          "text": "The turn-in marker for “Grim Tidings” has been updated for accuracy.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11106,8 +11854,8 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Rogue",
+          "group": "Mulgore",
+          "text": "Creatures in Gloomrise now respawn more evenly, and Gloomrise Hatchlings give appropriate XP for their difficulty.",
           "notes": [],
           "subjects": []
         },
@@ -11117,8 +11865,8 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Added map markers for the quest “Plundering the Plunderers”.",
+          "group": "Orgrimmar",
+          "text": "Neeru Fireblade now has a map marker and mouseover tooltip during the quest “Hidden Enemies”. Ironic.",
           "notes": [],
           "subjects": []
         },
@@ -11128,12 +11876,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Shaman",
-          "notes": [
-            "The various creatures needed for the quest “Storm, Earth, and Fire” respawn more quickly, creatures drop their twisted totems more often, Maraudine Scouts now drop Twisted Air Totems, Ongeku can now drop a Twisted Earth Totem, Murdaloc can now drop a Twisted Fire Totem. The Twisted Fire Totem can now additionally be obtained via Dustbelcher ogres across the Badlands. Larger encampents like Dustbelch Grotto will respawn more quickly, but smaller ones will not.",
-            "The Eye of the Tempest for “Heed My Call” is now multi-drop."
-          ],
+          "group": "Redridge Mountains",
+          "text": "Increased the respawn rate of the Weapon Racks, Stolen Weapons, and Blackrock Supplies for the quest “Blackrock Blockade”.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11142,11 +11887,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Stonetalon Mountains",
-          "notes": [
-            "Jin’Zil now allows quests to be turned in to him after someone completes the quest “Jin’Zil’s Forest Magic.”"
-          ],
+          "group": "Rogue",
+          "text": "Added map markers for the quest “Plundering the Plunderers”.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11155,12 +11898,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Teldrassil",
-          "notes": [
-            "During the quest “Destiny Calls”, Sethir the Ancient now spawns more Minions of Sethir after having been reset, and his respawn time has been decreased.",
-            "Sentinel Lynessa Duskblossom now moves more slowly during the quest “Escaping Ban’ethil.”"
-          ],
+          "group": "Shaman",
+          "text": "The various creatures needed for the quest “Storm, Earth, and Fire” respawn more quickly, creatures drop their twisted totems more often, Maraudine Scouts now drop Twisted Air Totems, Ongeku can now drop a Twisted Earth Totem, Murdaloc can now drop a Twisted Fire Totem. The Twisted Fire Totem can now additionally be obtained via Dustbelcher ogres across the Badlands. Larger encampents like Dustbelch Grotto will respawn more quickly, but smaller ones will not.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11169,12 +11909,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Tirisfal Glades",
-          "notes": [
-            "Increased the level of the quests and creatures around Shadowvale and Bandarion Keep.",
-            "Developers’ notes: These were lower level than the content that preceded them, which didn’t have the escalation we wanted and could result in the quests being green by the time you got to them."
-          ],
+          "group": "Shaman",
+          "text": "The Eye of the Tempest for “Heed My Call” is now multi-drop.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -11183,54 +11920,54 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Warrior",
-          "notes": [
-            "Fixed an issue where the Mausoleum Trigger for the quest “Ulag the Cleaver” would take a long time to reactivate."
-          ],
+          "group": "Stonetalon Mountains",
+          "text": "Jin’Zil now allows quests to be turned in to him after someone completes the quest “Jin’Zil’s Forest Magic.”",
+          "notes": [],
           "subjects": []
         },
         {
           "id": "2026-10-08-p105",
           "scope": "general",
-          "category": "User Interface",
+          "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Voice Chat can now be set to use Discord Voice under Audio settings and is used for the entire party based on the party leader’s setting.",
+          "group": "Teldrassil",
+          "text": "During the quest “Destiny Calls”, Sethir the Ancient now spawns more Minions of Sethir after having been reset, and his respawn time has been decreased.",
           "notes": [],
           "subjects": []
         },
         {
           "id": "2026-10-08-p106",
           "scope": "general",
-          "category": "User Interface",
+          "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "An In-Game Voice Mode can now be chosen for Group Finder postings which result in party members receiving a prompt to join the selected voice chat.",
+          "group": "Teldrassil",
+          "text": "Sentinel Lynessa Duskblossom now moves more slowly during the quest “Escaping Ban’ethil.”",
           "notes": [],
           "subjects": []
         },
         {
           "id": "2026-10-08-p107",
           "scope": "general",
-          "category": "User Interface",
+          "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Inspect player window has been updated.",
-          "notes": [],
+          "group": "Tirisfal Glades",
+          "text": "Increased the level of the quests and creatures around Shadowvale and Bandarion Keep.",
+          "notes": [
+            "Developers’ notes: These were lower level than the content that preceded them, which didn’t have the escalation we wanted and could result in the quests being green by the time you got to them."
+          ],
           "subjects": []
         },
         {
           "id": "2026-10-08-p108",
           "scope": "general",
-          "category": "User Interface",
+          "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Combo points have been updated in the Target Frame and Personal Resource Display.",
+          "group": "Warrior",
+          "text": "Fixed an issue where the Mausoleum Trigger for the quest “Ulag the Cleaver” would take a long time to reactivate.",
           "notes": [],
           "subjects": []
         },
@@ -11241,7 +11978,7 @@
           "class": null,
           "spec": null,
           "group": null,
-          "text": "Quest Types are now displayed as text in the Quest Log, Quest Tracker, and Quest Dialogue.",
+          "text": "Voice Chat can now be set to use Discord Voice under Audio settings and is used for the entire party based on the party leader’s setting.",
           "notes": [],
           "subjects": []
         },
@@ -11252,7 +11989,7 @@
           "class": null,
           "spec": null,
           "group": null,
-          "text": "Quest level requirements are now displayed in the Quest Tracker.",
+          "text": "An In-Game Voice Mode can now be chosen for Group Finder postings which result in party members receiving a prompt to join the selected voice chat.",
           "notes": [],
           "subjects": []
         },
@@ -11263,7 +12000,7 @@
           "class": null,
           "spec": null,
           "group": null,
-          "text": "Fixed an issue where buffed stats were not highlighted in the Character Info panel.",
+          "text": "Inspect player window has been updated.",
           "notes": [],
           "subjects": []
         },
@@ -11274,7 +12011,7 @@
           "class": null,
           "spec": null,
           "group": null,
-          "text": "Fixed an issue where Specific Macros were showing General Macros.",
+          "text": "Combo points have been updated in the Target Frame and Personal Resource Display.",
           "notes": [],
           "subjects": []
         },
@@ -11285,7 +12022,7 @@
           "class": null,
           "spec": null,
           "group": null,
-          "text": "Clicking on an earned Legacy Challenge will now open the Legacy Challenge window.",
+          "text": "Quest Types are now displayed as text in the Quest Log, Quest Tracker, and Quest Dialogue.",
           "notes": [],
           "subjects": []
         },
@@ -11296,7 +12033,7 @@
           "class": null,
           "spec": null,
           "group": null,
-          "text": "View Talents is now an option below Inspect in the target frame’s context menu.",
+          "text": "Quest level requirements are now displayed in the Quest Tracker.",
           "notes": [],
           "subjects": []
         },
@@ -11307,12 +12044,56 @@
           "class": null,
           "spec": null,
           "group": null,
-          "text": "Character level and class is now displayed on the left frame of the Character Info pane.",
+          "text": "Fixed an issue where buffed stats were not highlighted in the Character Info panel.",
           "notes": [],
           "subjects": []
         },
         {
           "id": "2026-10-08-p116",
+          "scope": "general",
+          "category": "User Interface",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Specific Macros were showing General Macros.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-08-p117",
+          "scope": "general",
+          "category": "User Interface",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Clicking on an earned Legacy Challenge will now open the Legacy Challenge window.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-08-p118",
+          "scope": "general",
+          "category": "User Interface",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "View Talents is now an option below Inspect in the target frame’s context menu.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-08-p119",
+          "scope": "general",
+          "category": "User Interface",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Character level and class is now displayed on the left frame of the Character Info pane.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-08-p120",
           "scope": "general",
           "category": "Known Issues – New with this build",
           "class": null,
@@ -11329,7 +12110,7 @@
           ]
         },
         {
-          "id": "2026-10-08-p117",
+          "id": "2026-10-08-p121",
           "scope": "general",
           "category": "Known Issues – New with this build",
           "class": null,
@@ -11340,7 +12121,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-08-p118",
+          "id": "2026-10-08-p122",
           "scope": "general",
           "category": "Known Issues – New with this build",
           "class": null,
@@ -11520,7 +12301,13 @@
           "group": null,
           "text": "Bear Form and Dire Bear Form now generate 75% increased Rage when landing a Critical Strike.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Critical Strike",
+              "type": "spell",
+              "icon": "ability_criticalstrike"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p014",
@@ -11794,7 +12581,13 @@
           "notes": [
             "Developers’ notes: Champion of the Light had a tooltip issue saying it increased Healing; it did not. This tooltip has been removed."
           ],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Champion of the Light",
+              "type": "spell",
+              "icon": "ability_paladin_enlightenedjudgements"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p036",
@@ -11805,7 +12598,13 @@
           "group": null,
           "text": "Devouring Plague can now correctly critically strike.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Devouring Plague",
+              "type": "spell",
+              "icon": "spell_shadow_devouringplague"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p037",
@@ -11816,7 +12615,13 @@
           "group": null,
           "text": "Fixed an issue where Shadow Word: Death was always benefitting from the Early Demise talent regardless of the target’s health %.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Shadow Word: Death",
+              "type": "spell",
+              "icon": "spell_shadow_demonicfortitude"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p038",
@@ -11827,7 +12632,13 @@
           "group": null,
           "text": "Inner Focus no longer applies its Critical Strike increase to Periodic Effects.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Critical Strike",
+              "type": "spell",
+              "icon": "ability_criticalstrike"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p039",
@@ -11849,7 +12660,13 @@
           "group": null,
           "text": "Fixed an issue where Expose Armor missing would cause you to lose all of your combo points.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Expose Armor",
+              "type": "spell",
+              "icon": "ability_warrior_riposte"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p041",
@@ -11860,7 +12677,13 @@
           "group": null,
           "text": "Setup will now only add combo points to your current target if they are the one you dodged or resisted a spell from.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Setup",
+              "type": "spell",
+              "icon": "spell_nature_mirrorimage"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p042",
@@ -12017,7 +12840,13 @@
           "notes": [
             "Developers’ notes: Because of the above bug, our tests needed some correcting, so we did another pass on Fury Warrior."
           ],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dual Wield Specialization",
+              "type": "spell",
+              "icon": "ability_dualwield"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p055",
@@ -12039,7 +12868,13 @@
           "group": null,
           "text": "Dual Wield Specialization no longer provides a 20/40/60/80/100% increase to your Off-Hand weapon’s Rage generation.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dual Wield Specialization",
+              "type": "spell",
+              "icon": "ability_dualwield"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p057",
@@ -12162,7 +12997,13 @@
           "group": null,
           "text": "Dual Wield Specialization no longer grants hit to your off-hand attacks.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dual Wield Specialization",
+              "type": "spell",
+              "icon": "ability_dualwield"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p068",
@@ -12279,7 +13120,13 @@
           "group": null,
           "text": "Anticipation moved to Row 2 (Was Row 1).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Anticipation",
+              "type": "spell",
+              "icon": "spell_magic_lesserinvisibilty"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p077",
@@ -12290,7 +13137,13 @@
           "group": null,
           "text": "Toughness has been removed.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Toughness",
+              "type": "spell",
+              "icon": "spell_holy_devotion"
+            }
+          ]
         },
         {
           "id": "2026-10-01-p078",
@@ -12575,11 +13428,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Darkshore",
-          "notes": [
-            "Resolved an issue with the Tharnariun’s Hope item during the quest “Plagued Lands”."
-          ],
+          "group": "Darkshore",
+          "text": "Resolved an issue with the Tharnariun’s Hope item during the quest “Plagued Lands”.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12588,11 +13439,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Deadmines",
-          "notes": [
-            "“Destruction in Deadmines” now sorts correctly in the quest log for the dungeon."
-          ],
+          "group": "Deadmines",
+          "text": "“Destruction in Deadmines” now sorts correctly in the quest log for the dungeon.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12601,12 +13450,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Druid",
-          "notes": [
-            "Fixed an issue where players were not receiving loot reliably during the quests “The Great Cat Spirit” and “The Great Windborne Cat Spirit.”",
-            "High Order Skyborne can now do the quest “Power Over Poison” to learn the Cure Poison spell."
-          ],
+          "group": "Druid",
+          "text": "Fixed an issue where players were not receiving loot reliably during the quests “The Great Cat Spirit” and “The Great Windborne Cat Spirit.”",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12615,11 +13461,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Dun Morogh",
-          "notes": [
-            "Shimmer Ridge trolls will respawn more evenly, and faster in areas where they were sluggish. It be the cold, mon."
-          ],
+          "group": "Druid",
+          "text": "High Order Skyborne can now do the quest “Power Over Poison” to learn the Cure Poison spell.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12628,11 +13472,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Loch Modan",
-          "notes": [
-            "Troggs in the Loch now respawn slightly more slowly for the quest “In Defense of the King’s Lands.”"
-          ],
+          "group": "Dun Morogh",
+          "text": "Shimmer Ridge trolls will respawn more evenly, and faster in areas where they were sluggish. It be the cold, mon.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12641,11 +13483,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Mulgore",
-          "notes": [
-            "The quest “Kyle’s Gone Missing!” has been added."
-          ],
+          "group": "Loch Modan",
+          "text": "Troggs in the Loch now respawn slightly more slowly for the quest “In Defense of the King’s Lands.”",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12654,11 +13494,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Orgrimmmar",
-          "notes": [
-            "Smooth Boulder should be far more plentiful and available to gather for the quest “Rocks to Rests”"
-          ],
+          "group": "Mulgore",
+          "text": "The quest “Kyle’s Gone Missing!” has been added.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12667,11 +13505,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Redridge Mountains",
-          "notes": [
-            "The quest “Blackrock Blockade” has been updated. Spawn rates have also been adjusted."
-          ],
+          "group": "Orgrimmmar",
+          "text": "Smooth Boulder should be far more plentiful and available to gather for the quest “Rocks to Rests”",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12680,12 +13516,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Ruins of Loraderon",
-          "notes": [
-            "“A Frightened Request” now sorts correctly in the quest log under the dungeon.",
-            "Resolved an issue where players could receive multiple copies of the Bloodied Insignia quest item."
-          ],
+          "group": "Redridge Mountains",
+          "text": "The quest “Blackrock Blockade” has been updated. Spawn rates have also been adjusted.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12694,11 +13527,9 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Wailing Caverns",
-          "notes": [
-            "Serpentbloom Snakes now despawn after a couple of minutes. Why’d it have to be snakes?"
-          ],
+          "group": "Ruins of Loraderon",
+          "text": "“A Frightened Request” now sorts correctly in the quest log under the dungeon.",
+          "notes": [],
           "subjects": []
         },
         {
@@ -12707,16 +13538,46 @@
           "category": "Quests",
           "class": null,
           "spec": null,
-          "group": null,
-          "text": "Westfall",
-          "notes": [
-            "Significantly reduced the respawn rate of the pocket watch in Furlbrow’s Wardrobe for the quest “The Forgotten Heirloom”.",
-            "Increased respawn rate for the undead for the quest “Collecting Memories” and Foreman Thistlenettle for the quest “Oh Brother…”"
-          ],
+          "group": "Ruins of Loraderon",
+          "text": "Resolved an issue where players could receive multiple copies of the Bloodied Insignia quest item.",
+          "notes": [],
           "subjects": []
         },
         {
           "id": "2026-10-01-p114",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Wailing Caverns",
+          "text": "Serpentbloom Snakes now despawn after a couple of minutes. Why’d it have to be snakes?",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-01-p115",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Westfall",
+          "text": "Significantly reduced the respawn rate of the pocket watch in Furlbrow’s Wardrobe for the quest “The Forgotten Heirloom”.",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-01-p116",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Westfall",
+          "text": "Increased respawn rate for the undead for the quest “Collecting Memories” and Foreman Thistlenettle for the quest “Oh Brother…”",
+          "notes": [],
+          "subjects": []
+        },
+        {
+          "id": "2026-10-01-p117",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -12727,7 +13588,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p115",
+          "id": "2026-10-01-p118",
           "scope": "general",
           "category": "Races",
           "class": null,
@@ -12738,7 +13599,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p116",
+          "id": "2026-10-01-p119",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -12751,7 +13612,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p117",
+          "id": "2026-10-01-p120",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -12762,7 +13623,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p118",
+          "id": "2026-10-01-p121",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -12773,7 +13634,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p119",
+          "id": "2026-10-01-p122",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -12784,7 +13645,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p120",
+          "id": "2026-10-01-p123",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -12795,7 +13656,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p121",
+          "id": "2026-10-01-p124",
           "scope": "general",
           "category": "User Interface",
           "class": null,
@@ -12806,7 +13667,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p122",
+          "id": "2026-10-01-p125",
           "scope": "general",
           "category": "World",
           "class": null,
@@ -12817,7 +13678,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p123",
+          "id": "2026-10-01-p126",
           "scope": "general",
           "category": "World",
           "class": null,
@@ -12830,7 +13691,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p124",
+          "id": "2026-10-01-p127",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12843,7 +13704,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p125",
+          "id": "2026-10-01-p128",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12854,7 +13715,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p126",
+          "id": "2026-10-01-p129",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12865,7 +13726,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p127",
+          "id": "2026-10-01-p130",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12876,7 +13737,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p128",
+          "id": "2026-10-01-p131",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12887,7 +13748,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p129",
+          "id": "2026-10-01-p132",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12898,7 +13759,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p130",
+          "id": "2026-10-01-p133",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12909,7 +13770,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p131",
+          "id": "2026-10-01-p134",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12920,7 +13781,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p132",
+          "id": "2026-10-01-p135",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12931,7 +13792,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p133",
+          "id": "2026-10-01-p136",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12942,7 +13803,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p134",
+          "id": "2026-10-01-p137",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12953,7 +13814,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p135",
+          "id": "2026-10-01-p138",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -12964,7 +13825,7 @@
           "subjects": []
         },
         {
-          "id": "2026-10-01-p136",
+          "id": "2026-10-01-p139",
           "scope": "general",
           "category": "Known Issues - New to this build",
           "class": null,
@@ -13503,7 +14364,13 @@
           "group": null,
           "text": "Light’s Vigil’s tooltip has been reorganized to make it more clear that the damage component is the only version that returns some of the Mana cost.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Light's Vigil",
+              "type": "spell",
+              "icon": "ability_paladin_judgementofthepure"
+            }
+          ]
         },
         {
           "id": "2026-09-24-p041",
@@ -13515,6 +14382,16 @@
           "text": "Holy Power now increases the Critical Strike chance of Holy Strike by 15% and retains all of its old effects.",
           "notes": [],
           "subjects": [
+            {
+              "name": "Holy Power",
+              "type": "spell",
+              "icon": "spell_holy_power"
+            },
+            {
+              "name": "Critical Strike",
+              "type": "spell",
+              "icon": "ability_criticalstrike"
+            },
             {
               "name": "Holy Strike",
               "type": "spell",
@@ -13531,7 +14408,13 @@
           "group": null,
           "text": "Vengeance now activates off of non-periodic critical strikes.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Vengeance",
+              "type": "spell",
+              "icon": "ability_racial_avatar"
+            }
+          ]
         },
         {
           "id": "2026-09-24-p043",
@@ -13542,7 +14425,13 @@
           "group": null,
           "text": "Vengeance’s maximum stacks lowered to 3 (was 5).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Vengeance",
+              "type": "spell",
+              "icon": "ability_racial_avatar"
+            }
+          ]
         },
         {
           "id": "2026-09-24-p044",
@@ -13553,7 +14442,13 @@
           "group": null,
           "text": "Two-Handed Weapon Specialization’s damage increase reduced to 2/4/6% (was 3/6/9%).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Two-Handed Weapon Specialization",
+              "type": "spell",
+              "icon": "inv_hammer_04"
+            }
+          ]
         },
         {
           "id": "2026-09-24-p045",
@@ -13603,7 +14498,13 @@
           "group": null,
           "text": "Power Word: Shield can now always overwrite an existing Power Word: Shield on a target that does not have Weakened Soul.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Power Word: Shield",
+              "type": "spell",
+              "icon": "spell_holy_powerwordshield"
+            }
+          ]
         },
         {
           "id": "2026-09-24-p049",
@@ -13659,7 +14560,13 @@
           "group": "Undead",
           "text": "Dark Sacrifice no longer breaks Crowd Control that breaks on damage.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dark Sacrifice",
+              "type": "spell",
+              "icon": "spell_holy_powerinfusion_shadow"
+            }
+          ]
         },
         {
           "id": "2026-09-24-p053",
@@ -13670,7 +14577,13 @@
           "group": "Undead",
           "text": "Dark Sacrifice’s tooltip now correctly displays that the Mana gained from the ability scales with Spirit.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Dark Sacrifice",
+              "type": "spell",
+              "icon": "spell_holy_powerinfusion_shadow"
+            }
+          ]
         },
         {
           "id": "2026-09-24-p054",

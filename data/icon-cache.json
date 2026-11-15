@@ -1,9 +1,26 @@
 {
   "abomimable head": null,
   "action bar": null,
+  "added: shank": null,
+  "additionally": null,
   "addressed": null,
+  "aggression": {
+    "name": "Aggression",
+    "type": "spell",
+    "icon": "ability_racial_avatar"
+  },
   "aimed shot: bonus": null,
   "alliance-equivalent": null,
+  "ambush": {
+    "name": "Ambush",
+    "type": "spell",
+    "icon": "ability_rogue_ambush"
+  },
+  "anticipation": {
+    "name": "Anticipation",
+    "type": "spell",
+    "icon": "spell_magic_lesserinvisibilty"
+  },
   "arcane blast": {
     "name": "Arcane Blast",
     "type": "spell",
@@ -49,6 +66,11 @@
   "attack power": null,
   "attack speed": null,
   "aura: ranged attack power": null,
+  "backstab": {
+    "name": "Backstab",
+    "type": "spell",
+    "icon": "ability_backstab"
+  },
   "bad hat": {
     "name": "Bad Hat",
     "type": "item",
@@ -63,6 +85,7 @@
   "baron in the ruins of lordaeron": null,
   "barrage: damage": null,
   "base": null,
+  "base mana": null,
   "bear": null,
   "bear form": {
     "name": "Bear Form",
@@ -93,6 +116,11 @@
   },
   "beta": null,
   "beyond": null,
+  "binding heal": {
+    "name": "Binding Heal",
+    "type": "spell",
+    "icon": "spell_holy_blindingheal"
+  },
   "bite: base": null,
   "bite: replaces berserk": null,
   "blackfathom deeps": null,
@@ -110,6 +138,11 @@
     "type": "item",
     "icon": "inv_jewelry_ring_60"
   },
+  "blessing of light": {
+    "name": "Blessing of Light",
+    "type": "spell",
+    "icon": "spell_holy_prayerofhealing02"
+  },
   "blessing of salvation": null,
   "blink": {
     "name": "Blink",
@@ -120,6 +153,11 @@
     "name": "Blizzard",
     "type": "spell",
     "icon": "spell_frost_icestorm"
+  },
+  "blood splatter": {
+    "name": "Blood Splatter",
+    "type": "spell",
+    "icon": "ability_rogue_rupture"
   },
   "bloodmaster's ring": {
     "name": "Bloodmaster's Ring",
@@ -144,6 +182,7 @@
     "type": "spell",
     "icon": "inv_sword_32"
   },
+  "boundless light in row": null,
   "brewed": null,
   "brightfire in valanaar": null,
   "broken frond of celastrus": {
@@ -152,6 +191,11 @@
     "icon": "inv_misc_plant_03"
   },
   "cage door": null,
+  "camouflage": {
+    "name": "Camouflage",
+    "type": "spell",
+    "icon": "ability_stealth"
+  },
   "camp benefits": {
     "name": "Camp Benefits",
     "type": "spell",
@@ -159,7 +203,14 @@
   },
   "camp taurajo": null,
   "camp taurajo to thunder bluff": null,
+  "casting slice": null,
+  "casting slice and dice": null,
   "challenge master spelunker": null,
+  "champion of the light": {
+    "name": "Champion of the Light",
+    "type": "spell",
+    "icon": "ability_paladin_enlightenedjudgements"
+  },
   "channeler's ring": {
     "name": "Channeler's Ring",
     "type": "item",
@@ -182,6 +233,7 @@
     "type": "item",
     "icon": "inv_stone_grindingstone_02"
   },
+  "combo point": null,
   "combo points": null,
   "command tent": null,
   "completing": null,
@@ -200,6 +252,11 @@
     "type": "spell",
     "icon": "spell_holy_innerfire"
   },
+  "conviction": {
+    "name": "Conviction",
+    "type": "spell",
+    "icon": "spell_holy_retributionaura"
+  },
   "cooking": {
     "name": "Cooking",
     "type": "spell",
@@ -210,20 +267,41 @@
     "type": "spell",
     "icon": "spell_shadow_abominationexplosion"
   },
+  "coup": {
+    "name": "Coup",
+    "type": "spell",
+    "icon": "inv_sword_87"
+  },
   "craftsman's writs": null,
   "crates and craftsman's writs": null,
   "critical mass: this": null,
+  "critical strike": {
+    "name": "Critical Strike",
+    "type": "spell",
+    "icon": "ability_criticalstrike"
+  },
   "crow effigy": null,
   "cultivation": {
     "name": "Cultivation",
     "type": "spell",
     "icon": "inv_misc_flower_01"
   },
+  "cure disease": {
+    "name": "Cure Disease",
+    "type": "spell",
+    "icon": "spell_holy_nullifydisease"
+  },
+  "cure disease and abolish disease": null,
   "damage": null,
   "damp note": {
     "name": "Damp Note",
     "type": "item",
     "icon": "inv_misc_note_06"
+  },
+  "dark sacrifice": {
+    "name": "Dark Sacrifice",
+    "type": "spell",
+    "icon": "spell_holy_powerinfusion_shadow"
   },
   "darkspear": {
     "name": "Darkspear",
@@ -238,6 +316,7 @@
   },
   "dawn and dusk": null,
   "dead legacy talent": null,
+  "deadly poison attack power": null,
   "deadwood key": {
     "name": "Deadwood Key",
     "type": "item",
@@ -251,14 +330,56 @@
   "defeating balnazzar": null,
   "defeating zarla ober": null,
   "deployed": null,
+  "devouring contagion": {
+    "name": "Devouring Contagion",
+    "type": "spell",
+    "icon": "spell_shadow_devouringplague"
+  },
+  "devouring plague": {
+    "name": "Devouring Plague",
+    "type": "spell",
+    "icon": "spell_shadow_devouringplague"
+  },
   "dexterity: intellect to attack power": null,
   "diminishing returns": null,
+  "dirty deeds": {
+    "name": "Dirty Deeds",
+    "type": "spell",
+    "icon": "spell_shadow_summonsuccubus"
+  },
   "discipline: this": null,
+  "divine favor": {
+    "name": "Divine Favor",
+    "type": "spell",
+    "icon": "spell_holy_heal"
+  },
+  "divine intellect": {
+    "name": "Divine Intellect",
+    "type": "spell",
+    "icon": "spell_nature_sleep"
+  },
+  "divine precision": {
+    "name": "Divine Precision",
+    "type": "spell",
+    "icon": "spell_holy_mindsooth"
+  },
+  "divine protection": {
+    "name": "Divine Protection",
+    "type": "spell",
+    "icon": "spell_holy_restoration"
+  },
+  "divine shield": {
+    "name": "Divine Shield",
+    "type": "spell",
+    "icon": "spell_holy_divineintervention"
+  },
   "divine spirit": {
     "name": "Divine Spirit",
     "type": "spell",
     "icon": "spell_holy_divinespirit"
   },
+  "dodging": null,
+  "does": null,
   "doomguard xarkul": null,
   "drain life": {
     "name": "Drain Life",
@@ -281,6 +402,11 @@
     "icon": "spell_shadow_lifedrain"
   },
   "drowned city": null,
+  "dual wield specialization": {
+    "name": "Dual Wield Specialization",
+    "type": "spell",
+    "icon": "ability_dualwield"
+  },
   "duration": null,
   "dustwallow marsh": null,
   "earthen silk slippers": {
@@ -290,12 +416,24 @@
   },
   "earthmother: this": null,
   "eastern plaguelands": null,
+  "efficient strikes": {
+    "name": "Efficient Strikes",
+    "type": "spell",
+    "icon": "spell_shadow_ritualofsacrifice"
+  },
   "elemental precision": null,
+  "embrace healing": null,
   "emperor thaurissan": null,
+  "energy": null,
   "everstaring abomination eye": {
     "name": "Everstaring Abomination Eye",
     "type": "item",
     "icon": "inv_misc_eye_01"
+  },
+  "eviscerate": {
+    "name": "Eviscerate",
+    "type": "spell",
+    "icon": "ability_rogue_eviscerate"
   },
   "eww": null,
   "executioner morg": null,
@@ -304,6 +442,11 @@
     "name": "Explosive Trap",
     "type": "spell",
     "icon": "spell_fire_selfdestruct"
+  },
+  "expose armor": {
+    "name": "Expose Armor",
+    "type": "spell",
+    "icon": "ability_warrior_riposte"
   },
   "fang and nightbane tainted ones": null,
   "fear ward": {
@@ -343,6 +486,21 @@
     "type": "spell",
     "icon": "spell_nature_guardianward"
   },
+  "flash heal": {
+    "name": "Flash Heal",
+    "type": "spell",
+    "icon": "spell_holy_flashheal"
+  },
+  "flash of steel": {
+    "name": "Flash of Steel",
+    "type": "spell",
+    "icon": "ability_rogue_restlessblades"
+  },
+  "flawless execution": {
+    "name": "Flawless Execution",
+    "type": "spell",
+    "icon": "inv_sword_35"
+  },
   "focus: this": null,
   "form: the": null,
   "frost blast: this": null,
@@ -374,11 +532,21 @@
   },
   "furor: this": null,
   "garion wendell": null,
+  "garrote": {
+    "name": "Garrote",
+    "type": "spell",
+    "icon": "ability_rogue_garrote"
+  },
   "genesis: now": null,
   "ghost wolf": {
     "name": "Ghost Wolf",
     "type": "spell",
     "icon": "spell_nature_spiritwolf"
+  },
+  "ghostly strike": {
+    "name": "Ghostly Strike",
+    "type": "spell",
+    "icon": "spell_shadow_curse"
   },
   "gift of the earthmother": {
     "name": "Gift of the Earthmother",
@@ -402,8 +570,14 @@
     "type": "spell",
     "icon": "racial_troll_berserk"
   },
+  "grace": null,
   "grol'bolar quarry": null,
   "growth: now": null,
+  "hammer of wrath": {
+    "name": "Hammer of Wrath",
+    "type": "spell",
+    "icon": "ability_thunderclap"
+  },
   "hand weapon": null,
   "hawk": null,
   "hawk mana": null,
@@ -420,6 +594,7 @@
     "icon": "spell_holy_blessingofagility"
   },
   "heart of the wild: the": null,
+  "hemorrhage and ghostly strike": null,
   "henrig lonebrow's journal": {
     "name": "Henrig Lonebrow's Journal",
     "type": "item",
@@ -428,16 +603,38 @@
   "high order": null,
   "high order and windshaper skyborne": null,
   "hold and the drowned city": null,
+  "holy binding": {
+    "name": "Holy Binding",
+    "type": "spell",
+    "icon": "spell_holy_blindingheal"
+  },
+  "holy conduit": {
+    "name": "Holy Conduit",
+    "type": "spell",
+    "icon": "spell_holy_devineaegis"
+  },
   "holy nova": {
     "name": "Holy Nova",
     "type": "spell",
     "icon": "spell_holy_holynova"
   },
+  "holy power": {
+    "name": "Holy Power",
+    "type": "spell",
+    "icon": "spell_holy_power"
+  },
+  "holy shock": {
+    "name": "Holy Shock",
+    "type": "spell",
+    "icon": "spell_holy_searinglight"
+  },
+  "holy spells": null,
   "holy strike": {
     "name": "Holy Strike",
     "type": "spell",
     "icon": "classicon_paladin"
   },
+  "holy tree": null,
   "horn of awakening": {
     "name": "Horn of Awakening",
     "type": "item",
@@ -471,6 +668,11 @@
     "type": "spell",
     "icon": "spell_fire_incinerate"
   },
+  "illumination": {
+    "name": "Illumination",
+    "type": "spell",
+    "icon": "spell_holy_greaterheal"
+  },
   "imbue iceknife": null,
   "imp": null,
   "imp health": null,
@@ -482,11 +684,22 @@
   },
   "incineration: this": null,
   "includes frostbite": null,
+  "increases": null,
+  "increases the energy": null,
+  "increasing": null,
   "incubus": null,
   "innkeepers": null,
   "insatiable and the shrieklings of zephras": null,
+  "instant poison attack power": null,
+  "instantly": null,
   "instinct: moved": null,
+  "instrument of law removed": null,
   "intellect to attack power": null,
+  "iron creed": {
+    "name": "Iron Creed",
+    "type": "spell",
+    "icon": "spell_holy_improvedresistanceauras"
+  },
   "iron grenades": null,
   "ironforge": null,
   "item restoration": null,
@@ -504,6 +717,11 @@
     "type": "spell",
     "icon": "ability_warrior_innerrage"
   },
+  "judgement of fury": {
+    "name": "Judgement of Fury",
+    "type": "spell",
+    "icon": "spell_holy_retributionaura"
+  },
   "kerlonian evershade": null,
   "killing": null,
   "krek the noxious": null,
@@ -514,13 +732,16 @@
   },
   "lacerate: this": null,
   "lacerating strikes: this": null,
+  "landing": null,
   "lasher sproutlings": null,
+  "law removed": null,
   "leader of the pack": {
     "name": "Leader of the Pack",
     "type": "spell",
     "icon": "spell_nature_unyeildingstamina"
   },
   "leader of the pack: the": null,
+  "learned": null,
   "learning": null,
   "leatherworking": {
     "name": "Leatherworking",
@@ -538,6 +759,17 @@
     "icon": "temp"
   },
   "lesser spirit and enchant bracer": null,
+  "lethality": {
+    "name": "Lethality",
+    "type": "spell",
+    "icon": "ability_criticalstrike"
+  },
+  "light in row": null,
+  "light's vigil": {
+    "name": "Light's Vigil",
+    "type": "spell",
+    "icon": "ability_paladin_judgementofthepure"
+  },
   "lightning bolt": {
     "name": "Lightning Bolt",
     "type": "spell",
@@ -564,6 +796,7 @@
     "type": "spell",
     "icon": "spell_shaman_maelstromweapon"
   },
+  "magic": null,
   "main hand weapon": null,
   "malduko cloudcrush": null,
   "mangle": {
@@ -574,6 +807,8 @@
   "mass salvation": null,
   "mass: this": null,
   "master spelunker": null,
+  "max": null,
+  "maximum mana": null,
   "mental dexterity: intellect": null,
   "mental dexterity: intellect to attack power": null,
   "mild spices": {
@@ -601,8 +836,19 @@
   "moonkin form: the": null,
   "most": null,
   "mount hyjal": null,
+  "murder": {
+    "name": "Murder",
+    "type": "spell",
+    "icon": "spell_shadow_deathscream"
+  },
   "murloc eyes": null,
   "murloc tideskimmers": null,
+  "mutilate": {
+    "name": "Mutilate",
+    "type": "spell",
+    "icon": "ability_rogue_deadlybrew"
+  },
+  "mutilates": null,
   "natural instinct": {
     "name": "Natural Instinct",
     "type": "spell",
@@ -617,6 +863,17 @@
   },
   "nethergarde keep": null,
   "new": null,
+  "new spell added: shank": null,
+  "new talent": null,
+  "new talent boundless light": null,
+  "new talent boundless light in row": null,
+  "new talent oath of light": null,
+  "new talent oath of light in row": null,
+  "new talent shieldsworn": null,
+  "new talent stoicism": null,
+  "new talent: blood splatter": null,
+  "new talent: composure": null,
+  "new talent: flash of steel": null,
   "nifty stopwatch": {
     "name": "Nifty Stopwatch",
     "type": "item",
@@ -634,10 +891,22 @@
   "number": null,
   "nyalah brightfire": null,
   "nyalah brightfire in valanaar": null,
+  "oath": null,
+  "oath of light in row": null,
   "omen of clarity": {
     "name": "Omen of Clarity",
     "type": "spell",
     "icon": "spell_nature_crystalball"
+  },
+  "one-handed weapon specialization": {
+    "name": "One-Handed Weapon Specialization",
+    "type": "spell",
+    "icon": "inv_sword_20"
+  },
+  "opportunity": {
+    "name": "Opportunity",
+    "type": "spell",
+    "icon": "ability_warrior_warcry"
   },
   "orc command": null,
   "order and windshaper skyborne": null,
@@ -647,6 +916,7 @@
   "owen thadd and garion wendell": null,
   "owl nests": null,
   "pack: the": null,
+  "passive": null,
   "pathfinding: this": null,
   "pelluk": null,
   "percent of intellect": null,
@@ -661,6 +931,12 @@
   },
   "please": null,
   "poised: new": null,
+  "poison": {
+    "name": "Poison",
+    "type": "spell",
+    "icon": "spell_shadow_corpseexplode"
+  },
+  "poison attack power": null,
   "pouch of violet dust": {
     "name": "Pouch of Violet Dust",
     "type": "item",
@@ -683,6 +959,11 @@
     "type": "spell",
     "icon": "spell_holy_powerinfusion"
   },
+  "power word: shield": {
+    "name": "Power Word: Shield",
+    "type": "spell",
+    "icon": "spell_holy_powerwordshield"
+  },
   "power: now": null,
   "precision": {
     "name": "Precision",
@@ -697,6 +978,12 @@
   },
   "predatory discipline: this": null,
   "predatory strikes: moved": null,
+  "premeditation": {
+    "name": "Premeditation",
+    "type": "spell",
+    "icon": "spell_shadow_possession"
+  },
+  "priest's dark sacrifice": null,
   "primal bite": {
     "name": "Primal Bite",
     "type": "spell",
@@ -707,7 +994,13 @@
   "princess theradras in maraudon": null,
   "probably": null,
   "procs": null,
+  "purifying power": {
+    "name": "Purifying Power",
+    "type": "spell",
+    "icon": "spell_holy_purifyingpower"
+  },
   "pyrewood village": null,
+  "quick and the dead": null,
   "quick and the dead legacy talent": null,
   "quillboar": null,
   "races": null,
@@ -731,11 +1024,17 @@
     "type": "spell",
     "icon": "ability_warrior_bloodfrenzy"
   },
+  "reckoning": {
+    "name": "Reckoning",
+    "type": "spell",
+    "icon": "spell_holy_blessingofstrength"
+  },
   "redoubt": {
     "name": "Redoubt",
     "type": "spell",
     "icon": "ability_defend"
   },
+  "reduces": null,
   "reflect": null,
   "reflection": {
     "name": "Reflection",
@@ -754,6 +1053,11 @@
     "type": "spell",
     "icon": "spell_nature_rejuvenation"
   },
+  "relentless strikes": {
+    "name": "Relentless Strikes",
+    "type": "spell",
+    "icon": "ability_warrior_decisivestrike"
+  },
   "renamed accelerant": null,
   "rend and tear": {
     "name": "Rend and Tear",
@@ -761,6 +1065,11 @@
     "icon": "ability_druid_primalagression"
   },
   "rend and tear: moved": null,
+  "repentance": {
+    "name": "Repentance",
+    "type": "spell",
+    "icon": "spell_holy_prayerofhealing"
+  },
   "replaces berserk": null,
   "replica ironforge air rifle": {
     "name": "Replica Ironforge Air Rifle",
@@ -777,6 +1086,12 @@
     "type": "spell",
     "icon": "spell_holy_mindvision"
   },
+  "reverence": {
+    "name": "Reverence",
+    "type": "spell",
+    "icon": "spell_holy_divineillumination"
+  },
+  "revoke": null,
   "ridgeshade lurkers": null,
   "righteous fury": {
     "name": "Righteous Fury",
@@ -797,18 +1112,51 @@
     "icon": "spell_shadow_teleport"
   },
   "roots": null,
+  "row": null,
+  "row of the holy tree": null,
   "ruins of lordaeron": null,
   "runed golden rod": {
     "name": "Runed Golden Rod",
     "type": "item",
     "icon": "inv_staff_10"
   },
+  "ruthlessness": {
+    "name": "Ruthlessness",
+    "type": "spell",
+    "icon": "ability_druid_disembowel"
+  },
+  "sacred duty": {
+    "name": "Sacred Duty",
+    "type": "spell",
+    "icon": "spell_holy_divineintervention"
+  },
   "saltwater murloc eyes": null,
   "salvation": null,
+  "sanctified judgement": {
+    "name": "Sanctified Judgement",
+    "type": "spell",
+    "icon": "ability_paladin_judgementblue"
+  },
   "sap": {
     "name": "Sap",
     "type": "spell",
     "icon": "ability_sap"
+  },
+  "seal": null,
+  "seal fate": {
+    "name": "Seal Fate",
+    "type": "spell",
+    "icon": "spell_shadow_chilltouch"
+  },
+  "seal of command": {
+    "name": "Seal of Command",
+    "type": "spell",
+    "icon": "ability_warrior_innerrage"
+  },
+  "seal of fury": {
+    "name": "Seal of Fury",
+    "type": "spell",
+    "icon": "spell_holy_retributionaura"
   },
   "seals": {
     "name": "Seals",
@@ -822,6 +1170,21 @@
   },
   "secondary talents": null,
   "serpent sting: attack power": null,
+  "serrated blades": {
+    "name": "Serrated Blades",
+    "type": "spell",
+    "icon": "inv_sword_17"
+  },
+  "setup": {
+    "name": "Setup",
+    "type": "spell",
+    "icon": "spell_nature_mirrorimage"
+  },
+  "shadow word: death": {
+    "name": "Shadow Word: Death",
+    "type": "spell",
+    "icon": "spell_shadow_demonicfortitude"
+  },
   "shadowform": {
     "name": "Shadowform",
     "type": "spell",
@@ -842,6 +1205,11 @@
     "type": "spell",
     "icon": "inv_shield_05"
   },
+  "shield specialization": {
+    "name": "Shield Specialization",
+    "type": "spell",
+    "icon": "inv_shield_06"
+  },
   "shifting power": {
     "name": "Shifting Power",
     "type": "spell",
@@ -853,6 +1221,18 @@
   "shred: weapon": null,
   "shrieklings of zephras": null,
   "significantly": null,
+  "silence": {
+    "name": "Silence",
+    "type": "spell",
+    "icon": "spell_shadow_impphaseshift"
+  },
+  "sinister strike": {
+    "name": "Sinister Strike",
+    "type": "spell",
+    "icon": "spell_shadow_ritualofsacrifice"
+  },
+  "sinister strike and eviscerate": null,
+  "sinister strike and hemorrhage": null,
   "siphon life": {
     "name": "Siphon Life",
     "type": "spell",
@@ -864,6 +1244,11 @@
     "icon": "inv_misc_pelt_wolf_01"
   },
   "skonk": null,
+  "slice and dice": {
+    "name": "Slice and Dice",
+    "type": "spell",
+    "icon": "ability_rogue_slicedice"
+  },
   "sneed": null,
   "sneed's shredder": null,
   "sniper shot: bonus": null,
@@ -892,7 +1277,13 @@
     "type": "spell",
     "icon": "trade_engineering"
   },
+  "spell added: shank": null,
   "spell damage": null,
+  "spiritual focus": {
+    "name": "Spiritual Focus",
+    "type": "spell",
+    "icon": "spell_arcane_blink"
+  },
   "sprint": {
     "name": "Sprint",
     "type": "spell",
@@ -919,6 +1310,7 @@
     "type": "spell",
     "icon": "spell_frost_stun"
   },
+  "stun and charm": null,
   "subtlety: this": null,
   "succubus": null,
   "summon hawk": {
@@ -927,10 +1319,16 @@
     "icon": "ability_hunter_animalhandler"
   },
   "summon hawk mana": null,
+  "swear": null,
   "sweeping strikes": {
     "name": "Sweeping Strikes",
     "type": "spell",
     "icon": "ability_rogue_slicedice"
+  },
+  "swift judgement": {
+    "name": "Swift Judgement",
+    "type": "spell",
+    "icon": "ability_paladin_judgementred"
   },
   "swiftmend": {
     "name": "Swiftmend",
@@ -950,6 +1348,13 @@
     "icon": "trade_tailoring"
   },
   "tainted ones": null,
+  "talent boundless light in row": null,
+  "talent oath of light in row": null,
+  "talent shieldsworn": null,
+  "talent stoicism": null,
+  "talent: blood splatter": null,
+  "talent: composure": null,
+  "talent: flash of steel": null,
   "tanks": null,
   "tanning rack": {
     "name": "Tanning Rack",
@@ -965,6 +1370,11 @@
   "tauren warriors": null,
   "tear: moved": null,
   "techbot": null,
+  "templar's bulwark": {
+    "name": "Templar's Bulwark",
+    "type": "spell",
+    "icon": "ability_paladin_shieldofthetemplar"
+  },
   "terrace: vitrix": null,
   "terry longdrink": null,
   "thadd and garion wendell": null,
@@ -981,6 +1391,11 @@
   "the shrieklings of zephras": null,
   "theradras in maraudon": null,
   "they're": null,
+  "threat": {
+    "name": "Threat",
+    "type": "spell",
+    "icon": "temp"
+  },
   "throw": {
     "name": "Throw",
     "type": "spell",
@@ -993,8 +1408,18 @@
     "icon": "spell_nature_thunderclap"
   },
   "tiger": null,
+  "toughness": {
+    "name": "Toughness",
+    "type": "spell",
+    "icon": "spell_holy_devotion"
+  },
   "training": null,
   "trueshot aura: ranged attack power": null,
+  "turn evil": {
+    "name": "Turn Evil",
+    "type": "spell",
+    "icon": "spell_holy_turnundead"
+  },
   "twilight enforcer": null,
   "twilight focus": {
     "name": "Twilight Focus",
@@ -1002,19 +1427,58 @@
     "icon": "spell_holy_healingfocus"
   },
   "twilight forgemaster": null,
+  "twist of light": null,
+  "two-handed weapon specialization": {
+    "name": "Two-Handed Weapon Specialization",
+    "type": "spell",
+    "icon": "inv_hammer_04"
+  },
   "unarmed weapon": null,
+  "undead priest's dark sacrifice": null,
   "unsealed fury": null,
+  "unsealed wrath": {
+    "name": "Unsealed Wrath",
+    "type": "spell",
+    "icon": "spell_holy_blessedresillience"
+  },
   "unstable package": null,
+  "unyielding faith": {
+    "name": "Unyielding Faith",
+    "type": "spell",
+    "icon": "spell_holy_unyieldingfaith"
+  },
   "valanaar": null,
   "vampiric embrace": {
     "name": "Vampiric Embrace",
     "type": "spell",
     "icon": "spell_shadow_unsummonbuilding"
   },
+  "vampiric embrace healing": null,
   "various": null,
+  "vengeance": {
+    "name": "Vengeance",
+    "type": "spell",
+    "icon": "ability_racial_avatar"
+  },
+  "venom": null,
   "venom-dripping": null,
   "venture co": null,
+  "vigor": {
+    "name": "Vigor",
+    "type": "spell",
+    "icon": "spell_nature_earthbindtotem"
+  },
   "vile fang and nightbane tainted ones": null,
+  "vindication": {
+    "name": "Vindication",
+    "type": "spell",
+    "icon": "spell_holy_vindication"
+  },
+  "voice of truth": {
+    "name": "Voice of Truth",
+    "type": "spell",
+    "icon": "inv_misc_horn_03"
+  },
   "voidwalker": {
     "name": "Voidwalker",
     "type": "spell",
@@ -1033,6 +1497,11 @@
   "waylaid crates and craftsman's writs": null,
   "we": null,
   "weapon": null,
+  "weapon expertise": {
+    "name": "Weapon Expertise",
+    "type": "spell",
+    "icon": "spell_holy_blessingofstrength"
+  },
   "wild growth": {
     "name": "Wild Growth",
     "type": "spell",
@@ -1062,6 +1531,7 @@
   "yarrog baneshadow": null,
   "yashiro": null,
   "young diemetradons": null,
+  "your": null,
   "zaetar": null,
   "zarla ober": null,
   "zephrali greatstaff": {
