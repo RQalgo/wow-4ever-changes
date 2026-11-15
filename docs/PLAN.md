@@ -64,3 +64,20 @@ filter state in the URL hash, light/dark.
   are keyed by date + kind.
 - The UI shows a Hotfix/Patch badge on every date and an
   All / Hotfixes / Patches filter.
+
+## Update: client data as icon source
+- `scripts/gamedata.mjs` builds a name -> icon/kind/class/tree index from the
+  game client's DB2 tables (via wago.tools CSV: SpellName, SpellMisc, Talent,
+  TalentTab, SkillLine(Ability), ManifestInterfaceData, ItemSparse, Item) for the
+  newest `wowf` build. The CSVs are streamed (own RFC-4180 parser, no new
+  dependency) and only needed columns are kept; the small result is cached as
+  `.cache/gamedata/index-<build>.json` (and kept between runs with
+  `actions/cache`).
+- Wowhead stays as fallback and cross-check. Its talent-calculator file is
+  fetched at most once per 24 h; talents are matched to the client's by tab id +
+  name (or a shared rank spell id) and marked `verified` true/false, and talents
+  only Wowhead has are added (`source: "wowhead"`).
+- Every failure (network, HTTP status, bad CSV, missing column) logs one line
+  and degrades: cached index, then Wowhead-only talents, then null. Never throws.
+- Real endpoints were not reachable from the development sandbox; the code is
+  tested against fixture CSVs under `test/fixtures/gamedata/`.
