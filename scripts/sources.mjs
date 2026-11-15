@@ -76,3 +76,24 @@ export async function loadSources(path = 'data/sources.json') {
   }
   return validateSources(list, path);
 }
+
+/** Formats a Date as its calendar date in US Pacific time (handles DST). */
+const PACIFIC_DATE = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit',
+});
+
+/**
+ * Calendar date of an instant in US Pacific time, which is how Blizzard
+ * dates its posts: a post made at 2026-11-03T03:20:33Z is "November 2".
+ *
+ * @param {string} isoString An ISO timestamp, e.g. Discourse's `created_at`.
+ * @returns {string} "YYYY-MM-DD"
+ * @throws {Error} if the timestamp cannot be parsed.
+ */
+export function pacificDate(isoString) {
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) throw new Error(`Invalid timestamp: ${isoString}`);
+  // formatToParts avoids depending on the locale's separator/order.
+  const parts = Object.fromEntries(PACIFIC_DATE.formatToParts(d).map((p) => [p.type, p.value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}

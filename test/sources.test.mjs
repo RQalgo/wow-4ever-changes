@@ -62,3 +62,15 @@ describe('loadSources', () => {
     assert.deepEqual(validateSources([{ ...ok, title: null }]), [{ ...ok, title: null }]);
   });
 });
+
+describe('pacificDate', () => {
+  test('converts UTC timestamps to the US Pacific calendar date', async () => {
+    const { pacificDate } = await import('../scripts/sources.mjs');
+    assert.equal(pacificDate('2026-11-03T03:20:33Z'), '2026-11-02'); // PST (UTC-8)
+    assert.equal(pacificDate('2026-11-03T03:20:33.210Z'), '2026-11-02');
+    assert.equal(pacificDate('2026-09-24T22:23:24.849Z'), '2026-09-24');
+    assert.equal(pacificDate('2026-07-01T06:59:59Z'), '2026-06-30'); // PDT (UTC-7)
+    assert.equal(pacificDate('2026-07-01T07:00:00Z'), '2026-07-01');
+    assert.throws(() => pacificDate('nope'), /Invalid timestamp/);
+  });
+});
