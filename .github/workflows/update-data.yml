@@ -56,16 +56,25 @@ jobs:
       # Fetch, parse, resolve icons, and write data/changes.json if changed.
       # The script prints a one-line summary such as
       # "updated: 3 days, 120 changes"; capture it for the job summary.
+      # pipefail matters: without it the step would take tee's exit status
+      # and a failed update would look like a success.
       - name: Run update
         id: update
+        shell: bash
         run: |
+          set -o pipefail
           node scripts/update.mjs | tee update.log
           echo "line=$(tail -n 1 update.log)" >> "$GITHUB_OUTPUT"
 
       # Show days/changes counts on the workflow run page.
+      # The value is passed through an environment variable rather than
+      # being interpolated into the script text, so its content can never be
+      # interpreted as shell code.
       - name: Job summary
+        env:
+          RESULT_LINE: ${{ steps.update.outputs.line }}
         run: |
-          echo "Data update result - ${{ steps.update.outputs.line }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Data update result - $RESULT_LINE" >> "$GITHUB_STEP_SUMMARY"
 
       # Commit and push only if files under data/ differ from HEAD.
       - name: Commit and push if changed
@@ -77,7 +86,12 @@ jobs:
           # Commit as the standard GitHub Actions bot identity.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Explicit paths so stray files (e.g. update.log) are never committed.
-          git add data/changes.json data/icon-cache.json
+          # Only the data/ folder is staged, so stray files in the repo root
+          # (e.g. update.log) are never committed, and a data file that does
+          # not exist yet cannot fail the step.
+          git add data/
           git commit -m "data: update changes ($(date -u +%Y-%m-%d))"
+          # main may have moved while the job ran (e.g. a merged PR); replay
+          # the data commit on top of it before pushing.
+          git pull --rebase origin main
           git push
