@@ -179,3 +179,189 @@ describe('fetchSourceDays', async () => {
     await assert.rejects(fetchSourceDays({ ...PATCH, type: 'rss' }, { log: quiet }), /Unknown source type "rss"/);
   });
 });
+
+describe('discourse-tracker (fixtures: tracker-page1/2.json, tracker-post-*.json)', async () => {
+  const { fetchSourceDays, forumBase, trackerPageUrl, defaultTrackerCutoff, devChangeId, validateSources: validate } = await import('../scripts/sources.mjs');
+  const { readFileSync } = await import('node:fs');
+  const fx = (name) => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
+  const FEED = 'https://us.forums.blizzard.com/en/wow/groups/blizzard-tracker/posts.json';
+  const DEV = { kind: 'dev', type: 'discourse-tracker', url: FEED, categoryId: 347, title: 'Dev Posts' };
+  const FORUM = 'https://us.forums.blizzard.com/en/wow';
+  const XP_URL = `${FORUM}/t/player-level-dungeon-xp-adjustment-november-14/2416343/1`;
+
+  /**
+   * Stub fetchJson over the fixtures: page 1, page 2 (before_post_id=30850001),
+   * then empty pages; post bodies by id. `pages` may replace the feed pages
+   * (keyed by before_post_id, '' = first page); `failBodies` ids throw.
+   */
+  const stub = ({ pages, failBodies = [] } = {}) => {
+    const urls = [];
+    const feed = pages ?? { '': fx('tracker-page1.json'), 30850001: fx('tracker-page2.json') };
+    const fetchJson = async (url) => {
+      urls.push(url);
+      const u = new URL(url);
+      if (u.pathname.endsWith('/posts.json')) {
+        const page = feed[u.searchParams.get('before_post_id') ?? ''];
+        if (page instanceof Error) throw page;
+        return structuredClone(page ?? { posts: [] });
+      }
+      const id = /\/posts\/(\d+)\.json$/.exec(u.pathname)?.[1];
+      if (failBodies.includes(id)) throw new Error('HTTP 429');
+      return fx(`tracker-post-${id}.json`);
+    };
+    return { urls, fetchJson };
+  };
+  const run = (deps = {}, s = stub()) => fetchSourceDays(DEV, { fetchJson: s.fetchJson, delayMs: 0, log: () => {}, ...deps });
+
+  test('helpers: forum base, page URLs, ids, default cutoff', () => {
+    assert.equal(forumBase(FEED), FORUM);
+    assert.throws(() => forumBase('https://x.test/en/wow/t/1.json'), /group feed URL/);
+    assert.equal(trackerPageUrl(FEED), FEED);
+    assert.equal(trackerPageUrl(FEED, 30850001), `${FEED}?before_post_id=30850001`);
+    assert.equal(devChangeId('2026-11-14', 0), '2026-11-14-d001');
+    assert.equal(defaultTrackerCutoff([]), '2026-09-01');
+    assert.equal(defaultTrackerCutoff(undefined), '2026-09-01');
+    assert.equal(defaultTrackerCutoff([{ date: '2026-11-02' }, { date: '2026-09-24' }, { date: '2026-10-01' }]), '2026-09-24');
+  });
+
+  test('validateSources: a tracker needs a positive integer categoryId; kind "dev" is known', () => {
+    assert.deepEqual(validate([DEV]), [DEV]);
+    assert.throws(() => validate([{ ...DEV, categoryId: '347' }]), /"categoryId" must be a positive integer/);
+    assert.throws(() => validate([{ ...DEV, categoryId: undefined }]), /"categoryId"/);
+  });
+
+  test('two pages via before_post_id, category 347 only (352 and 40 dropped), bodies for every new post', async () => {
+    const s = stub();
+    const days = await run({}, s);
+    assert.deepEqual(s.urls, [
+      FEED,
+      `${FEED}?before_post_id=30850001`, // the last post of page 1
+      `${FEED}?before_post_id=30650001`, // the last post of page 2 -> empty page: end of the feed
+      `${FORUM}/posts/30700001.json`, `${FORUM}/posts/30850001.json`, `${FORUM}/posts/30912982.json`,
+    ]);
+    const all = days.flatMap((d) => d.changes);
+    assert.equal(all.length, 3);
+    assert.ok(!all.some((c) => /Hotfixes - November 13|Raid Encounter Design/.test(c.text)), 'categories 352 and 40 dropped');
+  });
+
+  test('days: Pacific dates, newest first, v4 envelope; changes: text, url, author, postNumber, d-ids', async () => {
+    const days = await run();
+    assert.deepEqual(days.map((d) => [d.date, d.kind, d.title, d.sourceUrl, d.label]), [
+      ['2026-11-14', 'dev', null, null, 'November 14, 2026'], // created 2026-11-15T01:18Z
+      ['2026-11-10', 'dev', null, null, 'November 10, 2026'],
+      ['2026-10-07', 'dev', null, null, 'October 7, 2026'],
+    ]);
+    const [xp] = days[0].changes;
+    assert.deepEqual(Object.keys(xp), ['id', 'scope', 'category', 'class', 'spec', 'group', 'text', 'notes',
+      'url', 'author', 'authorTitle', 'postNumber', 'subjects', '_fullText']);
+    assert.deepEqual([xp.id, xp.scope, xp.category, xp.class, xp.spec, xp.group, xp.text, xp.url, xp.author, xp.authorTitle, xp.postNumber],
+      ['2026-11-14-d001', 'general', 'Dev Posts', null, null, null, 'Player-Level Dungeon XP Adjustment - November 14',
+        XP_URL, 'Kaivax', 'Community Manager', 1]);
+    const [reply] = days[1].changes;
+    assert.equal(reply.text, 'Reply in “PvP Faction Balance Updates - November 10”');
+    assert.equal(reply.postNumber, 174);
+    assert.deepEqual(reply.notes, ['To clarify, the restriction applies only to the more populous faction on PvP rulesets, including Roleplay-PvP. Battleground queues are not affected.']);
+    assert.ok(!reply._fullText.includes('RP-PvP realms?'), 'the quoted player is not part of the full text');
+    const [deep] = days[2].changes;
+    assert.equal(deep.authorTitle, null, 'an empty user_title is null');
+    assert.equal(deep.author, 'BlizzardEntertainment');
+    assert.ok(deep._fullText.includes('Maelstrom Weapon'), 'the full body, not just the summary');
+    assert.ok(!deep.notes.join(' ').includes('Maelstrom Weapon'));
+    for (const c of days.flatMap((d) => d.changes)) assert.ok(c.notes.join('').length <= 400);
+  });
+
+  test('stop rule: a page whose oldest post is older than the cutoff ends the paging; older posts dropped', async () => {
+    const s = stub();
+    const days = await run({ cutoffDate: '2026-10-05' }, s);
+    // Page 2's oldest post (Oct 1) is older than Oct 5: no third page request.
+    assert.equal(s.urls.filter((u) => u.includes('/posts.json')).length, 2);
+    assert.deepEqual(days.map((d) => d.date), ['2026-11-14', '2026-11-10', '2026-10-07']);
+    const later = await run({ cutoffDate: '2026-10-08' });
+    assert.deepEqual(later.map((d) => d.date), ['2026-11-14', '2026-11-10'], 'Oct 7 is before the cutoff');
+  });
+
+  test('default cutoff: the oldest stored day (any kind), else 2026-09-01', async () => {
+    const s = stub();
+    const days = await run({ storedDays: [{ date: '2026-11-01', kind: 'hotfix', changes: [] }] }, s);
+    // Page 1 ends on Nov 10 (not older than Nov 1), page 2 on Oct 1 (older): stop after 2.
+    assert.equal(s.urls.filter((u) => u.includes('/posts.json')).length, 2);
+    assert.deepEqual(days.map((d) => d.date), ['2026-11-14', '2026-11-10']);
+  });
+
+  test('stop rule: the safety cap of pages (logged)', async () => {
+    const lines = [];
+    let n = 0;
+    const endless = async (url) => {
+      if (!url.includes('/posts.json')) return { cooked: '<p>x</p>' };
+      n += 1;
+      return { posts: [{ id: 1000 - n, created_at: '2026-11-14T20:00:00Z', category_id: 1, url: `/t/x/${n}/1`, post_number: 1 }] };
+    };
+    await fetchSourceDays(DEV, { fetchJson: endless, delayMs: 0, maxPages: 3, log: (m) => lines.push(m) });
+    assert.equal(n, 3);
+    assert.match(lines.join('\n'), /safety cap of 3 pages/);
+    const defaults = await import('../scripts/sources.mjs');
+    assert.equal(defaults.MAX_TRACKER_PAGES, 30);
+  });
+
+  test('pauses between every request (500 ms by default)', async () => {
+    const pauses = [];
+    const s = stub();
+    await fetchSourceDays(DEV, { fetchJson: s.fetchJson, sleep: async (ms) => { pauses.push(ms); }, log: () => {} });
+    assert.equal(pauses.length, s.urls.length - 1);
+    assert.ok(pauses.every((ms) => ms === 500));
+  });
+
+  test('a body that cannot be fetched falls back to the feed excerpt (one log line); the source does not fail', async () => {
+    const lines = [];
+    const days = await run({ log: (m) => lines.push(m) }, stub({ failBodies: ['30912982'] }));
+    const xp = days[0].changes[0];
+    assert.deepEqual(xp.notes, ['Yesterday, we updated dungeon play so that experience granted by an enemy in an']);
+    assert.equal(xp._fullText, 'Player-Level Dungeon XP Adjustment - November 14\nYesterday, we updated dungeon play so that experience granted by an enemy in an');
+    assert.equal(lines.filter((l) => /post 30912982 unavailable \(HTTP 429\)/.test(l)).length, 1);
+    assert.equal(days.flatMap((d) => d.changes).length, 3);
+  });
+
+  test('the first page failing fails the source; a later page failing ends the paging', async () => {
+    await assert.rejects(run({}, stub({ pages: { '': new Error('HTTP 503') } })), /posts\.json: HTTP 503/);
+    const lines = [];
+    const days = await run({ log: (m) => lines.push(m) }, stub({ pages: { '': fx('tracker-page1.json'), 30850001: new Error('HTTP 503') } }));
+    assert.deepEqual(days.map((d) => d.date), ['2026-11-14', '2026-11-10']);
+    assert.match(lines.join('\n'), /page 2 failed \(HTTP 503\)/);
+  });
+
+  test('a stored post (same url) is reused as stored: no body request, same id, subjects and tags', async () => {
+    const stored = {
+      id: '2026-11-14-d001', scope: 'general', category: 'Dev Posts', class: null, spec: null, group: null,
+      text: 'Player-Level Dungeon XP Adjustment - November 14', notes: ['stored summary'], url: XP_URL,
+      author: 'Kaivax', authorTitle: 'Community Manager', postNumber: 1,
+      subjects: [{ name: 'Deadmines', type: 'spell', icon: 'x' }], tags: ['dungeons'],
+    };
+    const gone = { ...stored, id: '2026-11-14-d002', url: `${FORUM}/t/older/1/5`, text: 'Reply in “Older”', postNumber: 5 };
+    const storedDays = [{ date: '2026-11-14', kind: 'dev', title: null, sourceUrl: null, label: 'November 14, 2026', changes: [stored, gone] }];
+    const before = structuredClone(storedDays);
+    // A second post of Nov 14 that is new on the feed.
+    const page1 = fx('tracker-page1.json');
+    page1.posts.unshift({ ...page1.posts[0], id: 30920000, created_at: '2026-11-15T05:00:00Z', post_number: 2,
+      url: '/t/player-level-dungeon-xp-adjustment-november-14/2416343/2' });
+    const s = stub({ pages: { '': page1, 30850001: fx('tracker-page2.json') }, failBodies: ['30920000'] });
+    const days = await run({ storedDays, cutoffDate: '2026-09-01' }, s);
+    assert.ok(!s.urls.includes(`${FORUM}/posts/30912982.json`), 'stored post not re-fetched');
+    const nov14 = days.find((d) => d.date === '2026-11-14');
+    assert.deepEqual(nov14.changes.map((c) => [c.id, c.url.split('/').pop(), c.notes[0].slice(0, 14)]), [
+      ['2026-11-14-d001', '1', 'stored summary'], // reused unchanged
+      ['2026-11-14-d002', '5', 'stored summary'], // fell off the feed: kept
+      ['2026-11-14-d003', '2', 'Yesterday, we '], // new: the next free number
+    ]);
+    assert.deepEqual(nov14.changes[0], stored);
+    assert.deepEqual(storedDays, before, 'stored days are not mutated');
+  });
+
+  test('new posts of one day are numbered oldest first', async () => {
+    const page = { posts: [
+      { id: 3, created_at: '2026-11-14T22:00:00Z', category_id: 347, url: '/t/b/2/1', post_number: 1, topic_title: 'Later', excerpt: 'b' },
+      { id: 2, created_at: '2026-11-14T18:00:00Z', category_id: 347, url: '/t/a/1/1', post_number: 1, topic_title: 'Earlier', excerpt: 'a' },
+    ] };
+    const days = await run({ cutoffDate: '2026-11-01' }, stub({ pages: { '': page }, failBodies: ['2', '3'] }));
+    assert.deepEqual(days[0].changes.map((c) => [c.id, c.text]), [['2026-11-14-d001', 'Earlier'], ['2026-11-14-d002', 'Later']]);
+  });
+});
