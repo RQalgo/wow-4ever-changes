@@ -708,3 +708,56 @@ describe('addSubjects with a game-data index', () => {
     assert.equal(days[0].changes[0].subjects[0].source, 'wowhead');
   });
 });
+
+// ---------------------------------------------------------------------------
+// 6. v3: name aliases
+// ---------------------------------------------------------------------------
+
+describe('addSubjects: name aliases', () => {
+  /** Run with an alias file (or none when `aliases` is undefined). */
+  const withAliases = async (days, aliases, opts = {}) => {
+    const dir = await mkdtemp(join(tmpdir(), 'icons-alias-'));
+    try {
+      const aliasesPath = join(dir, 'aliases.json');
+      if (aliases !== undefined) await writeFile(aliasesPath, typeof aliases === 'string' ? aliases : JSON.stringify(aliases));
+      await addSubjects(days, { cachePath: join(dir, 'c.json'), overridesPath: join(dir, 'o.json'), aliasesPath, delayMs: 0, log: opts.log ?? quiet, ...opts });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  };
+  const retIndex = stubIndex({ 'unsealed wrath': { name: 'Unsealed Wrath', type: 'spell', kind: 'talent', class: 'paladin', tree: 'retribution', icon: 'spell_holy_blessedresillience' } });
+
+  test('alias hit: the written name is kept, the canonical one is resolved and recorded', async () => {
+    const days = oneDay({ class: 'paladin', text: 'Unsealed Fury no longer generates echoes.' });
+    await withAliases(days, { 'Unsealed Fury': 'Unsealed Wrath' }, { gameIndex: retIndex, fetchImpl: stubFetch(() => []) });
+    assert.deepEqual(days[0].changes[0].subjects, [{ name: 'Unsealed Fury', type: 'spell', kind: 'talent', class: 'paladin',
+      tree: 'retribution', icon: 'spell_holy_blessedresillience', source: 'client', alias: 'Unsealed Wrath' }]);
+  });
+
+  test('alias works through Wowhead too, and queries the canonical name', async () => {
+    const days = oneDay({ class: 'paladin', text: 'Unsealed Fury no longer generates echoes.' });
+    const f = stubFetch((q) => (q === 'Unsealed Wrath' ? [crumb(q, 'wh_icon', ['Talents', 'Paladin'])] : []));
+    await withAliases(days, { 'unsealed fury': 'Unsealed Wrath' }, { fetchImpl: f });
+    assert.deepEqual(f.calls.map((c) => c.q), ['Unsealed Wrath']);
+    const s = days[0].changes[0].subjects[0];
+    assert.deepEqual([s.name, s.alias, s.kind, s.icon, s.source], ['Unsealed Fury', 'Unsealed Wrath', 'talent', 'wh_icon', 'wowhead']);
+  });
+
+  test('alias whose target is unknown falls through to a normal miss', async () => {
+    const days = oneDay({ class: 'paladin', text: 'Unsealed Fury no longer generates echoes.' });
+    const f = stubFetch(() => []);
+    await withAliases(days, { 'unsealed fury': 'Nothing Like It' }, { fetchImpl: f });
+    assert.deepEqual(days[0].changes[0].subjects, []);
+    assert.ok(f.calls.some((c) => c.q === 'Nothing Like It') && f.calls.some((c) => c.q === 'Unsealed Fury'));
+  });
+
+  test('no alias file (or a corrupt one): no aliases and one log line', async () => {
+    for (const aliases of [undefined, '{not json']) {
+      const days = oneDay({ class: 'paladin', text: 'Unsealed Fury no longer generates echoes.' });
+      const logs = [];
+      await withAliases(days, aliases, { gameIndex: retIndex, fetchImpl: stubFetch(() => []), log: (m) => logs.push(m) });
+      assert.deepEqual(days[0].changes[0].subjects, []);
+      assert.equal(logs.filter((m) => /alias/.test(m)).length, 1);
+    }
+  });
+});

@@ -48,6 +48,15 @@
 //   The file is never written by this script. Plain JSON has no comments, so
 //   this header is the documentation.
 //
+// ALIASES  (data/name-aliases.json)  -- hand-edited
+//   `{ "<lower-cased name as written in the notes>": "Canonical Name" }`, e.g.
+//   `{ "unsealed fury": "Unsealed Wrath" }`: Blizzard's notes sometimes use a
+//   different name than the game data. The canonical name is resolved through
+//   the normal order (override, client index, Wowhead); the subject keeps the
+//   written name in `name` and gets `alias: "<canonical name>"`. If the target
+//   cannot be resolved the written name is tried as usual. A missing or corrupt
+//   file means no aliases (one log line).
+//
 // POLITENESS
 //   Requests are strictly sequential, separated by `delayMs`, carry an honest
 //   User-Agent, time out after 15 s, and are capped at `maxLookups` new network
@@ -871,6 +880,34 @@ async function readJsonObject(path, log) {
 }
 
 /**
+ * Load the hand-edited alias table (`{ "<lower-cased written name>": "Canonical
+ * Name" }`). A missing or corrupt file, or a non-object, yields no aliases and
+ * one log line; entries whose value is not a non-empty string are ignored.
+ * Keys are normalised like cache keys.
+ * @param {string} path
+ * @param {Function} log
+ * @returns {Promise<Record<string, string>>}
+ */
+async function loadAliases(path, log) {
+  let data;
+  try {
+    data = JSON.parse(await readFile(path, 'utf8'));
+  } catch (err) {
+    log(`icons: no usable alias file ${path} (${err.code ?? err.message}); no aliases`);
+    return {};
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    log(`icons: ${path} is not a JSON object; no aliases`);
+    return {};
+  }
+  const out = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (typeof v === 'string' && v.trim()) out[normalizeName(k)] = v.trim();
+  }
+  return out;
+}
+
+/**
  * Preferred subject type for a change: class-scope lines are about spells, item
  * and profession-like categories are about items, anything else has no
  * preference.
@@ -903,6 +940,7 @@ function preferTypeFor(change) {
  * @param {object} [opts]
  * @param {string} [opts.cachePath]
  * @param {string} [opts.overridesPath]
+ * @param {string} [opts.aliasesPath]  data/name-aliases.json
  * @param {typeof fetch} [opts.fetchImpl]
  * @param {number} [opts.delayMs]    pause between network calls
  * @param {number} [opts.maxLookups] cap on network calls this run
@@ -916,6 +954,7 @@ function preferTypeFor(change) {
 export async function addSubjects(days, {
   cachePath = 'data/icon-cache.json',
   overridesPath = 'data/icon-overrides.json',
+  aliasesPath = 'data/name-aliases.json',
   fetchImpl = globalThis.fetch,
   delayMs = 1500,
   maxLookups = 250,
@@ -924,6 +963,7 @@ export async function addSubjects(days, {
 } = {}) {
   const cache = await readJsonObject(cachePath, log);
   const overrides = await readJsonObject(overridesPath, log);
+  const aliases = await loadAliases(aliasesPath, log);
   const limits = createLimits({ maxLookups, delayMs, log });
   // A limits object that never touches the network: assembly reads the cache only.
   const offline = createLimits({ maxLookups: 0, delayMs: 0, log: () => {} });
@@ -974,6 +1014,22 @@ export async function addSubjects(days, {
   };
 
   /**
+   * Resolve a name through the alias table first: a name as written in the
+   * notes ("Unsealed Fury") may be called something else in the game data
+   * ("Unsealed Wrath"). The canonical name goes through resolveName; the subject
+   * keeps the written name and gets `alias: <canonical name>`. An alias whose
+   * target is unknown falls through to a normal resolution of the written name.
+   */
+  const resolveAliased = async (name, ctx, lim) => {
+    const target = aliases[normalizeName(name)];
+    if (target) {
+      const hit = await resolveName(target, ctx, lim);
+      if (hit) return { ...hit, name, alias: target };
+    }
+    return resolveName(name, ctx, lim);
+  };
+
+  /**
    * Resolve one change's groups into subjects using `lim` (real or offline
    * limits). `collect` (optional `{ stale, verify }` Maps) gathers the
    * follow-up work: v2-shape Wowhead spell entries to refresh, and
@@ -989,21 +1045,23 @@ export async function addSubjects(days, {
       taken.add(id);
       const subject = { name: hit.name, type: hit.type, kind: hit.kind, class: hit.class, tree: hit.tree, icon: hit.icon, source: hit.source };
       if (hit.verified !== undefined) subject.verified = hit.verified;
+      if (hit.alias) subject.alias = hit.alias;
       subjects.push(subject);
       if (!collect) return;
-      const key = normalizeName(queried);
-      const job = { name: queried, ...ctx };
+      const canonical = hit.alias ?? queried; // follow-up lookups use the game-data name
+      const key = normalizeName(canonical);
+      const job = { name: canonical, ...ctx };
       if (hit.source === 'wowhead' && isStaleEntry(cache[key]) && !collect.stale.has(key)) collect.stale.set(key, job);
       if (hit.source === 'client' && !Object.hasOwn(cache, key) && !collect.verify.has(key)) collect.verify.set(key, job);
     };
     for (const group of changeCandidateGroups(change)) {
       if (group.whole) {
-        const whole = await resolveName(group.whole, ctx, lim);
+        const whole = await resolveAliased(group.whole, ctx, lim);
         if (whole) { take(whole, group.whole); continue; } // a real "A and B" name: parts are not needed
       }
       for (const part of group.parts) {
         for (const variant of lookupVariants(part)) {
-          const hit = await resolveName(variant, ctx, lim);
+          const hit = await resolveAliased(variant, ctx, lim);
           if (hit) { take(hit, variant); break; } // first variant that resolves wins for this candidate
           const key = normalizeName(variant);
           const answered = Object.hasOwn(cache, key) || Object.hasOwn(overrides, key);
