@@ -13,6 +13,9 @@
 //
 // The output format is the contract in docs/SCHEMA.md.
 
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
 /**
@@ -56,4 +59,54 @@ export function sameContent(a, b) {
   const { generatedAt: _a, ...restA } = a;
   const { generatedAt: _b, ...restB } = b;
   return isDeepStrictEqual(restA, restB);
+}
+
+/**
+ * Read the previously generated changes.json. A missing or corrupt file is
+ * not fatal: the run simply starts from empty data (and will rewrite it).
+ *
+ * @param {string} path file to read
+ * @returns {Promise<object|null>} parsed object, or null if unusable
+ */
+async function readExisting(path) {
+  try {
+    const data = JSON.parse(await readFile(path, 'utf8'));
+    // Guard against valid JSON of the wrong shape (e.g. `[]` or `null`).
+    return data && typeof data === 'object' && Array.isArray(data.days)
+      ? data
+      : null;
+  } catch {
+    return null; // ENOENT or JSON syntax error
+  }
+}
+
+/**
+ * Load the real pipeline stages. Done lazily with dynamic import() so that
+ * importing this module (e.g. from tests) never requires them to exist.
+ *
+ * @returns {Promise<{fetchPost: Function, parseHotfixHtml: Function,
+ *   addSubjects: Function, SOURCE_URL: string}>}
+ */
+async function loadDefaultDeps() {
+  const [fetchMod, parseMod, iconsMod] = await Promise.all([
+    import('./fetch.mjs'),
+    import('./parse.mjs'),
+    import('./icons.mjs'),
+  ]);
+  return {
+    fetchPost: fetchMod.fetchPost,
+    parseHotfixHtml: parseMod.parseHotfixHtml,
+    addSubjects: iconsMod.addSubjects,
+    SOURCE_URL: fetchMod.SOURCE_URL,
+  };
+}
+
+/**
+ * Total number of individual changes across all days.
+ *
+ * @param {Array<{changes?: unknown[]}>} days
+ * @returns {number}
+ */
+function countChanges(days) {
+  return days.reduce((n, d) => n + (d.changes?.length ?? 0), 0);
 }
