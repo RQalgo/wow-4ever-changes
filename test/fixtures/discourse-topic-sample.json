@@ -1,0 +1,72 @@
+{
+ "id": 2360696,
+ "title": "Beta Development Notes – Updated November 2",
+ "slug": "beta-development-notes",
+ "posts_count": 5,
+ "post_stream": {
+  "stream": [
+   1001,
+   1002,
+   1004,
+   1008,
+   1011
+  ],
+  "posts": [
+   {
+    "id": 1001,
+    "post_number": 1,
+    "username": "Kaivax",
+    "staff": true,
+    "admin": true,
+    "moderator": true,
+    "created_at": "2026-09-24T22:23:24.849Z",
+    "updated_at": "2026-09-24T22:23:24.849Z",
+    "cooked": "<p>Today, we updated the Beta with a new build that includes the following updates.</p>\n<h2><a name=\"change-log-1\" class=\"anchor\" href=\"#change-log-1\"></a>Change Log</h2>\n<ul>\n<li><strong>Bugfixes</strong>\n<ul>\n<li>Fixed a bug with casters not playing their precast animations.</li>\n<li>Fixed an issue where a buff could not be applied.\n<ul>\n<li>Players may now buff each other.</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n<ul>\n<li><strong>Classes</strong>\n<ul>\n<li>If you have not recently logged in, your talents have been reset.</li>\n<li><strong>Hunter</strong>\n<ul>\n<li><strong>Pets</strong>\n<ul>\n<li>Pet attack speed normalised.</li>\n</ul>\n</li>\n<li><strong>Marksmanship</strong>\n<ul>\n<li>Aimed Shot cast time reduced to 2.5 seconds (was 3 seconds).</li>\n</ul>\n</li>\n</ul>\n</li>\n<li><strong>Paladin</strong>\n<ul>\n<li>Retribution Aura base damage returned to the original values.</li>\n<li><strong>Protection</strong>\n<ul>\n<li>Reckoning: Now has a 1.5 second cooldown.\n<ul>\n<li><em>Developers’ notes: This keeps burst in check.</em></li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n<ul>\n<li><strong>Races</strong>\n<ul>\n<li><strong>Tauren</strong></li>\n<li>Cultivation now has a cast time.</li>\n</ul>\n</li>\n</ul>\n<ul>\n<li><strong>Quests</strong></li>\n<li>\n<ul>\n<li>Elwynn Forest - Increased the spawn rate of Kobolds.</li>\n<li>Durotar - Reduced the damage of Scorpids.</li>\n</ul>\n</li>\n</ul>\n<h2><a name=\"known-issues-2\" class=\"anchor\" href=\"#known-issues-2\"></a>New to this build - Known Issues</h2>\n<ul>\n<li>Banes and Curses do not properly stack.</li>\n</ul>\n<p><a href=\"https://example.test/known\">Our full Known Issues post is here.</a></p>"
+   },
+   {
+    "id": 1002,
+    "post_number": 2,
+    "username": "Kaivax",
+    "staff": true,
+    "admin": true,
+    "moderator": true,
+    "created_at": "2026-09-24T22:27:35.824Z",
+    "updated_at": "2026-09-24T22:27:35.824Z",
+    "cooked": ""
+   },
+   {
+    "id": 1004,
+    "post_number": 4,
+    "username": "Kaivax",
+    "staff": true,
+    "admin": true,
+    "moderator": true,
+    "created_at": "2026-11-03T03:20:33.210Z",
+    "updated_at": "2026-11-03T03:20:33.210Z",
+    "cooked": "<p>Today, we updated the Beta with a new build that includes the following.</p>\n<h2>CHANGE LOG</h2>\n<p><strong>Bug Fixes</strong></p>\n<ul>\n<li>Improved rain visibility.</li>\n</ul>\n<p><strong>Classes</strong></p>\n<ul>\n<li><strong>Warrior</strong>\n<ul>\n<li>Berserker Rage is now available at level 30 (was 32).</li>\n<li><strong>Protection</strong>\n<ul>\n<li>Last Stand moved one row up.</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>"
+   },
+   {
+    "id": 1008,
+    "post_number": 8,
+    "username": "Kaivax",
+    "staff": true,
+    "admin": true,
+    "moderator": true,
+    "created_at": "2026-11-04T19:35:16.582Z",
+    "updated_at": "2026-11-04T19:35:16.582Z",
+    "cooked": "<p>We’ve updated the previous post in this thread with some additions that were intended to be listed.</p>\n<p><strong>Orc</strong></p>\n<ul><li>Blood Fury’s cooldown reduced to 2 minutes (was 3 minutes).</li></ul>"
+   },
+   {
+    "id": 1011,
+    "post_number": 11,
+    "username": "SomePlayer",
+    "staff": false,
+    "admin": false,
+    "moderator": false,
+    "created_at": "2026-11-04T20:00:00.000Z",
+    "updated_at": "2026-11-04T20:00:00.000Z",
+    "cooked": "<p>Thanks for the notes!</p><ul><li>My wishlist item.</li></ul>"
+   }
+  ]
+ }
+}
