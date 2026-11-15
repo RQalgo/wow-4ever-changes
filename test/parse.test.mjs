@@ -449,3 +449,13 @@ describe('loose headings (bold-only items without a nested list)', () => {
     ]);
   });
 });
+
+test('hotfix days carry kind "hotfix" and null title/sourceUrl', () => {
+  const { days } = parseHotfixHtml(FIXTURE);
+  for (const d of days) {
+    assert.deepEqual(Object.keys(d), ['date', 'kind', 'title', 'sourceUrl', 'label', 'changes']);
+    assert.equal(d.kind, 'hotfix');
+    assert.equal(d.title, null);
+    assert.equal(d.sourceUrl, null);
+  }
+});

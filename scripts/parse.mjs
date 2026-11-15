@@ -660,7 +660,9 @@ function parseDays(root) {
     if (block.type === 'heading') {
       const iso = parseDateLabel(block.text);
       if (iso) {
-        if (!days.has(iso)) days.set(iso, { date: iso, label: block.text, changes: [] });
+        // kind/title/sourceUrl per docs/SCHEMA.md v2; the orchestrator
+        // (scripts/sources.mjs) fills in the source URL.
+        if (!days.has(iso)) days.set(iso, { date: iso, kind: 'hotfix', title: null, sourceUrl: null, label: block.text, changes: [] });
         day = days.get(iso);
         category = null;
       } else if (day) {
@@ -697,7 +699,7 @@ function finalizeDays(days) {
  * (without the top-level generatedAt/source, which the pipeline adds).
  *
  * @param {string} html Full page HTML or just the article fragment.
- * @returns {{days: Array<{date:string,label:string,changes:object[]}>}}
+ * @returns {{days: Array<{date:string,kind:'hotfix',title:null,sourceUrl:null,label:string,changes:object[]}>}}
  */
 export function parseHotfixHtml(html) {
   const root = parseDom(String(html ?? ''), { comment: false });
