@@ -1,0 +1,88 @@
+/*
+ * styles.css - styling for "WoW: Forever - Changes at a Glance".
+ *
+ * Structure:
+ *   1. Design tokens (CSS custom properties): dark theme default, light via
+ *      prefers-color-scheme. Class colours are only used as ACCENTS (bars,
+ *      dots, tiles), never as text colour, so contrast holds in both themes.
+ *   2. Base / typography
+ *   3. Header, footer
+ *   4. Layout (mobile first; sidebar from 900px)
+ *   5. Filters (search, chips, toggles, suggestions)
+ *   6. Results (date headings, class/general sections, lines, icons)
+ *   7. States (loading, error, empty) and motion preferences
+ */
+
+/* ---------- 1. Tokens ---------- */
+:root {
+  --bg: #14110f;
+  --surface: #1e1a17;
+  --surface-2: #28221e;
+  --border: #3d342c;
+  --text: #f0e8d8;
+  --muted: #bcae97;
+  --accent: #e8a13a;        /* forge amber: used for text/links on dark */
+  --accent-ink: #1a1208;    /* text on top of --accent fills */
+  --focus: #ffd27a;
+  --mark-bg: #6b4a12;
+  --mark-fg: #fff3d6;
+  --shadow: 0 1px 0 rgba(0,0,0,.4);
+  --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bar-h: 0px;             /* set by app.js: height of the sticky filter bar on mobile */
+  --radius: 10px;
+
+  /* Standard class colours (accents only). */
+  --c-druid: #FF7C0A; --c-hunter: #AAD372; --c-mage: #3FC7EB;
+  --c-paladin: #F48CBA; --c-priest: #FFFFFF; --c-rogue: #FFF468;
+  --c-shaman: #0070DD; --c-warlock: #8788EE; --c-warrior: #C69B6D;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f3ead8;
+    --surface: #fbf6ea;
+    --surface-2: #efe4cc;
+    --border: #cdbd9c;
+    --text: #2a2118;
+    --muted: #5b4d3a;
+    --accent: #8a4a06;
+    --accent-ink: #fffaf0;
+    --focus: #1d4fd8;
+    --mark-bg: #ffe08a;
+    --mark-fg: #2a2118;
+    --shadow: 0 1px 0 rgba(0,0,0,.06);
+  }
+}
+
+/* ---------- 2. Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--bar-h) + 3rem); }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.5 var(--sans);
+  /* subtle parchment/forge glow, purely decorative */
+  background-image: radial-gradient(ellipse at top, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%);
+  background-repeat: no-repeat;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; padding: 0 2px; }
+.skip-link { position: absolute; left: -999px; top: 0; background: var(--accent); color: var(--accent-ink); padding: .5rem 1rem; z-index: 100; }
+.skip-link:focus { left: 0; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- 3. Header / footer ---------- */
+.site-header { padding: 1rem 1rem .5rem; max-width: 1200px; margin: 0 auto; }
+.site-header h1 {
+  margin: 0; font: 700 1.35rem/1.2 var(--serif); letter-spacing: .01em;
+  border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: .2rem;
+}
+.site-header .dash { color: var(--accent); }
+.site-meta { margin: .4rem 0 0; color: var(--muted); font-size: .875rem; }
+.site-footer { max-width: 1200px; margin: 2rem auto 0; padding: 1rem; color: var(--muted); font-size: .8125rem; border-top: 1px solid var(--border); }
+.site-footer p { margin: 0; max-width: 70ch; }
+
+/* ---------- 4. Layout ---------- */
+.layout { max-width: 1200px; margin: 0 auto; }
+.results { padding: .5rem 1rem 0; min-width: 0; }
+.results:focus { outline: none; }
