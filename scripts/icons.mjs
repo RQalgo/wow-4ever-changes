@@ -932,6 +932,13 @@ function preferTypeFor(change) {
 }
 
 /**
+ * Icon names that are placeholders in the client data, not real art. A
+ * subject whose client icon is one of these takes Wowhead's icon when Wowhead
+ * has answered for the same name.
+ */
+const PLACEHOLDER_ICONS = new Set(['temp', 'inv_misc_questionmark']);
+
+/**
  * Fill `subjects` on every change of every day (see docs/SCHEMA.md, v3).
  *
  * Subjects come from the change text first, then from its notes. Source order
@@ -1011,6 +1018,19 @@ export async function addSubjects(days, {
       const hit = { name: client.name, type: client.type, kind: client.kind, class: client.class ?? null,
         tree: client.tree ?? null, icon: client.icon, source: 'client' };
       const wh = cache[key]; // the Wowhead answer, if any (never fetched here)
+      // Two cases, both seen in the first real run, where Wowhead's answer is
+      // the better one and is used instead of the client's:
+      //  - the line is about an item (Items category) but the client index
+      //    only has a same-named SPELL (the item's proc effect; new items are
+      //    missing from the client item table) while Wowhead knows the item;
+      //  - the client icon is a placeholder ("temp", the question mark).
+      if (wh && wh.icon) {
+        const itemWanted = ctx.preferType === 'item' && client.type !== 'item' && wh.type === 'item';
+        const placeholder = PLACEHOLDER_ICONS.has(String(client.icon).toLowerCase());
+        if (itemWanted || placeholder) {
+          return { ...normalizeHit(wh), tree: client.type === wh.type ? client.tree ?? null : null, source: 'wowhead' };
+        }
+      }
       if (wh && wh.icon) {
         hit.verified = String(wh.icon).toLowerCase() === String(client.icon).toLowerCase();
         if (!hit.verified && !mismatches.has(key)) {
