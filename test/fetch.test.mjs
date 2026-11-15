@@ -7,7 +7,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fetchPost, SOURCE_URL, USER_AGENT } from '../scripts/fetch.mjs';
+import { fetchPost, metaRefreshTarget, SOURCE_URL, USER_AGENT } from '../scripts/fetch.mjs';
 
 /**
  * Build a stub fetch that records its calls and returns `response`.
@@ -66,4 +66,36 @@ test('fetchPost times out', async () => {
     });
   });
   await assert.rejects(fetchPost(SOURCE_URL, { fetchImpl: impl, timeoutMs: 20 }), /Timed out after 20 ms/);
+});
+
+// --- In-body (meta refresh) redirects, as served by Blizzard's news site ----
+
+test('metaRefreshTarget resolves a relative same-site target and rejects other hosts', () => {
+  const base = 'https://news.example.test/en-us/article/1';
+  assert.equal(
+    metaRefreshTarget('<meta id="__next-page-redirect" http-equiv="refresh" content="1;url=/en-us/article/1/slug"/>', base),
+    'https://news.example.test/en-us/article/1/slug',
+  );
+  assert.equal(metaRefreshTarget('<meta http-equiv="refresh" content="0;url=https://evil.test/x">', base), null);
+  assert.equal(metaRefreshTarget('<p>no redirect here</p>', base), null);
+});
+
+test('fetchPost follows a 307 whose target is only in a meta refresh tag', async () => {
+  const urls = [];
+  const impl = async (url) => {
+    urls.push(String(url));
+    if (!String(url).endsWith('/slug')) {
+      return new Response('<html id="__next_error__"><meta http-equiv="refresh" content="1;url=/en-us/article/1/slug"/></html>', { status: 307 });
+    }
+    return new Response('<p>article</p>', { status: 200 });
+  };
+  const body = await fetchPost('https://news.example.test/en-us/article/1', { fetchImpl: impl });
+  assert.equal(body, '<p>article</p>');
+  assert.deepEqual(urls, ['https://news.example.test/en-us/article/1', 'https://news.example.test/en-us/article/1/slug']);
+});
+
+test('fetchPost gives up on an endless chain of in-page redirects', async () => {
+  let n = 0;
+  const impl = async () => new Response(`<meta http-equiv="refresh" content="1;url=/hop${++n}">`, { status: 307 });
+  await assert.rejects(fetchPost('https://news.example.test/a', { fetchImpl: impl }), /too many in-page redirects/);
 });
