@@ -436,12 +436,12 @@ export async function lookupName(name, {
  * Lookup variants for one candidate, in the order they are tried:
  *   1. the full phrase;
  *   2. the pieces left over when the phrase is split at weak connectors
- *      (in / for / to / and), e.g. "Sap in Warsong Gulch" -> "Sap",
- *      "Warsong Gulch";
+ *      (in / for / to / and), e.g. "Fear Ward and Power Infusion" -> "Fear Ward",
+ *      "Power Infusion";
  *   3. the phrase shrunk from the left one word at a time, e.g.
- *      "Lesser Rock Elemental" -> "Rock Elemental" -> "Elemental".
- * Variants that start with a connector, or are a single filler / generic word,
- * are skipped. Misses are cached, so the extra variants cost one call each, once.
+ *      "Greater Lesser Rock Elemental" -> "Lesser Rock Elemental" -> "Rock Elemental".
+ * Variants that start with a connector, are a single filler / generic word, or
+ * are a single word derived from a longer phrase, are skipped. Misses are cached, so the extra variants cost one call each, once.
  *
  * @param {string} candidate
  * @returns {string[]} distinct variants, full phrase first
@@ -474,6 +474,13 @@ function lookupVariants(candidate) {
     const vt = v.split(' ');
     // A single filler / generic word is never worth a network call.
     if (vt.length === 1 && (FILLER_WORDS.has(key) || isGenericToken(vt[0]))) return false;
+    // Review fix: a single word DERIVED from a longer phrase ("Elemental" from
+    // "Lesser Rock Elemental", "Dead" from "The Quick and the Dead") is far
+    // more likely to hit an unrelated spell or item of that exact name than
+    // the thing the line is about, and a wrong icon is worse than the class
+    // fallback. Single words are only looked up when they are the candidate
+    // itself (e.g. "Redoubt", "Consecration").
+    if (vt.length === 1 && v !== candidate) return false;
     return true;
   });
 }
