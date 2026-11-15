@@ -1,0 +1,47 @@
+# .github/workflows/ci.yml
+#
+# Continuous integration: runs the unit tests and sanity-checks the generated
+# data on every pull request and on every push to main.
+#
+# Design: pushes that only touch data/** are ignored. Those are the bot's own
+# data-update commits (see update-data.yml), which already run the tests
+# before committing, so re-running CI on them would be redundant.
+# No secrets and no write permissions are needed.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    # Skip runs for pushes that change nothing but generated data.
+    paths-ignore:
+      - 'data/**'
+
+# Read-only token is enough for checkout.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Fetch the repository at the commit being tested.
+      - uses: actions/checkout@v4
+
+      # Node 22 (matches package.json engines); cache npm downloads.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Clean, lockfile-exact install (requires package-lock.json).
+      - run: npm ci
+
+      # Run the unit tests (node --test).
+      - run: npm test
+
+      # The web app loads data/changes.json directly, so make sure the
+      # committed file is at least valid JSON with a days array.
+      - name: Validate data/changes.json
+        run: node -e "const d=JSON.parse(require('fs').readFileSync('data/changes.json','utf8')); if(!Array.isArray(d.days)) throw new Error('days missing'); console.log('data/changes.json OK:', d.days.length, 'days')"
