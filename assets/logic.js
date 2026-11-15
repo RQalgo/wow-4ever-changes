@@ -337,3 +337,57 @@ export function glyphKey(ch) {
   if (/dungeon|raid|instance/.test(cat)) return 'arch';
   return 'hex';
 }
+
+/* ======================= 6. Suggestions ======================= */
+
+/**
+ * Build search-box suggestions from `subjects[].name` across the data.
+ *
+ * - Only changes passing the class/spec filter and the General toggle count
+ *   (the search text itself is ignored here, otherwise the list would shrink
+ *   to the thing already typed).
+ * - Ranked by how many changes mention the subject (most frequent first),
+ *   then alphabetically.
+ * - Empty query: SKILL names only (type "spell"). Typing widens this to every
+ *   subject (items too) and narrows by the text: prefix matches first, then
+ *   substring matches, each group keeping the frequency order.
+ *
+ * @param {{days: object[]}} data
+ * @param {object} state current UI state (cls/spec/general used)
+ * @param {string} query text currently typed
+ * @param {number} [limit] max suggestions
+ * @returns {{name: string, icon: string, type: string, count: number}[]}
+ */
+export function buildSuggestions(data, state, query, limit = 8) {
+  const q = String(query || '').trim().toLowerCase();
+  const filterState = { ...state, q: '' };
+  const tally = new Map(); // lower-cased name -> suggestion
+
+  for (const day of data.days || []) {
+    for (const ch of day.changes || []) {
+      if (!matchesState(ch, filterState)) continue;
+      const seen = new Set(); // count a subject once per change
+      for (const sub of ch.subjects || []) {
+        if (!sub || !sub.name) continue;
+        const key = sub.name.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (!q && sub.type !== 'spell') continue; // default list: skills only
+        const entry = tally.get(key) || { name: sub.name, icon: sub.icon, type: sub.type, count: 0 };
+        entry.count += 1;
+        tally.set(key, entry);
+      }
+    }
+  }
+
+  const byFrequency = (a, b) => b.count - a.count || a.name.localeCompare(b.name);
+  let list = [...tally.values()];
+  if (q) {
+    const prefix = list.filter((s) => s.name.toLowerCase().startsWith(q)).sort(byFrequency);
+    const rest = list.filter((s) => !s.name.toLowerCase().startsWith(q) && s.name.toLowerCase().includes(q)).sort(byFrequency);
+    list = [...prefix, ...rest];
+  } else {
+    list.sort(byFrequency);
+  }
+  return list.slice(0, limit);
+}

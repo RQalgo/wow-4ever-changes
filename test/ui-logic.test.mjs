@@ -125,3 +125,30 @@ test('highlightSegments marks matches and escapes regex characters', () => {
   assert.deepEqual(L.highlightSegments('a (b)', ['(b']), [{ text: 'a ', match: false }, { text: '(b', match: true }, { text: ')', match: false }]);
   assert.deepEqual(L.highlightSegments('abc', []), [{ text: 'abc', match: false }]);
 });
+
+/* ---------- suggestions ---------- */
+test('empty query suggests skill names, most frequently changed first', () => {
+  const extra = { days: [{ changes: [
+    mk({ subjects: [{ name: 'Zeal', type: 'spell', icon: 'z' }] }),
+    mk({ subjects: [{ name: 'Zeal', type: 'spell', icon: 'z' }, { name: 'Thing', type: 'item', icon: 't' }] }),
+    mk({ subjects: [{ name: 'Alpha', type: 'spell', icon: 'a' }] }),
+  ] }] };
+  const s = L.buildSuggestions(extra, L.defaultState(), '');
+  assert.deepEqual(s.map((x) => [x.name, x.count]), [['Zeal', 2], ['Alpha', 1]]); // items excluded
+});
+
+test('suggestions respect the class/spec filter', () => {
+  const names = (st) => L.buildSuggestions(data, st, '').map((s) => s.name);
+  assert.ok(names(L.defaultState()).includes('Wild Growth'));
+  assert.ok(!names({ ...L.defaultState(), cls: 'paladin' }).includes('Wild Growth'));
+  assert.ok(!names({ ...L.defaultState(), cls: 'paladin', spec: 'holy' }).includes('Unsealed Fury'));
+  assert.ok(names({ ...L.defaultState(), cls: 'paladin', spec: 'retribution' }).includes('Unsealed Fury'));
+});
+
+test('typing narrows: prefix matches first, then substring; items allowed', () => {
+  const s = L.buildSuggestions(data, L.defaultState(), 'ju').map((x) => x.name);
+  assert.deepEqual(s.slice(0, 2).sort(), ['Judgement', 'Judgement of Command']);
+  const sub = L.buildSuggestions(data, L.defaultState(), 'command').map((x) => x.name);
+  assert.deepEqual(sub, ['Judgement of Command']); // substring match
+  assert.equal(L.buildSuggestions(data, L.defaultState(), 'icebreaker')[0].type, 'item');
+});
