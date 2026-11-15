@@ -640,6 +640,7 @@ async function boot() {
   try {
     data = await loadData();
   } catch (err) {
+    $('updated').textContent = 'Last updated: unavailable';
     showStatus(
       'Could not load the changes',
       `The data file could not be loaded (${err.message}). Check your connection and try again.`,
