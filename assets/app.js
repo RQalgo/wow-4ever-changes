@@ -440,6 +440,27 @@ function chip(label, pressed, onClick, color) {
 }
 
 /**
+ * Replace the chips of a row without losing keyboard focus. The rows are
+ * rebuilt on every state change, so the chip that was just pressed with
+ * Enter/Space would otherwise be removed from the page and focus would fall
+ * back to <body> (Tab then restarts from the top). The chip at the same
+ * position gets the focus back; if that one is now disabled (the categories'
+ * All / None after use), the nearest enabled chip after it, else before it.
+ * Rows keep their chip order between renders, so the position identifies
+ * the same chip.
+ * @param {HTMLElement} row
+ * @param {HTMLElement[]} chips new children
+ */
+function replaceChips(row, chips) {
+  const i = [...row.children].indexOf(document.activeElement);
+  row.replaceChildren(...chips);
+  if (i < 0) return;
+  const order = [...chips.slice(i), ...chips.slice(0, i).reverse()];
+  const target = order.find((c) => !c.disabled);
+  if (target) target.focus();
+}
+
+/**
  * Rebuild the class chip row from the current state. The row is a three-way
  * choice (see classChoice in logic.js): "All classes" (default), "No classes"
  * (hide every class change, leaving only the category content), or one class.
@@ -461,7 +482,7 @@ function renderClassChips() {
   none.title = 'Hide all class changes and show only the categories below';
   const chips = [all, none];
   for (const c of CLASSES) chips.push(chip(c.name, current === c.slug, pick(c.slug), c.color));
-  row.replaceChildren(...chips);
+  replaceChips(row, chips);
   scrollPressedIntoView(row);
 }
 
@@ -491,7 +512,7 @@ function renderSpecChips() {
     chips.push(chip(titleCase(spec), state.spec === spec,
       () => setState({ ...state, spec: state.spec === spec ? '' : spec }), color));
   }
-  row.replaceChildren(...chips);
+  replaceChips(row, chips);
 }
 
 /**
@@ -522,7 +543,7 @@ function renderCategoryChips() {
     chips.push(chip(c.label, isCategoryOn(state, c.slug),
       () => setState({ ...state, cats: toggleCategory(state.cats, c.slug, categories) })));
   }
-  row.replaceChildren(...chips);
+  replaceChips(row, chips);
 }
 
 /** Segment labels of the kind filter, keyed by filter value. */
