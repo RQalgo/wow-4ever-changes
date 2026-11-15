@@ -331,6 +331,97 @@ function walkList(list, ctx, out) {
 }
 
 // ---------------------------------------------------------------------------
+// <script> fallback
+// ---------------------------------------------------------------------------
+
+/** A month-name date anywhere in a string, e.g. "November 13, 2026". */
+const DATE_ANYWHERE_RE = /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}\b/g;
+
+/** Double-quoted string literal (JSON or JS), body captured, escapes kept. */
+const STRING_LITERAL_RE = /"((?:[^"\\\n]|\\.)*)"/g;
+
+/** How deep to look for JSON encoded inside JSON string values. */
+const MAX_JSON_DEPTH = 3;
+
+/**
+ * Number of month-name dates in `s` if it plausibly holds the article HTML
+ * (contains bold markup and at least one date), else 0.
+ * @param {string} s
+ */
+function articleScore(s) {
+  if (typeof s !== 'string' || !/<(?:strong|b)\b/i.test(s)) return 0;
+  return (s.match(DATE_ANYWHERE_RE) || []).length;
+}
+
+/**
+ * Push every string found inside a parsed JSON value onto `out`. Strings
+ * that themselves look like JSON documents are parsed and searched too (up
+ * to MAX_JSON_DEPTH), because frameworks sometimes double-encode payloads.
+ * @param {unknown} value
+ * @param {string[]} out
+ * @param {number} depth
+ */
+function collectJsonStrings(value, out, depth = 0) {
+  if (typeof value === 'string') {
+    out.push(value);
+    const t = value.trim();
+    if (depth < MAX_JSON_DEPTH && (t.startsWith('{') || t.startsWith('['))) {
+      try { collectJsonStrings(JSON.parse(t), out, depth + 1); } catch { /* not JSON */ }
+    }
+  } else if (Array.isArray(value)) {
+    for (const v of value) collectJsonStrings(v, out, depth);
+  } else if (value && typeof value === 'object') {
+    for (const v of Object.values(value)) collectJsonStrings(v, out, depth);
+  }
+}
+
+/**
+ * All string values in a script's source: the whole script parsed as JSON
+ * (e.g. `<script id="__NEXT_DATA__" type="application/json">`), plus every
+ * double-quoted literal, unescaped with JSON rules, for JS assignments like
+ * `window.__STATE__ = {...}` that are not valid JSON as a whole.
+ * @param {string} source
+ * @returns {string[]}
+ */
+function scriptStrings(source) {
+  const out = [];
+  try { collectJsonStrings(JSON.parse(source), out); } catch { /* not pure JSON */ }
+  for (const m of source.matchAll(STRING_LITERAL_RE)) {
+    // Cheap pre-filter on the still-escaped body before unescaping: "<" may
+    // be written as \u003c, so look for the tag name rather than the bracket.
+    if (!/strong|\bb\b|u003cb/i.test(m[1])) continue;
+    // JS allows \' which JSON does not; normalise it before JSON.parse.
+    const body = m[1].replace(/\\'/g, "'");
+    try { out.push(JSON.parse(`"${body}"`)); } catch { /* not a JSON-compatible literal */ }
+  }
+  return out;
+}
+
+/**
+ * Find candidate article-HTML strings inside the document's <script> tags,
+ * best first (most dates, then longest).
+ *
+ * @param {string|import('node-html-parser').HTMLElement} htmlOrRoot
+ * @returns {string[]} Candidate HTML fragments, possibly empty.
+ */
+export function findArticleHtmlInScripts(htmlOrRoot) {
+  const root = typeof htmlOrRoot === 'string' ? parseDom(htmlOrRoot, { comment: false }) : htmlOrRoot;
+  const scored = [];
+  const seen = new Set();
+  for (const script of root.querySelectorAll('script')) {
+    for (const str of scriptStrings(script.rawText)) {
+      const score = articleScore(str);
+      if (score > 0 && !seen.has(str)) {
+        seen.add(str);
+        scored.push({ str, score });
+      }
+    }
+  }
+  scored.sort((a, b) => b.score - a.score || b.str.length - a.str.length);
+  return scored.map((c) => c.str);
+}
+
+// ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
 
@@ -387,5 +478,14 @@ function finalizeDays(days) {
  */
 export function parseHotfixHtml(html) {
   const root = parseDom(String(html ?? ''), { comment: false });
-  return { days: finalizeDays(parseDays(root)) };
+  let days = parseDays(root);
+  if (days.length === 0) {
+    // No date headings in the DOM: the article may only exist as data in a
+    // <script> (client-side rendering). Use the first candidate that parses.
+    for (const fragment of findArticleHtmlInScripts(root)) {
+      days = parseDays(parseDom(fragment, { comment: false }));
+      if (days.length) break;
+    }
+  }
+  return { days: finalizeDays(days) };
 }
