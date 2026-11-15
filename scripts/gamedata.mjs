@@ -368,3 +368,38 @@ export async function* csvRows(source, opts) {
     if (row) yield row;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Build selection
+// ---------------------------------------------------------------------------
+
+/**
+ * Picks the newest build of a product from the wago.tools /api/builds
+ * response. The response is an object keyed by product whose values are
+ * UNORDERED arrays of { product, version, created_at, is_bgdl, ... }; this also
+ * accepts a plain top-level array. "Newest" = greatest created_at
+ * ("YYYY-MM-DD HH:MM:SS" sorts correctly as text). Background-download builds
+ * (is_bgdl) are ignored unless they are all there is.
+ * @param {object|object[]} buildsJson
+ * @param {string} [product]
+ * @returns {string|null} version such as "1.60.1.70938", or null
+ */
+export function pickLatestBuild(buildsJson, product = 'wowf') {
+  let list = [];
+  if (Array.isArray(buildsJson)) {
+    list = buildsJson.filter((b) => b && b.product === product);
+  } else if (buildsJson && typeof buildsJson === 'object') {
+    const v = buildsJson[product];
+    if (Array.isArray(v)) list = v.filter((b) => b && (b.product === undefined || b.product === product));
+  }
+  list = list.filter((b) => typeof b.version === 'string' && b.version);
+  if (list.length === 0) return null;
+  // Prefer real builds over background-download ones, when any exist.
+  const normal = list.filter((b) => !b.is_bgdl);
+  const pool = normal.length ? normal : list;
+  let best = pool[0];
+  for (const b of pool) {
+    if (String(b.created_at ?? '') > String(best.created_at ?? '')) best = b;
+  }
+  return best.version;
+}

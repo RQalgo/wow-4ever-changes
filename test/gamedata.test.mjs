@@ -7,7 +7,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { classFromMask, normalizeName, treeSlug, parseCsv, csvRows } from '../scripts/gamedata.mjs';
+import { classFromMask, normalizeName, treeSlug, parseCsv, csvRows, pickLatestBuild } from '../scripts/gamedata.mjs';
 
 describe('helpers', () => {
   test('classFromMask: single bits map to classes, everything else to null', () => {
@@ -104,5 +104,40 @@ describe('csvRows (streaming)', () => {
     const chunks = [];
     for (let i = 0; i < bytes.length; i += 3) chunks.push(bytes.subarray(i, i + 3));
     assert.deepEqual(await collect(csvRows(chunks)), expected);
+  });
+});
+
+describe('pickLatestBuild', () => {
+  const b = (version, created_at, extra = {}) => ({ product: 'wowf', version, created_at, is_bgdl: false, ...extra });
+
+  test('picks the greatest created_at from an unordered array', () => {
+    const json = {
+      wow: [b('11.0.0.1', '2030-01-01 00:00:00', { product: 'wow' })],
+      wowf: [b('1.60.0.1', '2026-10-01 10:00:00'), b('1.60.1.2', '2026-11-12 09:30:00'), b('1.59.9.9', '2026-09-01 00:00:00')],
+    };
+    assert.equal(pickLatestBuild(json), '1.60.1.2');
+  });
+
+  test('ignores background-download builds when a normal one exists', () => {
+    const json = { wowf: [b('1.61.0.1', '2026-11-14 00:00:00', { is_bgdl: true }), b('1.60.1.2', '2026-11-12 09:30:00')] };
+    assert.equal(pickLatestBuild(json), '1.60.1.2');
+  });
+
+  test('uses a bgdl build when it is the only one', () => {
+    assert.equal(pickLatestBuild({ wowf: [b('1.61.0.1', '2026-11-14 00:00:00', { is_bgdl: true })] }), '1.61.0.1');
+  });
+
+  test('accepts a top-level array and filters by product', () => {
+    const arr = [b('1.60.1.2', '2026-11-12 09:30:00'), { product: 'wow', version: '9.9.9.9', created_at: '2099-01-01 00:00:00' }];
+    assert.equal(pickLatestBuild(arr), '1.60.1.2');
+    assert.equal(pickLatestBuild(arr, 'wow'), '9.9.9.9');
+  });
+
+  test('returns null when nothing matches or the input is junk', () => {
+    assert.equal(pickLatestBuild({ wow: [b('1', '2026-01-01 00:00:00', { product: 'wow' })] }), null);
+    assert.equal(pickLatestBuild({ wowf: [] }), null);
+    assert.equal(pickLatestBuild(null), null);
+    assert.equal(pickLatestBuild('nope'), null);
+    assert.equal(pickLatestBuild({ wowf: [{ product: 'wowf', created_at: 'x' }] }), null);
   });
 });
