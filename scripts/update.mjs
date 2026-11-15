@@ -13,9 +13,14 @@
 // `deps`, so the tests can use stubs and this file can be imported even when
 // the real modules are not present.
 //
-// Sources come from data/sources.json (docs/SCHEMA.md "Version 2"): the
-// rolling hotfix post and Blizzard forum topics with patch notes. A source
-// that fails is skipped and its stored days are kept.
+// Sources come from data/sources.json (docs/SCHEMA.md "Version 2" and "4"):
+// the rolling hotfix post, Blizzard forum topics with patch notes, and the
+// forum's Blizzard tracker (dev posts). A source that fails is skipped and
+// its stored days are kept.
+//
+// Dev posts carry a TRANSIENT `_fullText` (the whole post as plain text)
+// from scripts/sources.mjs to the icon and tag stages; it is deleted before
+// the file is written (TRANSIENT_FIELDS, stripTransientFields).
 //
 // The output format is the contract in docs/SCHEMA.md.
 
@@ -30,18 +35,18 @@ import { addTags as defaultAddTags } from './tags.mjs';
  * all hotfixes.
  *
  * @param {{kind?: string}} day
- * @returns {string} "hotfix" | "patch"
+ * @returns {string} "hotfix" | "patch" | "dev"
  */
 export function dayKind(day) {
   return day?.kind ?? 'hotfix';
 }
 
-/** Sort rank on the same date: the patch comes before the hotfix. */
-const KIND_ORDER = { patch: 0, hotfix: 1 };
+/** Sort rank on the same date: patch, then hotfix, then dev posts (SCHEMA v2/v4). */
+const KIND_ORDER = { patch: 0, hotfix: 1, dev: 2 };
 
 /**
  * Order two days: newest date first; on the same date, patch before hotfix
- * (docs/SCHEMA.md v2). Unknown kinds sort after the known ones.
+ * before dev (docs/SCHEMA.md v2, v4). Unknown kinds sort after the known ones.
  *
  * @param {{date: string, kind?: string}} a
  * @param {{date: string, kind?: string}} b
@@ -65,7 +70,7 @@ export function compareDays(a, b) {
  * @param {Array<{date: string, kind?: string}>} previousDays days from the existing file
  * @param {Array<{date: string, kind?: string}>} freshDays    days from the new fetch
  * @returns {Array<{date: string, kind?: string}>} merged days, newest first,
- *   patch before hotfix on the same date
+ *   patch before hotfix before dev on the same date
  */
 export function mergeDays(previousDays, freshDays) {
   // Inserting previous first then fresh means fresh overwrites any day with
@@ -95,6 +100,80 @@ export function normalizeGroupSeparators(days) {
       // Only the exact " > " (a ">" with a space on each side) is a separator;
       // a ">" inside a name without spaces is left alone.
       if (typeof change.group === 'string') change.group = change.group.replaceAll(' > ', ' \u203A ');
+    }
+  }
+  return days;
+}
+
+/**
+ * Names of TRANSIENT change fields: set by a pipeline stage for the stages
+ * after it, never written to data/changes.json.
+ *  - `_fullText`: a dev post's title + whole body as plain text (set by
+ *    scripts/sources.mjs for freshly fetched posts). scripts/icons.mjs and
+ *    scripts/tags.mjs read it, because a dev change's `notes` hold only a
+ *    short summary; it is not stored to keep the file small and to publish
+ *    only the summary of Blizzard's text (each line links to the full post).
+ */
+export const TRANSIENT_FIELDS = ['_fullText'];
+
+/**
+ * Delete the transient fields (TRANSIENT_FIELDS) from every change. Mutates
+ * and returns `days`.
+ *
+ * @param {Array<{changes?: object[]}>} days
+ * @returns {Array<object>} the same `days`
+ */
+export function stripTransientFields(days) {
+  for (const day of days ?? []) {
+    for (const change of day.changes ?? []) for (const f of TRANSIENT_FIELDS) delete change[f];
+  }
+  return days;
+}
+
+/**
+ * Subjects and tags of stored dev-post changes that will not be recomputed
+ * from the full post: a post already stored is not fetched again (docs/SCHEMA.md
+ * v4), so it reaches the icon and tag stages without `_fullText`, and
+ * recomputing it from its title and short summary would LOSE what only the
+ * body said (a class, a tree, a dungeon). Such a change (kind "dev", has a
+ * `url`, no `_fullText`, already has `subjects` and `tags`) keeps them as
+ * stored; collect them here, keyed by url, before the stages run.
+ *
+ * Consequence: a later rule change does not revise stored dev posts. To
+ * recompute them, remove those dev days from data/changes.json; posts still
+ * on the tracker's pages are then fetched and tagged again.
+ *
+ * @param {Array<{kind?: string, changes?: object[]}>} days merged days
+ * @returns {Map<string, {subjects: object[], tags: string[]}>}
+ */
+export function storedDevResults(days) {
+  const kept = new Map();
+  for (const day of days ?? []) {
+    if (dayKind(day) !== 'dev') continue;
+    for (const c of day.changes ?? []) {
+      if (c.url && c._fullText === undefined && Array.isArray(c.subjects) && Array.isArray(c.tags)) {
+        kept.set(c.url, { subjects: c.subjects, tags: c.tags });
+      }
+    }
+  }
+  return kept;
+}
+
+/**
+ * Put the results collected by storedDevResults back after the icon and tag
+ * stages (which may return new objects, so changes are matched by url).
+ * Mutates and returns `days`.
+ *
+ * @param {Array<{kind?: string, changes?: object[]}>} days
+ * @param {Map<string, {subjects: object[], tags: string[]}>} kept
+ * @returns {Array<object>} the same `days`
+ */
+export function restoreDevResults(days, kept) {
+  for (const day of days ?? []) {
+    if (dayKind(day) !== 'dev') continue;
+    for (const c of day.changes ?? []) {
+      const k = c.url && kept.get(c.url);
+      if (k) { c.subjects = k.subjects; c.tags = k.tags; }
     }
   }
   return days;
@@ -142,8 +221,8 @@ async function readExisting(path) {
  *
  * @returns {Promise<{loadSources: Function, fetchSourceDays: Function,
  *   fetchPost: Function, fetchJson: Function, parseHotfixHtml: Function,
- *   parsePatchPost: Function, addSubjects: Function, addTags: Function,
- *   loadGameIndex: Function}>}
+ *   parsePatchPost: Function, parseDevPost: Function, addSubjects: Function,
+ *   addTags: Function, loadGameIndex: Function}>}
  */
 async function loadDefaultDeps() {
   const [fetchMod, parseMod, iconsMod, sourcesMod] = await Promise.all([
@@ -159,6 +238,7 @@ async function loadDefaultDeps() {
     fetchJson: fetchMod.fetchJson,
     parseHotfixHtml: parseMod.parseHotfixHtml,
     parsePatchPost: parseMod.parsePatchPost,
+    parseDevPost: parseMod.parseDevPost,
     addSubjects: iconsMod.addSubjects,
     addTags: defaultAddTags,
     // The game-client data index is a separate module that may be missing or
@@ -252,8 +332,10 @@ function countChanges(days) {
  * @param {object} [options.deps] injectable stages (all optional except
  *   addSubjects when deps is given):
  *   { sources | loadSources | SOURCE_URL, fetchSourceDays, fetchPost,
- *     fetchJson, parseHotfixHtml, parsePatchPost, addSubjects, addTags,
- *     loadGameIndex }
+ *     fetchJson, parseHotfixHtml, parsePatchPost, parseDevPost, addSubjects,
+ *     addTags, loadGameIndex, trackerOptions }
+ *   (`trackerOptions`: extra options for the tracker source, e.g.
+ *   `{ cutoffDate, maxPages, delayMs, sleep }`, see fetchTrackerDays)
  *   (addTags defaults to scripts/tags.mjs; loadGameIndex defaults to
  *   scripts/gamedata.mjs only when no `deps` are given at all, so stubbed
  *   tests never touch the network)
@@ -282,11 +364,16 @@ export async function runUpdate({
 
   // 2. Fetch and parse each source. Failures are collected, not thrown, so
   //    one broken source does not block the others.
+  //    The stored days go along: the tracker source reuses stored dev posts
+  //    (no second body request, stable ids) and pages back to their oldest date.
   const stageDeps = {
     fetchPost: d.fetchPost,
     fetchJson: d.fetchJson,
     parseHotfixHtml: d.parseHotfixHtml,
     parsePatchPost: d.parsePatchPost,
+    parseDevPost: d.parseDevPost,
+    storedDays: previousDays,
+    ...(d.trackerOptions ?? {}),
     log,
   };
   const freshDays = [];
@@ -322,12 +409,17 @@ export async function runUpdate({
   // 4. Merge with what we already had, then resolve icons for everything.
   //    Icon lookups are cached, so re-processing old days is cheap.
   const merged = normalizeGroupSeparators(mergeDays(previousDays, freshDays));
+  // Stored dev posts keep their subjects and tags (see storedDevResults).
+  const keptDev = storedDevResults(merged);
   const gameIndex = await loadIndexSafely(d, log);
   const withSubjects = await d.addSubjects(merged, { gameIndex });
   // Tags are recomputed for ALL days, including stored days no source has any
   // more, so that a change of the rules revises the whole history on the next
   // run (sameContent then sees the difference and the file is rewritten).
-  const days = (d.addTags ?? defaultAddTags)(withSubjects);
+  // The one exception is stored dev posts, restored right after.
+  const tagged = restoreDevResults((d.addTags ?? defaultAddTags)(withSubjects), keptDev);
+  // The transient `_fullText` was for the icon and tag stages only.
+  const days = stripTransientFields(tagged);
 
   // 5. Assemble the document per docs/SCHEMA.md. generatedAt is whole
   //    seconds (no milliseconds) to match the documented format. `source`
