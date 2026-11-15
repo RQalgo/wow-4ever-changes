@@ -283,6 +283,9 @@ function makeChange(ctx, text) {
   };
 }
 
+/** The nine WoW: Forever classes, as slugs (docs/SCHEMA.md). */
+const KNOWN_CLASSES = new Set(['druid', 'hunter', 'mage', 'paladin', 'priest', 'rogue', 'shaman', 'warlock', 'warrior']);
+
 /**
  * Return the context for the children of a bold heading `<li>`.
  *
@@ -293,7 +296,15 @@ function makeChange(ctx, text) {
  * @param {string} heading
  */
 function descend(ctx, heading) {
-  if (ctx.inClasses && ctx.class === null) return { ...ctx, class: slugify(heading) };
+  // Under "Classes" the first heading level is normally a class. The real post
+  // also puts non-class headings there (e.g. "Cooldown Manager"); those are
+  // kept as a `group` of all-class changes instead of being invented as a
+  // class, so the class filter only ever lists real classes.
+  if (ctx.inClasses && ctx.class === null) {
+    const slug = slugify(heading);
+    if (ctx.group.length === 0 && KNOWN_CLASSES.has(slug)) return { ...ctx, class: slug };
+    return { ...ctx, group: [...ctx.group, heading] };
+  }
   if (ctx.inClasses && ctx.spec === null) return { ...ctx, spec: slugify(heading) };
   return { ...ctx, group: [...ctx.group, heading] };
 }

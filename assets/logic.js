@@ -31,7 +31,7 @@ export const CLASSES = [
 
 /** Known vanilla talent trees per class slug (merged with trees seen in data). */
 export const VANILLA_SPECS = {
-  druid: ['balance', 'feral-combat', 'restoration'],
+  druid: ['balance', 'feral', 'restoration'],
   hunter: ['beast-mastery', 'marksmanship', 'survival'],
   mage: ['arcane', 'fire', 'frost'],
   paladin: ['holy', 'protection', 'retribution'],

@@ -136,6 +136,8 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .lines > .line:first-child { border-top: 0; }
 .line-body { min-width: 0; flex: 1; }
 .line-text { margin: 0; overflow-wrap: anywhere; }
+/* Inline sub-heading label for class lines that belong to a named group. */
+.line-group { font-weight: 700; font-size: .8em; letter-spacing: .04em; text-transform: uppercase; opacity: .75; margin-right: .15em; }
 .line-note {
   margin: .3rem 0 0 .2rem; padding-left: .7rem; border-left: 3px solid var(--border);
   color: var(--muted); font-size: .9rem; font-style: italic;
