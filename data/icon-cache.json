@@ -34,6 +34,7 @@
   "adventure": null,
   "adventure in wow": null,
   "afterward": null,
+  "against botting": null,
   "aggression": {
     "name": "Aggression",
     "type": "spell",
@@ -50,6 +51,13 @@
     "icon": "inv_spear_07"
   },
   "aimed shot: bonus": null,
+  "air totem": {
+    "name": "Air Totem",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "spell_totem_wardofdraining"
+  },
   "alba fairmoon": null,
   "alliance in eu roleplay-pvp": null,
   "alliance outrunners": null,
@@ -76,6 +84,7 @@
   },
   "analog targeting": null,
   "another": null,
+  "answer": null,
   "anticipation": {
     "name": "Anticipation",
     "type": "spell",
@@ -138,6 +147,13 @@
     "class": null,
     "icon": "inv_ammo_arrow_01"
   },
+  "artisan's precision": {
+    "name": "Artisan's Precision",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "inv_hammer_09"
+  },
   "ashenvale": null,
   "aspect of the hawk": {
     "name": "Aspect of the Hawk",
@@ -151,6 +167,13 @@
   "attack power": null,
   "attack speed": null,
   "attention oceanic": null,
+  "attuned": {
+    "name": "Attuned",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_arcane_focusedpower"
+  },
   "attunement": null,
   "auction house": null,
   "audio": null,
@@ -203,8 +226,29 @@
   "base": null,
   "base mana": null,
   "baseline abilities": null,
+  "bastion": {
+    "name": "Bastion",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "inv_shield_04"
+  },
   "bat": null,
   "battle for the darkspear islands in world of warcraft": null,
+  "battle shout": {
+    "name": "Battle Shout",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_warrior_battleshout"
+  },
+  "battle stance": {
+    "name": "Battle Stance",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_warrior_offensivestance"
+  },
   "battleground marks of honor": null,
   "bear": null,
   "bear form": {
@@ -237,10 +281,18 @@
     "type": "spell",
     "icon": "spell_nature_ancestralguardian"
   },
+  "berserking": {
+    "name": "Berserking",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "racial_troll_berserk"
+  },
   "besides": null,
   "beta": null,
   "beta build": null,
   "beta celebration": null,
+  "beta discussion forum right this way": null,
   "beta launch": null,
   "beta special": null,
   "beyond": null,
@@ -251,6 +303,13 @@
   },
   "bite: base": null,
   "bite: replaces berserk": null,
+  "black silk pack": {
+    "name": "Black Silk Pack",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_bag_07_black"
+  },
   "blackfathom deeps": null,
   "blackmaw hold": null,
   "blackmaw hold and the drowned city": null,
@@ -260,6 +319,13 @@
     "icon": "trade_blacksmithing"
   },
   "blacksmithing and leatherworking": null,
+  "blackthorne intelligence": {
+    "name": "Blackthorne Intelligence",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_scroll_03"
+  },
   "blade of the magram clan": {
     "name": "Blade of the Magram Clan",
     "type": "item",
@@ -292,12 +358,27 @@
     "type": "spell",
     "icon": "spell_frost_icestorm"
   },
+  "blizzcon": null,
   "blood craze": {
     "name": "Blood Craze",
     "type": "spell",
     "kind": "talent",
     "class": "warrior",
     "icon": "spell_shadow_summonimp"
+  },
+  "blood frenzy": {
+    "name": "Blood Frenzy",
+    "type": "spell",
+    "kind": "talent",
+    "class": "druid",
+    "icon": "ability_ghoulfrenzy"
+  },
+  "blood fury": {
+    "name": "Blood Fury",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "racial_orc_berserkerstrength"
   },
   "blood splatter": {
     "name": "Blood Splatter",
@@ -348,6 +429,13 @@
   "boe": null,
   "bonsu": null,
   "booming": null,
+  "booming voice": {
+    "name": "Booming Voice",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "spell_nature_purge"
+  },
   "boot knife": {
     "name": "Boot Knife",
     "type": "spell",
@@ -407,6 +495,13 @@
   "camp taurajo to thunder bluff": null,
   "campfires": null,
   "cancel": null,
+  "cannibalize": {
+    "name": "Cannibalize",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_racial_cannibalize"
+  },
   "cast": null,
   "casting slice": null,
   "casting slice and dice": null,
@@ -459,6 +554,13 @@
   "character creation": null,
   "character names": null,
   "character select": null,
+  "charged": {
+    "name": "Charged",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_monk_rushingjadewind"
+  },
   "chat channels": null,
   "check out episode": null,
   "chill: redesigned": null,
@@ -467,6 +569,7 @@
   "claim your world of warcraft": null,
   "class": null,
   "class deep dives": null,
+  "classic designer tim jones": null,
   "claw": {
     "name": "Claw",
     "type": "spell",
@@ -482,6 +585,13 @@
     "icon": "spell_shadow_manaburn"
   },
   "clearingcast": null,
+  "cleave": {
+    "name": "Cleave",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_warrior_cleave"
+  },
   "cleave and whirlwind": null,
   "clicking": null,
   "cloak of the fleshborer": {
@@ -494,6 +604,7 @@
     "type": "item",
     "icon": "inv_stone_grindingstone_02"
   },
+  "code of conduct": null,
   "cold blood": {
     "name": "Cold Blood",
     "type": "spell",
@@ -509,6 +620,14 @@
   "combat text for self": null,
   "combo point": null,
   "combo points": null,
+  "combustion": {
+    "name": "Combustion",
+    "type": "spell",
+    "kind": "talent",
+    "class": "mage",
+    "icon": "spell_fire_sealoffire"
+  },
+  "coming": null,
   "coming to wow forever": null,
   "command": {
     "name": "Command",
@@ -519,6 +638,7 @@
   },
   "command tent": null,
   "communities": null,
+  "community": null,
   "compact action bar": null,
   "compact raid frame manager": null,
   "completing": null,
@@ -548,6 +668,13 @@
     "icon": "spell_holy_innerfire"
   },
   "consecration's z": null,
+  "contingency plan": {
+    "name": "Contingency Plan",
+    "type": "spell",
+    "kind": "ability",
+    "class": "priest",
+    "icon": "ability_priest_soulwarding"
+  },
   "conviction": {
     "name": "Conviction",
     "type": "spell",
@@ -569,6 +696,13 @@
   },
   "costs": null,
   "countdown to classic": null,
+  "counterattack": {
+    "name": "Counterattack",
+    "type": "spell",
+    "kind": "talent",
+    "class": "hunter",
+    "icon": "ability_warrior_challange"
+  },
   "coup": {
     "name": "Coup",
     "type": "spell",
@@ -692,6 +826,13 @@
   "deathless watcher's charge": null,
   "deathstalker erland": null,
   "deep dives": null,
+  "deep wounds": {
+    "name": "Deep Wounds",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_backstab"
+  },
   "defeating balnazzar": null,
   "defeating zarla ober": null,
   "defensive stance": {
@@ -710,12 +851,42 @@
   },
   "defias messenger": null,
   "deflection's parry": null,
+  "demonic brand": {
+    "name": "Demonic Brand",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warlock",
+    "icon": "ability_demonhunter_chaoticimprint_fire"
+  },
+  "demoralizing roar": {
+    "name": "Demoralizing Roar",
+    "type": "spell",
+    "kind": "ability",
+    "class": "druid",
+    "icon": "ability_druid_demoralizingroar"
+  },
+  "demoralizing shout": {
+    "name": "Demoralizing Shout",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_warrior_warcry"
+  },
   "deployed": null,
   "designer aidan moon": null,
   "designer josh greenfield": null,
   "designer kris zierhut": null,
+  "designer tim jones": null,
   "designers josh greenfield": null,
   "desolace": null,
+  "destructive reach": {
+    "name": "Destructive Reach",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warlock",
+    "icon": "spell_shadow_corpseexplode"
+  },
+  "development team": null,
   "deviate hides": null,
   "devouring contagion": {
     "name": "Devouring Contagion",
@@ -743,10 +914,33 @@
     "type": "spell",
     "icon": "spell_shadow_summonsuccubus"
   },
+  "disarm": {
+    "name": "Disarm",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_warrior_disarm"
+  },
   "discipline: this": null,
   "discolored healing potions": null,
   "discord": null,
   "discord voice": null,
+  "discussion forum": null,
+  "discussion forum right this way": null,
+  "disease cleansing totem": {
+    "name": "Disease Cleansing Totem",
+    "type": "spell",
+    "kind": "ability",
+    "class": "shaman",
+    "icon": "spell_nature_diseasecleansingtotem"
+  },
+  "disengage": {
+    "name": "Disengage",
+    "type": "spell",
+    "kind": "ability",
+    "class": "hunter",
+    "icon": "ability_rogue_feint"
+  },
   "dive into dungeons with devs": null,
   "divine aegis": {
     "name": "Divine Aegis",
@@ -838,6 +1032,13 @@
   "dustwallow marsh": null,
   "dwarf": null,
   "early": null,
+  "early demise": {
+    "name": "Early Demise",
+    "type": "spell",
+    "kind": "talent",
+    "class": "priest",
+    "icon": "spell_shadow_demonicfortitude"
+  },
   "early name": null,
   "earth fury": null,
   "earthbound": {
@@ -855,6 +1056,13 @@
   "earthmother: this": null,
   "eastern kingdoms": null,
   "eastern plaguelands": null,
+  "echo of justice": {
+    "name": "Echo of Justice",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_holy_sealofwrath"
+  },
   "economy hold": null,
   "economy holds for rmt": null,
   "economy legacy perk": null,
@@ -907,6 +1115,13 @@
   "enchant bracer": null,
   "enchant weapon": null,
   "end of beta special": null,
+  "endurance": {
+    "name": "Endurance",
+    "type": "spell",
+    "kind": "talent",
+    "class": "rogue",
+    "icon": "spell_shadow_shadowward"
+  },
   "enemy": null,
   "energy": null,
   "enrage": {
@@ -917,6 +1132,14 @@
     "icon": "spell_shadow_unholyfrenzy"
   },
   "ensured": null,
+  "entrapment": {
+    "name": "Entrapment",
+    "type": "spell",
+    "kind": "talent",
+    "class": "hunter",
+    "icon": "spell_nature_stranglevines"
+  },
+  "ep": null,
   "eu roleplay-pvp": null,
   "eureka": null,
   "even": null,
@@ -937,6 +1160,8 @@
   "experience": null,
   "expertise": null,
   "explore": null,
+  "explore the legacy system": null,
+  "explore the legacy system in world of warcraft": null,
   "explore the new dungeons of world of warcraft": null,
   "explore wow": null,
   "explosive trap": {
@@ -948,6 +1173,13 @@
     "name": "Expose Armor",
     "type": "spell",
     "icon": "ability_warrior_riposte"
+  },
+  "expose prey": {
+    "name": "Expose Prey",
+    "type": "spell",
+    "kind": "talent",
+    "class": "hunter",
+    "icon": "ability_hunter_swiftstrike"
   },
   "face down": null,
   "faction": null,
@@ -1015,6 +1247,13 @@
   },
   "fire power: redesigned": null,
   "fire trap": null,
+  "fire vulnerability": {
+    "name": "Fire Vulnerability",
+    "type": "spell",
+    "kind": "spell",
+    "class": "mage",
+    "icon": "spell_fire_soulburn"
+  },
   "fire-based and frost-based": null,
   "fireball": {
     "name": "Fireball",
@@ -1025,6 +1264,13 @@
   },
   "fireball: renamed accelerant": null,
   "fireblast": null,
+  "fishing rack": {
+    "name": "Fishing Rack",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_2h_draenorfishingpole_a_01"
+  },
   "fishing racks": null,
   "fist": null,
   "flame shock": {
@@ -1046,9 +1292,23 @@
     "icon": "spell_nature_guardianward"
   },
   "flametongue totem: buff": null,
+  "flametongue weapon": {
+    "name": "Flametongue Weapon",
+    "type": "spell",
+    "kind": "ability",
+    "class": "shaman",
+    "icon": "spell_fire_flametounge"
+  },
   "flash heal": {
     "name": "Flash Heal",
     "type": "spell",
+    "icon": "spell_holy_flashheal"
+  },
+  "flash of light": {
+    "name": "Flash of Light",
+    "type": "spell",
+    "kind": "ability",
+    "class": "paladin",
     "icon": "spell_holy_flashheal"
   },
   "flash of steel": {
@@ -1070,6 +1330,13 @@
   },
   "focus target": null,
   "focus: this": null,
+  "focused rage": {
+    "name": "Focused Rage",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_warrior_focusedrage"
+  },
   "for group ui": null,
   "for rmt": null,
   "for testing the wow forever beta": null,
@@ -1086,12 +1353,17 @@
   "forever character names": null,
   "forever class deep dives": null,
   "forever early name": null,
+  "forever general discussion": null,
+  "forever general discussion forum": null,
   "forever launch time": null,
+  "forever legacy system": null,
+  "forever meet the new skyborne": null,
   "forever now live": null,
   "forever podcast": null,
   "forever podcast ep": null,
   "forever podcast: episode": null,
   "forever raid overview": null,
+  "forever revealed": null,
   "forever short story": null,
   "forever starts": null,
   "forever starts in the wow portal room": null,
@@ -1101,6 +1373,7 @@
   "form only": null,
   "form: the": null,
   "forsaken": null,
+  "forum right this way": null,
   "frame manager": null,
   "friday": null,
   "friend of the library": null,
@@ -1136,6 +1409,13 @@
     "type": "spell",
     "icon": "spell_frost_frostnova"
   },
+  "frost trap": {
+    "name": "Frost Trap",
+    "type": "spell",
+    "kind": "ability",
+    "class": "hunter",
+    "icon": "spell_frost_freezingbreath"
+  },
   "frost ward": {
     "name": "Frost Ward",
     "type": "spell",
@@ -1169,6 +1449,13 @@
   "full article": null,
   "full energy": null,
   "furious howl attack power": null,
+  "furious precision": {
+    "name": "Furious Precision",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_warrior_incite"
+  },
   "furlbrow's wardrobe": null,
   "furor": {
     "name": "Furor",
@@ -1196,6 +1483,8 @@
   "gelkis": null,
   "gelkis and magram": null,
   "gelkis and the magram": null,
+  "general discussion": null,
+  "general discussion forum": null,
   "general macros": null,
   "genesis": {
     "name": "Genesis",
@@ -1206,6 +1495,7 @@
   },
   "genesis: now": null,
   "get": null,
+  "get to know the world of warcraft": null,
   "ghost wolf": {
     "name": "Ghost Wolf",
     "type": "spell",
@@ -1253,7 +1543,35 @@
   "grand marshal": null,
   "greater blessing of salvation": null,
   "greater friend of the library": null,
+  "greater heal": {
+    "name": "Greater Heal",
+    "type": "spell",
+    "kind": "ability",
+    "class": "priest",
+    "icon": "spell_holy_greaterheal"
+  },
+  "green silk pack": {
+    "name": "Green Silk Pack",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_bag_07_green"
+  },
+  "green woolen bag": {
+    "name": "Green Woolen Bag",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_bag_10_green"
+  },
   "greetings": null,
+  "grim reach": {
+    "name": "Grim Reach",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warlock",
+    "icon": "spell_shadow_callofbone"
+  },
   "grimoires": null,
   "grol'bolar quarry": null,
   "grounding totem": {
@@ -1281,6 +1599,13 @@
   "hawk": null,
   "hawk mana": null,
   "hawk: ranged attack power": null,
+  "heal": {
+    "name": "Heal",
+    "type": "spell",
+    "kind": "ability",
+    "class": "priest",
+    "icon": "spell_holy_heal"
+  },
   "healing potions": null,
   "healing stream": {
     "name": "Healing Stream",
@@ -1293,6 +1618,13 @@
     "name": "Health",
     "type": "spell",
     "icon": "inv_misc_enggizmos_27"
+  },
+  "health regeneration": {
+    "name": "Health Regeneration",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_holy_healingaura"
   },
   "heart of the mountain": null,
   "heart of the wild": {
@@ -1317,6 +1649,13 @@
     "icon": "ability_ambush"
   },
   "helene peltskinner": null,
+  "hellfire": {
+    "name": "Hellfire",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warlock",
+    "icon": "spell_fire_incinerate"
+  },
   "hello": null,
   "hemorrhage": {
     "name": "Hemorrhage",
@@ -1333,6 +1672,13 @@
   },
   "herb": null,
   "herbs": null,
+  "heroic strike": {
+    "name": "Heroic Strike",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_rogue_ambush"
+  },
   "hi all": null,
   "hi there": null,
   "high order": null,
@@ -1392,6 +1738,13 @@
   "host countdown to classic": null,
   "hostile analog targeting": null,
   "hostile target action sides: swaps": null,
+  "hot streak": {
+    "name": "Hot Streak",
+    "type": "spell",
+    "kind": "spell",
+    "class": "mage",
+    "icon": "ability_mage_hotstreak"
+  },
   "hotfixes update": null,
   "howl attack power": null,
   "huey sunnydale": null,
@@ -1451,6 +1804,7 @@
     "icon": "spell_holy_greaterheal"
   },
   "imbue iceknife": null,
+  "immune to disarm": null,
   "imp": null,
   "imp health": null,
   "imp's firebolt": null,
@@ -1462,6 +1816,48 @@
     "icon": "spell_fire_meteorstorm"
   },
   "impairing effects": null,
+  "impale": {
+    "name": "Impale",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_searingarrow"
+  },
+  "improved berserker rage": {
+    "name": "Improved Berserker Rage",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "spell_nature_ancestralguardian"
+  },
+  "improved bloodrage": {
+    "name": "Improved Bloodrage",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_racial_bloodrage"
+  },
+  "improved cleave": {
+    "name": "Improved Cleave",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_warrior_cleave"
+  },
+  "improved concussive shot": {
+    "name": "Improved Concussive Shot",
+    "type": "spell",
+    "kind": "talent",
+    "class": "hunter",
+    "icon": "spell_frost_stun"
+  },
+  "improved disarm": {
+    "name": "Improved Disarm",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_warrior_disarm"
+  },
   "improved distract": {
     "name": "Improved Distract",
     "type": "spell",
@@ -1508,6 +1904,13 @@
     "class": "shaman",
     "icon": "spell_nature_spiritwolf"
   },
+  "improved holy strike": {
+    "name": "Improved Holy Strike",
+    "type": "spell",
+    "kind": "spell",
+    "class": "paladin",
+    "icon": "classicon_paladin"
+  },
   "improved keyring": null,
   "improved mend pet": {
     "name": "Improved Mend Pet",
@@ -1537,6 +1940,13 @@
     "class": "priest",
     "icon": "spell_holy_powerwordshield"
   },
+  "improved revenge": {
+    "name": "Improved Revenge",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_warrior_revenge"
+  },
   "improved righteous fury": {
     "name": "Improved Righteous Fury",
     "type": "spell",
@@ -1565,6 +1975,20 @@
     "class": "paladin",
     "icon": "ability_thunderbolt"
   },
+  "improved shield bash": {
+    "name": "Improved Shield Bash",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_warrior_shieldbash"
+  },
+  "improved shifting power": {
+    "name": "Improved Shifting Power",
+    "type": "spell",
+    "kind": "spell",
+    "class": "druid",
+    "icon": "ability_hunter_aspectmastery"
+  },
   "improved sinister strike": null,
   "improved slam": {
     "name": "Improved Slam",
@@ -1580,6 +2004,13 @@
     "class": "rogue",
     "icon": "ability_rogue_sprint"
   },
+  "improved stings": {
+    "name": "Improved Stings",
+    "type": "spell",
+    "kind": "talent",
+    "class": "hunter",
+    "icon": "ability_hunter_quickshot"
+  },
   "improved tactical mastery": {
     "name": "Improved Tactical Mastery",
     "type": "spell",
@@ -1594,6 +2025,13 @@
     "kind": "talent",
     "class": "warrior",
     "icon": "ability_whirlwind"
+  },
+  "improved wing clip": {
+    "name": "Improved Wing Clip",
+    "type": "spell",
+    "kind": "talent",
+    "class": "hunter",
+    "icon": "ability_rogue_trip"
   },
   "in-game tutorials": null,
   "in-game voice mode": null,
@@ -1629,6 +2067,13 @@
     "class": "priest",
     "icon": "spell_frost_windwalkon"
   },
+  "innervate": {
+    "name": "Innervate",
+    "type": "spell",
+    "kind": "ability",
+    "class": "druid",
+    "icon": "spell_nature_lightning"
+  },
   "innkeepers": null,
   "insatiable and the shrieklings of zephras": null,
   "insect swarm": {
@@ -1657,6 +2102,13 @@
     "icon": "spell_holy_improvedresistanceauras"
   },
   "iron grenades": null,
+  "iron will": {
+    "name": "Iron Will",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "spell_magic_magearmor"
+  },
   "ironforge": null,
   "ironic": null,
   "is": null,
@@ -1673,7 +2125,9 @@
   "jin'zil": null,
   "join": null,
   "join host countdown to classic": null,
+  "join senior game designer josh greenfield": null,
   "join wow": null,
+  "jokes": null,
   "jom-jom": null,
   "josh greenfield": null,
   "journeyman campfire kit": {
@@ -1704,9 +2158,18 @@
   "kerlonian evershade": null,
   "khonsu": null,
   "killing": null,
+  "king of the jungle": {
+    "name": "King of the Jungle",
+    "type": "spell",
+    "kind": "spell",
+    "class": "druid",
+    "icon": "ability_druid_kingofthejungle"
+  },
   "kirin tor": null,
+  "know the world of warcraft": null,
   "krek the noxious": null,
   "kris zierhut": null,
+  "krol'dok stronghold": null,
   "lacerate": {
     "name": "Lacerate",
     "type": "spell",
@@ -1724,6 +2187,13 @@
   "lady sylvanas windrunner": null,
   "landing": null,
   "lasher sproutlings": null,
+  "last stand": {
+    "name": "Last Stand",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "spell_holy_ashestoashes"
+  },
   "latest beta build": null,
   "launch time": null,
   "lava burst": {
@@ -1736,6 +2206,7 @@
   "law removed": null,
   "lazy peons": null,
   "lb": null,
+  "lead classic designer tim jones": null,
   "leader of the pack": {
     "name": "Leader of the Pack",
     "type": "spell",
@@ -1755,8 +2226,17 @@
   "legacy perk the quick": null,
   "legacy perk the quick and the dead": null,
   "legacy points": null,
+  "legacy system": null,
+  "legacy system in world of warcraft": null,
   "legacy talent": null,
   "leopard prowler": null,
+  "lesser heal": {
+    "name": "Lesser Heal",
+    "type": "spell",
+    "kind": "ability",
+    "class": "priest",
+    "icon": "spell_holy_lesserheal"
+  },
   "lesser rock elemental": null,
   "lesser spirit": {
     "name": "Lesser Spirit",
@@ -1773,6 +2253,13 @@
   },
   "ley line": null,
   "life": null,
+  "life tap": {
+    "name": "Life Tap",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warlock",
+    "icon": "spell_shadow_burningspirit"
+  },
   "light in row": null,
   "light's vigil": {
     "name": "Light's Vigil",
@@ -1804,9 +2291,23 @@
   },
   "lightning reflexes: agility": null,
   "like": null,
+  "lingering rage": {
+    "name": "Lingering Rage",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_warrior_secondwind"
+  },
   "location": null,
   "locations": null,
   "loch modan": null,
+  "lone wolf": {
+    "name": "Lone Wolf",
+    "type": "spell",
+    "kind": "talent",
+    "class": "hunter",
+    "icon": "ability_mount_whitedirewolf"
+  },
   "look": null,
   "looking for group ui": null,
   "lord melenas": null,
@@ -1829,6 +2330,13 @@
   "main": null,
   "main hand weapon": null,
   "malduko cloudcrush": null,
+  "malediction": {
+    "name": "Malediction",
+    "type": "spell",
+    "kind": "spell",
+    "class": "warlock",
+    "icon": "spell_shadow_curseofachimonde"
+  },
   "mana potions": null,
   "mana tide totem": {
     "name": "Mana Tide Totem",
@@ -1854,6 +2362,7 @@
   "max": null,
   "maximum": null,
   "maximum mana": null,
+  "meet the new skyborne": null,
   "members of the horde": null,
   "mend pet": {
     "name": "Mend Pet",
@@ -1917,6 +2426,7 @@
   "mmmmm": null,
   "modifier sides: swaps": null,
   "money trade": null,
+  "money transactions in wow": null,
   "moonkin aura": {
     "name": "Moonkin Aura",
     "type": "spell",
@@ -1952,6 +2462,8 @@
     "icon": "ability_rogue_deadlybrew"
   },
   "mutilates": null,
+  "name of your own": null,
+  "name of your own in wow": null,
   "name reservation": null,
   "name reservation issue": null,
   "name reservation issue for oceanic players": null,
@@ -1979,6 +2491,7 @@
   "nethergarde keep": null,
   "new": null,
   "new dungeons of world of warcraft": null,
+  "new skyborne": null,
   "new spell added: shank": null,
   "new talent": null,
   "new talent boundless light": null,
@@ -2074,6 +2587,7 @@
   "owen thadd": null,
   "owen thadd and garion wendell": null,
   "owl nests": null,
+  "own in wow": null,
   "pack: the": null,
   "parry and block": null,
   "party": null,
@@ -2256,6 +2770,7 @@
   "professions": null,
   "professions ui": null,
   "progression in world of warcraft": null,
+  "proper": null,
   "pst": null,
   "purifying power": {
     "name": "Purifying Power",
@@ -2330,8 +2845,18 @@
   "ray traced shadows": null,
   "razorfen downs": null,
   "rb": null,
+  "read leyline": {
+    "name": "Read Leyline",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_mage_incantersabsorbtion"
+  },
   "reagent economy legacy perk": null,
+  "real": null,
   "real money trade": null,
+  "real money transactions": null,
+  "real money transactions in wow": null,
   "reckless swings": {
     "name": "Reckless Swings",
     "type": "spell",
@@ -2341,6 +2866,20 @@
     "name": "Reckoning",
     "type": "spell",
     "icon": "spell_holy_blessingofstrength"
+  },
+  "red mageweave bag": {
+    "name": "Red Mageweave Bag",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_bag_10_red"
+  },
+  "red woolen bag": {
+    "name": "Red Woolen Bag",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_bag_10_red"
   },
   "redoubt": {
     "name": "Redoubt",
@@ -2429,6 +2968,13 @@
     "icon": "spell_nature_manaregentotem"
   },
   "rethgar deathgate": null,
+  "retribution aura": {
+    "name": "Retribution Aura",
+    "type": "spell",
+    "kind": "ability",
+    "class": "paladin",
+    "icon": "spell_holy_auraoflight"
+  },
   "revelation": {
     "name": "Revelation",
     "type": "spell",
@@ -2442,6 +2988,7 @@
   },
   "revoke": null,
   "ridgeshade lurkers": null,
+  "right this way": null,
   "righteous fury": {
     "name": "Righteous Fury",
     "type": "spell",
@@ -2469,6 +3016,7 @@
   },
   "riverglades": null,
   "rmt": null,
+  "rmt in the wow": null,
   "rock elemental": null,
   "rockbiter weapon to the weapon imbues": null,
   "rogue poisons": null,
@@ -2500,10 +3048,24 @@
     "icon": "ability_rogue_rupture"
   },
   "rupture and garrote": null,
+  "ruthless": {
+    "name": "Ruthless",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_rogue_eviscerate"
+  },
   "ruthlessness": {
     "name": "Ruthlessness",
     "type": "spell",
     "icon": "ability_druid_disembowel"
+  },
+  "sacred arbiter": {
+    "name": "Sacred Arbiter",
+    "type": "spell",
+    "kind": "talent",
+    "class": "paladin",
+    "icon": "inv_sword_08"
   },
   "sacred duty": {
     "name": "Sacred Duty",
@@ -2522,6 +3084,7 @@
     "type": "spell",
     "icon": "ability_sap"
   },
+  "savage": null,
   "savage fury": {
     "name": "Savage Fury",
     "type": "spell",
@@ -2596,7 +3159,28 @@
     "class": "warlock",
     "icon": "spell_fire_playingwithfire"
   },
+  "shadow bolt": {
+    "name": "Shadow Bolt",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warlock",
+    "icon": "spell_shadow_shadowbolt"
+  },
   "shadow infinity": null,
+  "shadow mastery": {
+    "name": "Shadow Mastery",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warlock",
+    "icon": "spell_shadow_shadetruesight"
+  },
+  "shadow weaving": {
+    "name": "Shadow Weaving",
+    "type": "spell",
+    "kind": "talent",
+    "class": "priest",
+    "icon": "spell_shadow_blackplague"
+  },
   "shadow weaving's tooltip": null,
   "shadow word pain": null,
   "shadow word: death": {
@@ -2629,6 +3213,13 @@
   "shen'dar village": null,
   "shen'dralas": null,
   "shenthul in orgrimmar": null,
+  "shield bash": {
+    "name": "Shield Bash",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_warrior_shieldbash"
+  },
   "shield slam": {
     "name": "Shield Slam",
     "type": "spell",
@@ -2714,6 +3305,13 @@
   "skonk": null,
   "skyborne": null,
   "skyborne visual updates": null,
+  "skysight": {
+    "name": "Skysight",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_skyreach_lens_flare"
+  },
   "slam": {
     "name": "Slam",
     "type": "spell",
@@ -2751,9 +3349,30 @@
   "so": null,
   "sodapoppin": null,
   "soft targeting": null,
+  "sonic blast": {
+    "name": "Sonic Blast",
+    "type": "spell",
+    "kind": "spell",
+    "class": "hunter",
+    "icon": "ability_vehicle_sonicshockwave"
+  },
   "sootfur": null,
   "sorcerer's fireball": null,
+  "soul harvest": {
+    "name": "Soul Harvest",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warlock",
+    "icon": "inv_elemental_primal_shadow"
+  },
   "soul harvesting": null,
+  "soul link": {
+    "name": "Soul Link",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warlock",
+    "icon": "spell_shadow_gathershadows"
+  },
   "soul shard": {
     "name": "Soul Shard",
     "type": "item",
@@ -2784,6 +3403,13 @@
   },
   "spawns": null,
   "speak to tyrion": null,
+  "spearing strike": {
+    "name": "Spearing Strike",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "inv_spear_01"
+  },
   "specifically": null,
   "speed running classes": null,
   "speedrunning classes": null,
@@ -2883,6 +3509,7 @@
   },
   "stun and charm": null,
   "stutter-stepping": null,
+  "subjective": null,
   "subtlety: this": null,
   "succubus": null,
   "summon hawk": {
@@ -2891,7 +3518,21 @@
     "icon": "ability_hunter_animalhandler"
   },
   "summon hawk mana": null,
+  "summon incubus": {
+    "name": "Summon Incubus",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warlock",
+    "icon": "ability_warlock_incubus"
+  },
   "sunday": null,
+  "sunder armor": {
+    "name": "Sunder Armor",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "ability_warrior_sunder"
+  },
   "survive": null,
   "swap friendly target action sides: swaps": null,
   "swap hostile target action sides: swaps": null,
@@ -2908,6 +3549,13 @@
     "type": "spell",
     "icon": "ability_paladin_judgementred"
   },
+  "swiftfeather arrow": {
+    "name": "Swiftfeather Arrow",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_ammo_arrow_06"
+  },
   "swiftmend": {
     "name": "Swiftmend",
     "type": "spell",
@@ -2921,7 +3569,22 @@
   },
   "swiftstrike shot and swiftfeather arrow": null,
   "swing timer": null,
+  "swipe": {
+    "name": "Swipe",
+    "type": "spell",
+    "kind": "ability",
+    "class": "druid",
+    "icon": "inv_misc_monsterclaw_03"
+  },
+  "sword specialization": {
+    "name": "Sword Specialization",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_meleedamage"
+  },
   "sylvanas windrunner": null,
+  "system in world of warcraft": null,
   "tab targeting": null,
   "taillasher eggs": null,
   "tailoring": {
@@ -2930,6 +3593,7 @@
     "icon": "trade_tailoring"
   },
   "tainted ones": null,
+  "taken against botting": null,
   "taldramir": null,
   "talent boundless light in row": null,
   "talent oath of light in row": null,
@@ -2940,6 +3604,13 @@
   "talent: composure": null,
   "talent: flash of steel": null,
   "talenting": null,
+  "tame beast": {
+    "name": "Tame Beast",
+    "type": "spell",
+    "kind": "ability",
+    "class": "hunter",
+    "icon": "ability_hunter_beasttaming"
+  },
   "tanks": null,
   "tanning rack": {
     "name": "Tanning Rack",
@@ -2990,6 +3661,8 @@
   },
   "the ruins of lordaeron": null,
   "the shrieklings of zephras": null,
+  "the world of warcraft": null,
+  "the wow": null,
   "the wow portal room": null,
   "theradras in maraudon": null,
   "theramore expeditionary force": null,
@@ -3000,6 +3673,14 @@
     "kind": "talent",
     "class": "druid",
     "icon": "inv_misc_pelt_bear_03"
+  },
+  "this way": null,
+  "thorns": {
+    "name": "Thorns",
+    "type": "spell",
+    "kind": "ability",
+    "class": "druid",
+    "icon": "spell_nature_thorns"
   },
   "thousand cuts": {
     "name": "Thousand Cuts",
@@ -3035,6 +3716,7 @@
     "icon": "spell_frost_manarecharge"
   },
   "tiger": null,
+  "tim jones": null,
   "time": null,
   "time zone": null,
   "tipsoutbaby": null,
@@ -3049,6 +3731,13 @@
     "kind": "ability",
     "class": "shaman",
     "icon": "ability_shaman_totemrelocation"
+  },
+  "totemic focus": {
+    "name": "Totemic Focus",
+    "type": "spell",
+    "kind": "talent",
+    "class": "shaman",
+    "icon": "spell_nature_moonglow"
   },
   "totemic projection": null,
   "totemic recall": {
@@ -3068,6 +3757,14 @@
   "train": null,
   "training": null,
   "tranquil air totem": null,
+  "tranquility": {
+    "name": "Tranquility",
+    "type": "spell",
+    "kind": "ability",
+    "class": "druid",
+    "icon": "spell_nature_tranquility"
+  },
+  "transactions in wow": null,
   "transmog": null,
   "traps": null,
   "trial by fire": {
@@ -3118,6 +3815,13 @@
   "uldaman": null,
   "unarmed weapon": null,
   "unbridled rage": null,
+  "unbridled wrath": {
+    "name": "Unbridled Wrath",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "spell_nature_stoneclawtotem"
+  },
   "uncommon": null,
   "undead priest's dark sacrifice": null,
   "under": null,
@@ -3126,6 +3830,13 @@
   "underway": null,
   "unit frames": null,
   "units": null,
+  "unleashed fury": {
+    "name": "Unleashed Fury",
+    "type": "spell",
+    "kind": "talent",
+    "class": "hunter",
+    "icon": "ability_bullrush"
+  },
   "unpacking beta launch": null,
   "unsealed fury": null,
   "unsealed wrath": {
@@ -3230,12 +3941,27 @@
   "warsong gulch": null,
   "watch forging forever": null,
   "watch now": null,
+  "watch the world of warcraft": null,
   "watch the wow": null,
   "watcher's charge": null,
   "water pitchers": null,
+  "water shield": {
+    "name": "Water Shield",
+    "type": "spell",
+    "kind": "talent",
+    "class": "shaman",
+    "icon": "ability_shaman_watershield"
+  },
   "waylaid crates": null,
   "waylaid crates and craftsman's writs": null,
   "we": null,
+  "weakened soul": {
+    "name": "Weakened Soul",
+    "type": "spell",
+    "kind": "spell",
+    "class": "priest",
+    "icon": "spell_holy_ashestoashes"
+  },
   "weapon": null,
   "weapon expertise": {
     "name": "Weapon Expertise",
@@ -3245,8 +3971,18 @@
   "weapon imbues": null,
   "weapon racks": null,
   "weapon: chance": null,
+  "weaponmaster": {
+    "name": "Weaponmaster",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "garrison_weaponupgrade"
+  },
+  "weather effects": null,
   "weaving's tooltip": null,
   "weight stones": null,
+  "welcome to the world of warcraft": null,
+  "welcome to the wow": null,
   "welcome to world of warcraft: forever": null,
   "wetlands": null,
   "whether": null,
@@ -3321,6 +4057,7 @@
     "type": "spell",
     "icon": "ability_deathknight_hemorrhagicfever"
   },
+  "wrath": null,
   "wrathvine": null,
   "xaryu": null,
   "xp adjustment": null,
@@ -3331,11 +4068,13 @@
   "yesterday": null,
   "you for testing the wow forever beta": null,
   "you'll": null,
+  "you're": null,
   "young diemetradons": null,
   "your": null,
   "your clearcasting": null,
   "your next adventure": null,
   "your next adventure in wow": null,
+  "your own in wow": null,
   "your stormstrike": null,
   "your world of warcraft": null,
   "zaetar": null,
