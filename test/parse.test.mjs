@@ -9,6 +9,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { parse as parseDom } from 'node-html-parser';
 import {
   cleanText, slugify, parseDateLabel, parseHotfixHtml, isDeveloperNote, findArticleHtmlInScripts,
 } from '../scripts/parse.mjs';
@@ -216,5 +217,61 @@ describe('days and headings', () => {
     assert.deepEqual(parseHotfixHtml('<p><strong>Classes</strong></p><ul><li>x</li></ul>'), { days: [] });
     assert.deepEqual(parseHotfixHtml(''), { days: [] });
     assert.deepEqual(parseHotfixHtml(undefined), { days: [] });
+  });
+});
+
+describe('developer notes', () => {
+  test('marker variants: curly/straight apostrophe, singular, any case', () => {
+    const variants = [
+      'Developers’ notes: a', "Developers' notes: b", "Developer's note: c",
+      'Developer’s note: d', 'DEVELOPERS’ NOTES: e', 'developers notes: f',
+    ];
+    const items = variants.map((v) => `<li><em>${v}</em></li>`).join('');
+    const [change, ...rest] = changes(parseHotfixHtml(day('Items', `<ul><li>Change.</li>${items}</ul>`)));
+    assert.equal(rest.length, 0);
+    assert.deepEqual(change.notes, variants);
+  });
+
+  test('isDeveloperNote needs the whole item to be italic and start with the marker', () => {
+    // Build the <li> children with the same DOM library the parser uses.
+    const own = (html) => parseDom(`<li>${html}</li>`).firstChild.childNodes;
+    assert.equal(isDeveloperNote(own('<em>Developers’ notes: yes</em>')), true);
+    assert.equal(isDeveloperNote(own(' <i>Developers’ notes: also yes</i> ')), true);
+    assert.equal(isDeveloperNote(own('<em><strong>Developer’s note:</strong> nested bold</em>')), true);
+    assert.equal(isDeveloperNote(own('Developers’ notes: not italic')), false);
+    assert.equal(isDeveloperNote(own('<em>Developers’ notes:</em> partly italic')), false);
+    assert.equal(isDeveloperNote(own('<em>An italic change that is not a note.</em>')), false);
+  });
+
+  test('a non-note italic item stays a change', () => {
+    const html = day('Items', '<ul><li>Base.</li><li><em>An italic change.</em></li></ul>');
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => c.text), ['Base.', 'An italic change.']);
+  });
+
+  test('a note with no previous change in its list is kept as a change', () => {
+    const html = day('Classes', `<ul><li><strong>Mage</strong><ul>
+      <li><em>Developers’ notes: leading note.</em></li><li>Blink fixed.</li></ul></li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.class, c.text, c.notes]), [
+      ['mage', 'Developers’ notes: leading note.', []],
+      ['mage', 'Blink fixed.', []],
+    ]);
+  });
+
+  test('a note after a heading block does not jump back to an earlier change', () => {
+    const html = day('Classes', `<ul>
+      <li>All classes change.</li>
+      <li><strong>Hunter</strong><ul><li>Aimed Shot.</li></ul></li>
+      <li><em>Developers’ notes: orphaned.</em></li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.class, c.text, c.notes]), [
+      [null, 'All classes change.', []],
+      ['hunter', 'Aimed Shot.', []],
+      [null, 'Developers’ notes: orphaned.', []],
+    ]);
+  });
+
+  test('a note nested under a change becomes that change\'s note', () => {
+    const html = day('Items', `<ul><li>Change.<ul><li><em>Developer’s note: why.</em></li></ul></li>
+      <li><em>Developers’ notes: and more.</em></li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => c.notes), [['Developer’s note: why.', 'Developers’ notes: and more.']]);
   });
 });
