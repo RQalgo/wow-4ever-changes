@@ -37,6 +37,17 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
   published section, with small chips for the other classes, *Talent* and
   other categories (tap a chip to filter by it). Up to four skill icons are
   shown per line; talents carry a small diamond mark.
+- **Dates**: under the *All / Hotfixes / Patches / Dev Posts* switch, a slider
+  with two handles (start and end) limits the page to a date range; the
+  selected range is written above it ("Nov 4 – Nov 14, 2026", or *All dates*).
+  The handles stop on the dates that actually have changes, so every step
+  changes what you see (month labels under the track help you find your way).
+  Type an exact date in the *From* / *To* fields, or tap a preset: *Last 7
+  days* and *Last 30 days* count back from the newest change in the data (not
+  from today, so they never come up empty when Blizzard is quiet), *Since
+  launch* starts on November 4, 2026, *All* removes the limit. The range
+  combines with every other filter; when it is the only reason nothing shows,
+  the page says so and offers *Show all dates*.
 - On phones the filters sit behind the filter button next to the search box
   (a badge counts active filters; a one-line summary appears when something is
   filtered). On wide screens they stay in the sidebar and cards flow in two
@@ -57,11 +68,15 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
   them by author and by their tags (e.g. "mage").
 - The view is stored in the URL, e.g.
   `#class=paladin&spec=retribution`, `#class=none` (no class changes),
-  `#kind=patch`, `#kind=dev` or `#cats=items,quests` (enabled categories; `cats=none` for
-  none; the old `general=0` still works), so it can be bookmarked or shared.
+  `#kind=patch`, `#kind=dev`, `#cats=items,quests` (enabled categories; `cats=none` for
+  none; the old `general=0` still works) or `#from=2026-11-04&to=2026-11-10`
+  (date range), so it can be bookmarked or shared. A range end at the oldest or
+  newest date is left out of the URL: `#from=2026-11-04` means "from Nov 4 on"
+  and keeps showing new days as they arrive.
   `#filters=open` opens the filter sheet on phones. Without a hash the page
   restores the last class choice (a class and tree, or *No classes*) from the
-  browser's local storage; the other filters are not remembered.
+  browser's local storage; the other filters (including the date range) are
+  not remembered.
 
 ## How the data stays current
 
