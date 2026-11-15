@@ -1,0 +1,97 @@
+# .github/workflows/update-data.yml
+#
+# Scheduled data update: fetches Blizzard's rolling "WoW: Forever Hotfixes"
+# post, regenerates data/changes.json via scripts/update.mjs, and commits the
+# result to main only when something actually changed.
+#
+# Design notes:
+#   - There is no deploy step. GitHub Pages is set to "deploy from branch:
+#     main, root", so a commit that changes data/changes.json republishes the
+#     site by itself.
+#   - The tests run before the update so a broken pipeline never publishes.
+#   - The update script refuses to overwrite data on an empty parse, so a
+#     changed source layout fails this job instead of blanking the site.
+#   - No secrets are needed; the built-in GITHUB_TOKEN pushes the commit.
+
+name: Update data
+
+on:
+  schedule:
+    # Every 6 hours at minute 17 (UTC). Blizzard posts hotfixes at varying
+    # times, so polling several times a day catches them reasonably soon,
+    # and :17 avoids the congested top-of-the-hour slot.
+    - cron: '17 */6 * * *'
+  # Allow running it manually from the Actions tab.
+  workflow_dispatch:
+
+# The job commits data files back to the repository.
+permissions:
+  contents: write
+
+# Never run two updates at once; let a running one finish instead of
+# cancelling it midway (a cancelled push could leave stale data).
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out main (the default branch) with a token that can push.
+      - uses: actions/checkout@v4
+
+      # Node 22 with npm download caching.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Clean, lockfile-exact dependency install.
+      - run: npm ci
+
+      # Gate: do not touch data if the code's own tests fail.
+      - run: npm test
+
+      # Fetch, parse, resolve icons, and write data/changes.json if changed.
+      # The script prints a one-line summary such as
+      # "updated: 3 days, 120 changes"; capture it for the job summary.
+      # pipefail matters: without it the step would take tee's exit status
+      # and a failed update would look like a success.
+      - name: Run update
+        id: update
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/update.mjs | tee update.log
+          echo "line=$(tail -n 1 update.log)" >> "$GITHUB_OUTPUT"
+
+      # Show days/changes counts on the workflow run page.
+      # The value is passed through an environment variable rather than
+      # being interpolated into the script text, so its content can never be
+      # interpreted as shell code.
+      - name: Job summary
+        env:
+          RESULT_LINE: ${{ steps.update.outputs.line }}
+        run: |
+          echo "Data update result - $RESULT_LINE" >> "$GITHUB_STEP_SUMMARY"
+
+      # Commit and push only if files under data/ differ from HEAD.
+      - name: Commit and push if changed
+        run: |
+          if [ -z "$(git status --porcelain data/)" ]; then
+            echo "No data changes; nothing to commit."
+            exit 0
+          fi
+          # Commit as the standard GitHub Actions bot identity.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Only the data/ folder is staged, so stray files in the repo root
+          # (e.g. update.log) are never committed, and a data file that does
+          # not exist yet cannot fail the step.
+          git add data/
+          git commit -m "data: update changes ($(date -u +%Y-%m-%d))"
+          # main may have moved while the job ran (e.g. a merged PR); replay
+          # the data commit on top of it before pushing.
+          git pull --rebase origin main
+          git push
