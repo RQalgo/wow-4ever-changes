@@ -365,3 +365,18 @@ test('list items whose content is wrapped in <p> still yield class headings', ()
   assert.equal(c.text, 'Fixed Consecration.');
   assert.deepEqual(c.notes, ["Developers' note: x"]);
 });
+
+// --- Patch-notes support (schema v2) ---------------------------------------
+
+describe('Change Log headings', () => {
+  test('isChangeLogHeading accepts case and spacing variants only', async () => {
+    const { isChangeLogHeading } = await import('../scripts/parse.mjs');
+    for (const t of ['Change Log', 'CHANGE LOG', 'changelog', ' Change  Log: ']) assert.equal(isChangeLogHeading(t), true, t);
+    for (const t of ['Change Logs of Doom', 'Classes', 'Log']) assert.equal(isChangeLogHeading(t), false, t);
+  });
+
+  test('a "Change Log" heading in the hotfix post is not a category', () => {
+    const html = '<p><strong>November 13, 2026</strong></p><p><strong>Change Log</strong></p><ul><li>a</li></ul>';
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => c.category), ['General']);
+  });
+});

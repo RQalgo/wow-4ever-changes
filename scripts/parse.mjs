@@ -96,8 +96,36 @@ export function parseDateLabel(label) {
 /** Tags whose content is treated as bold for heading detection. */
 const BOLD_TAGS = new Set(['strong', 'b']);
 
-/** Tags that are always headings when they contain text. */
+/**
+ * Tags that are always headings when they contain text, in the hotfix post.
+ * <h2> is deliberately absent: the news page uses an <h2> for the article's
+ * own title ("Hotfixes"), which is not a category.
+ */
 const HEADING_TAGS = new Set(['h3', 'h4']);
+
+/**
+ * Heading tags for forum patch notes, where <h2> marks sections such as
+ * "Change Log" and "New to this build - Known Issues".
+ */
+const PATCH_HEADING_TAGS = new Set(['h2', 'h3', 'h4']);
+
+/**
+ * A section heading that only announces the list of changes ("Change Log",
+ * "CHANGE LOG", "Changelog"). It is not a category: it resets the current
+ * category so the following lists name their own categories.
+ */
+const CHANGE_LOG_RE = /^change\s*log:?$/i;
+
+/**
+ * True when a heading text is a "Change Log" marker (any case, with or
+ * without the space, optional trailing colon).
+ *
+ * @param {string} text Heading text.
+ * @returns {boolean}
+ */
+export function isChangeLogHeading(text) {
+  return CHANGE_LOG_RE.test(cleanText(text));
+}
 
 /** List container tags. */
 const LIST_TAGS = new Set(['ul', 'ol']);
@@ -158,14 +186,17 @@ function isOnly(nodes, tags) {
 }
 
 /**
- * If `el` is a heading-like block — <h3>/<h4>, or a <p> whose content is
- * only <strong>/<b> — return its text; otherwise null.
+ * If `el` is a heading-like block — one of `headingTags` (<h3>/<h4> by
+ * default), or a <p> whose content is only <strong>/<b> — return its text;
+ * otherwise null. Empty anchors inside a heading (Discourse's
+ * `<a class="anchor">`) contribute no text, so they need no special case.
  * @param {import('node-html-parser').HTMLElement} el
+ * @param {Set<string>} [headingTags=HEADING_TAGS]
  * @returns {string|null}
  */
-function headingText(el) {
+function headingText(el, headingTags = HEADING_TAGS) {
   const tag = tagOf(el);
-  if (HEADING_TAGS.has(tag)) return textOf(el.childNodes) || null;
+  if (headingTags.has(tag)) return textOf(el.childNodes) || null;
   if (tag === 'p' && isOnly(el.childNodes, BOLD_TAGS)) return textOf(el.childNodes);
   return null;
 }
@@ -176,8 +207,9 @@ function headingText(el) {
  * walker) or into headings.
  * @param {import('node-html-parser').Node} node
  * @param {Array<{type:'heading',text:string}|{type:'list',el:import('node-html-parser').HTMLElement}>} [out]
+ * @param {Set<string>} [headingTags=HEADING_TAGS] Tags treated as headings.
  */
-function collectBlocks(node, out = []) {
+function collectBlocks(node, out = [], headingTags = HEADING_TAGS) {
   for (const child of node.childNodes) {
     const tag = tagOf(child);
     if (!tag) continue;
@@ -185,14 +217,14 @@ function collectBlocks(node, out = []) {
       out.push({ type: 'list', el: child });
       continue;
     }
-    const text = headingText(child);
+    const text = headingText(child, headingTags);
     if (text !== null) {
       out.push({ type: 'heading', text });
       continue;
     }
     // <script>/<style> never contain article markup we can walk as DOM.
     if (tag === 'script' || tag === 'style') continue;
-    collectBlocks(child, out);
+    collectBlocks(child, out, headingTags);
   }
   return out;
 }
@@ -529,7 +561,8 @@ function parseDays(root) {
         day = days.get(iso);
         category = null;
       } else if (day) {
-        category = block.text;
+        // "Change Log" only introduces the lists; it is not a category.
+        category = isChangeLogHeading(block.text) ? null : block.text;
       }
       // Headings before the first date (e.g. intro text) are ignored.
       continue;
