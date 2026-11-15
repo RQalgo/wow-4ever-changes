@@ -122,8 +122,8 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   font: 700 1.15rem/1.3 var(--serif);
 }
 /* Kind badge: squarish and outlined so it never reads as the pill-shaped change count. */
-.kind-badge {
-  align-self: center; font: 700 .72rem/1 var(--sans); letter-spacing: .07em; text-transform: uppercase;
+.day-kind { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .15rem .4rem; min-width: 0; }
+.kind-badge { font: 700 .72rem/1 var(--sans); letter-spacing: .07em; text-transform: uppercase;
   padding: .28rem .5rem; border-radius: 4px; border: 1px solid var(--hotfix-edge);
   background: var(--hotfix-bg); color: var(--hotfix-fg);
 }

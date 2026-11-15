@@ -315,11 +315,15 @@ function renderDay(day, changes) {
   sec.id = `d-${dayKey(day).replace('|', '-')}`;
   const head = el('h2', 'day-heading');
   head.append(el('span', 'day-label', day.label || day.date));
-  head.append(el('span', `kind-badge kind-${kind}`, KIND_LABEL[kind]));
-  // The title is shown for patch days only ("Patch · Beta build notes").
+  // Badge and title live in one group so they wrap together on narrow screens
+  // ("Patch · Beta build notes" never breaks right after the badge).
+  const kindGroup = el('span', 'day-kind');
+  kindGroup.append(el('span', `kind-badge kind-${kind}`, KIND_LABEL[kind]));
+  // The title is shown for patch days only.
   if (kind === 'patch' && typeof day.title === 'string' && day.title.trim()) {
-    head.append(el('span', 'day-title', day.title.trim()));
+    kindGroup.append(el('span', 'day-title', day.title.trim()));
   }
+  head.append(kindGroup);
   head.append(el('span', 'day-rel', relativeDay(day.date)));
   const src = sourceLink(day);
   if (src) head.append(src);
