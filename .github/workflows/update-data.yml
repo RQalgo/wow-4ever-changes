@@ -53,6 +53,18 @@ jobs:
       # Gate: do not touch data if the code's own tests fail.
       - run: npm test
 
+      # Cache the game-data index built by scripts/gamedata.mjs (.cache/gamedata:
+      # index-<build>.json plus the Wowhead talent file). Building it downloads
+      # tens of MB of tables from wago.tools, which is only needed when a new
+      # game build appears. The key is unique per run so a changed index is
+      # saved at the end of the run; restore-keys makes every run start from the
+      # newest saved one (caches are immutable, so a fixed key would never update).
+      - uses: actions/cache@v4
+        with:
+          path: .cache/gamedata
+          key: gamedata-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: gamedata-${{ runner.os }}-
+
       # Fetch, parse, resolve icons, and write data/changes.json if changed.
       # The script prints a one-line summary such as
       # "updated: 3 days, 120 changes"; capture it for the job summary.
