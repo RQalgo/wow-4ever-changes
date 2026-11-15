@@ -115,3 +115,106 @@ describe('fixture: hotfixes-sample.html', () => {
     assert.ok(!changes(result).some((c) => /list of hotfixes/.test(c.text) || c.category === 'Hotfixes'));
   });
 });
+
+describe('list walker', () => {
+  test('unknown class headings are slugified; deeper class headings become groups', () => {
+    const html = day('Classes', `<ul>
+      <li><strong>Death Knight</strong><ul>
+        <li><strong>Frost</strong><ul>
+          <li><strong>Runeforging</strong><ul><li>Rune text.</li></ul></li>
+        </ul></li>
+      </ul></li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map(brief), [
+      { scope: 'class', category: 'Classes', class: 'death-knight', spec: 'frost', group: 'Runeforging', text: 'Rune text.', notes: [] },
+    ]);
+  });
+
+  test('nested bold headings in general categories join into "A > B"', () => {
+    const html = day('Dungeons', `<ul>
+      <li><strong>Blackrock Depths</strong><ul>
+        <li><strong>Lyceum</strong><ul><li>Fewer adds.</li></ul></li>
+        <li>Door fixed.</li>
+      </ul></li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.scope, c.class, c.group, c.text]), [
+      ['general', null, 'Blackrock Depths > Lyceum', 'Fewer adds.'],
+      ['general', null, 'Blackrock Depths', 'Door fixed.'],
+    ]);
+  });
+
+  test('a bold-only item without a nested list is a change', () => {
+    const html = day('Items', '<ul><li><strong>Thunderfury is back.</strong></li></ul>');
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.text, c.group]), [['Thunderfury is back.', null]]);
+  });
+
+  test('an item with its own text and a nested list is one change with notes', () => {
+    const html = day('Quests', `<ul><li>Quest X reworked:
+      <ul><li>Step one.</li><li>Step <em>two</em>.<ul><li>Sub-step.</li></ul></li></ul></li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.text, c.notes]), [
+      ['Quest X reworked:', ['Step one.', 'Step two.', 'Sub-step.']],
+    ]);
+  });
+
+  test('event-name categories are general; Classes match is case-insensitive', () => {
+    const html = day('Stranglethorn Fishing Extravaganza', '<ul><li>Prizes added.</li></ul>')
+      + '<p><strong>CLASSES</strong></p><ul><li><strong>Rogue</strong><ul><li>Stealth.</li></ul></li></ul>';
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.scope, c.category, c.class]), [
+      ['general', 'Stranglethorn Fishing Extravaganza', null],
+      ['class', 'CLASSES', 'rogue'],
+    ]);
+  });
+
+  test('text: entities decoded, whitespace collapsed, inline markup flattened, curly quotes kept', () => {
+    const html = day('Items', '<ul><li>  Fixed&nbsp;the   “<strong>Hand</strong> of <em>Ragnaros</em>”\n &amp; Sulfuras&#8217; tooltip.<br>Again. </li></ul>');
+    assert.equal(changes(parseHotfixHtml(html))[0].text, 'Fixed the “Hand of Ragnaros” & Sulfuras’ tooltip. Again.');
+  });
+
+  test('ordered lists, empty items and wrapper items are handled', () => {
+    const html = day('User Interface', '<ol><li>One.</li><li> </li><li><ul><li>Two.</li></ul></li></ol>');
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => c.text), ['One.', 'Two.']);
+  });
+
+  test('a list after a date but before any category gets category "General"', () => {
+    const html = '<p><strong>November 13, 2026</strong></p><ul><li>Orphan.</li></ul>';
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.scope, c.category]), [['general', 'General']]);
+  });
+});
+
+describe('days and headings', () => {
+  test('days are sorted newest first regardless of published order', () => {
+    const html = day('Items', '<ul><li>a</li></ul>', 'November 2, 2026')
+      + day('Items', '<ul><li>b</li></ul>', 'December 1, 2026')
+      + day('Items', '<ul><li>c</li></ul>', 'November 20, 2026');
+    assert.deepEqual(parseHotfixHtml(html).days.map((d) => d.date), ['2026-12-01', '2026-11-20', '2026-11-02']);
+  });
+
+  test('a repeated date merges into one day with continuous ids', () => {
+    const html = day('Items', '<ul><li>a</li></ul>') + day('Quests', '<ul><li>b</li></ul>');
+    const { days } = parseHotfixHtml(html);
+    assert.equal(days.length, 1);
+    assert.deepEqual(days[0].changes.map((c) => [c.id, c.category]), [['2026-11-13-001', 'Items'], ['2026-11-13-002', 'Quests']]);
+  });
+
+  test('<h3>, <h4> and <p><b> headings are accepted, anywhere in the document', () => {
+    const html = `<div class="x"><section><h3>November 13, 2026</h3></section>
+      <div><h4>Professions</h4><ul><li>Recipe fixed.</li></ul>
+      <p><b>Enemies and NPCs</b></p><ul><li>Hogger hits harder.</li></ul></div></div>`;
+    const { days } = parseHotfixHtml(html);
+    assert.deepEqual(days.map((d) => d.label), ['November 13, 2026']);
+    assert.deepEqual(days[0].changes.map((c) => [c.category, c.text]), [
+      ['Professions', 'Recipe fixed.'],
+      ['Enemies and NPCs', 'Hogger hits harder.'],
+    ]);
+  });
+
+  test('a paragraph mixing bold and plain text is not a heading', () => {
+    const html = '<p><strong>November 13, 2026</strong></p><p><strong>Note:</strong> servers restart.</p>'
+      + '<p><strong>Items</strong></p><ul><li>a</li></ul>';
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => c.category), ['Items']);
+  });
+
+  test('lists and headings before the first date are ignored; empty input gives no days', () => {
+    assert.deepEqual(parseHotfixHtml('<p><strong>Classes</strong></p><ul><li>x</li></ul>'), { days: [] });
+    assert.deepEqual(parseHotfixHtml(''), { days: [] });
+    assert.deepEqual(parseHotfixHtml(undefined), { days: [] });
+  });
+});
