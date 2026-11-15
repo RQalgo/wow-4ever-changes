@@ -862,3 +862,36 @@ test('flattenSections: group headings use one separator', () => {
   assert.deepEqual(f.cards.map(headingTitles), [['Races › Gnome › Racial Traits']]);
   assert.equal(f.cards[0].headings[0].group, 'Gnome › Racial Traits');
 });
+
+test('headingGroup: never repeats the category in a group heading', () => {
+  const cat = 'Gamepad Support';
+  assert.equal(L.headingGroup(cat, 'Gamepad Support'), null);
+  assert.equal(L.headingGroup(cat, 'gamepad support'), null);
+  assert.equal(L.headingGroup(cat, 'Gamepad Support has entered a functional Beta state.'), null);
+  assert.equal(L.headingGroup(cat, 'Gamepad Support: menus'), null);
+  assert.equal(L.headingGroup(cat, 'Gamepad Support > Menus'), 'Menus');
+  assert.equal(L.headingGroup(cat, 'Gamepad Support › Menus › Bags'), 'Menus › Bags');
+  assert.equal(L.headingGroup(cat, 'Steam Deck'), 'Steam Deck');
+  assert.equal(L.headingGroup('Items', 'Itemsets'), 'Itemsets'); // a longer word, not the category
+  assert.equal(L.headingGroup('Dungeons', 'The Deadmines'), 'The Deadmines');
+  assert.equal(L.headingGroup('', 'Gnome'), 'Gnome');
+  assert.equal(L.headingGroup(cat, null), null);
+});
+
+test('flattenSections: a group repeating the category joins the category heading, lines unprefixed', () => {
+  const f = L.flattenSections([
+    mk({ id: 'g1', scope: 'general', category: 'Gamepad Support', group: 'Gamepad Support has entered a functional Beta state.', text: 'a' }),
+    mk({ id: 'g2', scope: 'general', category: 'Gamepad Support', group: 'Steam Deck', text: 'b' }),
+    mk({ id: 'g3', scope: 'general', category: 'Gamepad Support', group: null, text: 'c' }),
+    mk({ id: 'g4', scope: 'general', category: 'Gamepad Support', group: 'Gamepad Support', text: 'd' }),
+    mk({ id: 'g5', scope: 'general', category: 'Gamepad Support', group: 'Gamepad Support > Steam Deck', text: 'e' }),
+  ]);
+  assert.deepEqual(f.cards.map(headingTitles), [['Gamepad Support', 'Gamepad Support › Steam Deck']]);
+  const [own, deck] = f.cards[0].headings;
+  assert.deepEqual(own.changes.map((c) => c.id), ['g3', 'g1', 'g4']); // ungrouped first, then the collapsed groups
+  assert.equal(own.group, null);
+  assert.deepEqual(deck.changes.map((c) => c.id), ['g2', 'g5']);
+  assert.equal(f.count, 5);
+  // The line text itself is not touched (no prefix added or removed).
+  assert.equal(own.changes[1].text, 'a');
+});

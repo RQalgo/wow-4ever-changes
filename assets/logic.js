@@ -333,6 +333,34 @@ export function displayGroup(group) {
   return g || null;
 }
 
+/**
+ * The group part of a general heading, without repeating the category:
+ *  - group equal to the category (case-insensitive) -> null: the heading
+ *    is the category alone ("Gamepad Support", not "Gamepad Support ›
+ *    Gamepad Support")
+ *  - group that is a breadcrumb under the category ("Gamepad Support ›
+ *    Menus") -> the rest ("Menus")
+ *  - group that starts with the category followed by more text ("Gamepad
+ *    Support has entered a functional Beta state.") -> null as well: the
+ *    heading is the category alone and the lines are shown without any
+ *    prefix (the parser makes such text a change of its own)
+ *  - anything else -> the group (via displayGroup)
+ * The category must end at a word boundary: "Itemsets" under "Items" is a
+ * different word and stays a group.
+ * @param {string|null|undefined} category published category
+ * @param {string|null|undefined} group published group
+ * @returns {string|null} label to show after the category, or null
+ */
+export function headingGroup(category, group) {
+  const g = displayGroup(group);
+  const cat = String(category || '').trim();
+  if (!g || !cat || !g.toLowerCase().startsWith(cat.toLowerCase())) return g;
+  const rest = g.slice(cat.length);
+  if (/^[\p{L}\p{N}]/u.test(rest)) return g; // the category name is only the start of a longer word
+  const crumb = /^\s*\u203A\s*(\S.*)$/u.exec(rest);
+  return crumb ? crumb[1] : null;
+}
+
 /** Title of the single card of a dev-post day. */
 export const DEV_CARD_TITLE = 'Dev Posts';
 
@@ -346,6 +374,8 @@ export const DEV_CARD_TITLE = 'Dev Posts';
  *     all in one tree therefore shows only "Druid › Restoration".
  *   - general card per published category: "Dungeons" for ungrouped lines and
  *     "Dungeons › The Deadmines" per group (the group is inline, not nested).
+ *     A group that repeats the category never shows it twice (headingGroup):
+ *     such lines join the plain "Gamepad Support" heading.
  * Order: all-classes card, classes alphabetically, then general categories in
  * first-seen order (same as groupChanges).
  *
@@ -373,10 +403,19 @@ export function flattenSections(changes, kind = 'hotfix') {
     cards.push({ kind: 'class', class: sec.class, category: null, headings });
   }
   for (const cat of g.general) {
-    const headings = cat.groups.map((grp) => {
-      const label = displayGroup(grp.group);
-      return { title: label ? [cat.category, label] : [cat.category], spec: null, group: label, changes: grp.changes };
-    });
+    // Groups whose label collapses to nothing (see headingGroup) join the
+    // category's own heading, and groups that end up with the same label
+    // share one heading, so no heading is printed twice. The category-only
+    // heading stays first (groupChanges already put the ungrouped lines first).
+    const byLabel = new Map(); // label|null -> heading
+    for (const grp of cat.groups) {
+      const label = headingGroup(cat.category, grp.group);
+      if (!byLabel.has(label)) {
+        byLabel.set(label, { title: label ? [cat.category, label] : [cat.category], spec: null, group: label, changes: [] });
+      }
+      byLabel.get(label).changes.push(...grp.changes);
+    }
+    const headings = [...byLabel.values()].sort((a, b) => (a.group === null ? -1 : b.group === null ? 1 : 0));
     cards.push({ kind: 'general', class: null, category: cat.category, headings });
   }
   return { count: g.count, cards };
