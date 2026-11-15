@@ -4,7 +4,7 @@
  * Responsibilities:
  *   - load ./data/changes.json and show loading / error / empty states
  *   - own the UI state (class choice incl. "No classes", spec, query, category
- *     chips, kind) and re-render
+ *     chips, kind, date range) and re-render
  *   - build every DOM node with createElement/textContent (data is never
  *     inserted through innerHTML)
  *
@@ -15,6 +15,11 @@
  * hotfix and a dev-post day (Blizzard staff forum posts, schema v4) can share
  * a date. A dev-post day is drawn as one "Dev Posts" card whose lines link to
  * the posts (renderLine with `dev`).
+ *
+ * The date range control (buildDateRange) is a two-handle slider made of two
+ * overlaid native range inputs that snap to the dates that have data, two
+ * exact-date inputs and preset chips. Dragging repaints the control at once
+ * but re-renders the results only when the handle rests (DATE_RENDER_DELAY).
  *
  * Sections: helpers, data loading, rendering, boot.
  */
@@ -28,6 +33,8 @@ import {
   activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
   classChoice, withClassChoice, normalizeClassState, sanitizeStoredSelection, emptyMessage,
   displayGroup, kindBadgeLabel, kindFilterLabel, devPostInfo,
+  dataDates, dateBounds, normalizeDateRange, effectiveRange, DATE_PRESETS, presetRange,
+  activePreset, presetTitle, dateRangeText, formatDateLong, sliderPositions, rangeFromPositions, monthTicks,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, enabled categories (null = all), kind filter, hideClasses ("No classes"). */
@@ -38,6 +45,12 @@ let data = null;
 
 /** Category chips offered for the loaded data (only tags that occur in it). */
 let categories = [];
+
+/** Dates that have data, oldest first: the stops of the date slider (see dataDates). */
+let dates = [];
+
+/** Earliest / latest date of the loaded data ({min, max}), or null; open range ends resolve to these. */
+let bounds = null;
 
 /** Shortcut for document.getElementById. */
 const $ = (id) => document.getElementById(id);
@@ -466,10 +479,13 @@ function renderResults() {
   renderFilterBar();
   if (!days.length) {
     // emptyMessage names the filters that are easy to forget (kind, hidden
-    // class changes) and spells out the impossible "No classes + no
+    // class changes, the date range) and spells out the impossible "No classes + no
     // categories" case; its one button always resets every filter.
-    const msg = emptyMessage(state);
-    showStatus(msg.title, msg.detail, { label: msg.action, onClick: () => setState(defaultState()) });
+    // With the data it can also tell when the date range alone is the reason;
+    // its button then resets only the range ("Show all dates").
+    const msg = emptyMessage(state, { data, bounds });
+    const reset = msg.reset === 'dates' ? () => setState({ ...state, from: '', to: '' }) : () => setState(defaultState());
+    showStatus(msg.title, msg.detail, { label: msg.action, onClick: reset });
     return;
   }
   $('results').replaceChildren(...days.map(({ day, changes }) => renderDay(day, changes)));
@@ -656,6 +672,202 @@ function renderKindFilter() {
     b.setAttribute('aria-checked', String(on));
     b.tabIndex = on ? 0 : -1;
   }
+}
+
+/** Re-render delay (ms) while a date handle is dragged: the results follow once it rests. */
+const DATE_RENDER_DELAY = 80;
+
+/**
+ * Build the date range control once (renderDateRange keeps it in sync):
+ *   - the selected range as text ("Sep 12 – Nov 14, 2026" / "All dates")
+ *   - a two-handle slider: two native <input type="range"> laid over one
+ *     track (keyboard, touch and screen readers work as for any slider). The
+ *     inputs ignore the pointer except on their thumbs (CSS), so each thumb
+ *     can be grabbed even though the inputs overlap. Their values are indexes
+ *     into `dates` (the dates that have data, oldest first), so every step
+ *     lands on a date where something changed. The highlighted segment and
+ *     month ticks are plain elements under the inputs.
+ *   - "From" / "To" <input type="date"> fields for an exact date
+ *   - preset chips (DATE_PRESETS)
+ * Handles never cross: moving one past the other stops it at the other.
+ * While dragging, the text, segment, fields and chips repaint at once; the
+ * results re-render once the handle rests for DATE_RENDER_DELAY ms (and at
+ * once on release / a key press, which fire `change`), so dragging stays
+ * smooth with the full data.
+ * @returns {HTMLElement}
+ */
+function buildDateRange() {
+  const wrap = el('div', 'date-range');
+  wrap.id = 'date-range';
+  wrap.setAttribute('role', 'group');
+  wrap.setAttribute('aria-labelledby', 'date-label');
+
+  const text = el('p', 'date-range-text', 'All dates');
+  text.id = 'date-range-text';
+
+  const slider = el('div', 'range-slider');
+  slider.id = 'range-slider';
+  const track = el('div', 'range-track');
+  track.append(el('div', 'range-fill'));
+  const ticks = el('div', 'range-ticks');
+  ticks.setAttribute('aria-hidden', 'true');
+  for (const t of monthTicks(dates)) {
+    const tick = el('span', 'range-tick', t.label);
+    tick.style.setProperty('--at', String(t.at));
+    ticks.append(tick);
+  }
+  /** One of the two handles (a native range input over the shared track). */
+  const handle = (cls, label) => {
+    const input = el('input', `range-input ${cls}`);
+    input.type = 'range';
+    input.min = '0';
+    input.max = String(Math.max(0, dates.length - 1));
+    input.step = '1';
+    input.setAttribute('aria-label', label);
+    return input;
+  };
+  const start = handle('range-start', 'Start date');
+  start.id = 'range-start';
+  const end = handle('range-end', 'End date');
+  end.id = 'range-end';
+  slider.append(track, ticks, start, end);
+  // A single date (or none) leaves nothing to slide.
+  slider.hidden = dates.length < 2;
+
+  /** An exact-date field with its visible label ("From" / "To"). */
+  const field = (id, label) => {
+    const box = el('label', 'date-field');
+    const input = el('input', 'date-input');
+    input.type = 'date';
+    input.id = id;
+    if (bounds) { input.min = bounds.min; input.max = bounds.max; }
+    box.append(el('span', 'date-field-label', label), input);
+    return box;
+  };
+  const exact = el('div', 'date-exact');
+  exact.append(field('date-from', 'From'), field('date-to', 'To'));
+
+  const presets = el('div', 'chip-row date-presets');
+  presets.id = 'date-presets';
+  presets.setAttribute('role', 'group');
+  presets.setAttribute('aria-label', 'Date presets');
+  for (const p of DATE_PRESETS) {
+    const b = chip(p.label, false, () => setState({ ...state, ...presetRange(p.id, bounds) }));
+    b.classList.add('chip-date');
+    b.dataset.preset = p.id;
+    b.title = presetTitle(p.id, bounds);
+    presets.append(b);
+  }
+
+  wrap.append(text, slider, exact, presets);
+
+  /** Pending re-render timer while a handle is dragged. */
+  let timer = 0;
+  /** Range shown by the control but not yet applied to the state (during a drag). */
+  let pending = null;
+  /** Apply the pending range now (also cancels a scheduled re-render). */
+  const commit = () => {
+    clearTimeout(timer);
+    timer = 0;
+    if (!pending) return;
+    const next = pending;
+    pending = null;
+    if (next.from !== state.from || next.to !== state.to) setState({ ...state, ...next });
+  };
+  /**
+   * A handle moved: keep start <= end (the moved handle stops at the other),
+   * repaint the control at once and schedule the re-render.
+   * @param {HTMLInputElement} moved the handle that moved
+   */
+  const onSlide = (moved) => {
+    let a = Number(start.value);
+    let b = Number(end.value);
+    if (a > b) {
+      if (moved === start) { a = b; start.value = String(a); } else { b = a; end.value = String(b); }
+    }
+    pending = rangeFromPositions(a, b, dates);
+    paintDateRange(pending, { start: a, end: b });
+    clearTimeout(timer);
+    timer = setTimeout(commit, DATE_RENDER_DELAY);
+  };
+  for (const input of [start, end]) {
+    input.addEventListener('input', () => onSlide(input));
+    // Release after a drag, a key press, a tap: render right away.
+    input.addEventListener('change', commit);
+  }
+
+  // A tap or click on the bare track moves the nearer handle there (the
+  // inputs themselves only react on their thumbs, see the CSS).
+  slider.addEventListener('pointerdown', (e) => {
+    if (e.target === start || e.target === end || dates.length < 2) return;
+    const box = track.getBoundingClientRect();
+    const i = Math.round(Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)) * (dates.length - 1));
+    const a = Number(start.value);
+    const b = Number(end.value);
+    // Nearer handle; between two equal handles the side decides.
+    const moved = Math.abs(i - a) < Math.abs(i - b) || (a === b && i < a) ? start : end;
+    moved.value = String(i);
+    onSlide(moved);
+    commit();
+    moved.focus();
+  });
+
+  /**
+   * An exact date was entered (or cleared: an open end). Normalising may
+   * swap a typed from > to and clamps to the data, like a hash would.
+   */
+  const onField = () => {
+    pending = null;
+    clearTimeout(timer);
+    setState({ ...state, from: $('date-from').value, to: $('date-to').value });
+  };
+  exact.addEventListener('change', onField);
+  return wrap;
+}
+
+/**
+ * Paint the date control for a range: text, handle positions, the
+ * highlighted segment, which handle is on top, the handles' spoken values,
+ * the exact-date fields and the pressed preset. Used both for the state
+ * (renderDateRange) and, while dragging, for the range not yet applied.
+ * @param {{from: string, to: string}} range normalised range
+ * @param {{start: number, end: number}} [pos] handle positions (default: from the range)
+ */
+function paintDateRange(range, pos = sliderPositions(range, dates)) {
+  const eff = effectiveRange(range, bounds);
+  $('date-range-text').textContent = dateRangeText(range, bounds);
+  const start = $('range-start');
+  const end = $('range-end');
+  // Only write a value that differs: rewriting the thumb being dragged is harmless but pointless.
+  if (start.value !== String(pos.start)) start.value = String(pos.start);
+  if (end.value !== String(pos.end)) end.value = String(pos.end);
+  const last = Math.max(1, dates.length - 1);
+  const slider = $('range-slider');
+  slider.style.setProperty('--a', String(pos.start / last));
+  slider.style.setProperty('--b', String(pos.end / last));
+  // Overlapping thumbs: the one that can still move must be on top. Both at
+  // the right end -> only the start can move (left), so it goes on top; in
+  // the left half the end handle stays on top (it can move right).
+  slider.classList.toggle('start-on-top', pos.start === pos.end && pos.start > last / 2);
+  // A typed date between two stops is spoken as typed, not as the stop the handle snapped to.
+  start.setAttribute('aria-valuetext', formatDateLong(eff.from));
+  end.setAttribute('aria-valuetext', formatDateLong(eff.to));
+  const from = $('date-from');
+  const to = $('date-to');
+  if (from.value !== eff.from) from.value = eff.from;
+  if (to.value !== eff.to) to.value = eff.to;
+  // The pickers offer only dates that keep from <= to (typing is still checked by normalizeDateRange).
+  if (bounds) {
+    from.max = eff.to || bounds.max;
+    to.min = eff.from || bounds.min;
+  }
+  const on = activePreset(range, bounds);
+  for (const b of $('date-presets').children) b.setAttribute('aria-pressed', String(b.dataset.preset === on));
+}
+
+/** Sync the date control with the state (after any state change). */
+function renderDateRange() {
+  paintDateRange({ from: state.from, to: state.to });
 }
 
 /**
@@ -867,7 +1079,8 @@ function setPanelOpen(open, moveFocus = true) {
  */
 function trapFocus(e) {
   if (!panelOpen || e.key !== 'Tab') return;
-  const items = [...$('filter-panel').querySelectorAll('button:not(:disabled), [tabindex="0"]')]
+  // Inputs too: the date range adds sliders and date fields to the panel.
+  const items = [...$('filter-panel').querySelectorAll('button:not(:disabled), input:not(:disabled), [tabindex="0"]')]
     .filter((n) => !n.closest('[hidden]'));
   if (!items.length) return;
   const first = items[0];
@@ -886,7 +1099,7 @@ function trapFocus(e) {
  * Build the (static) filter structure once:
  *   .filters-bar   search + filter button (narrow screens)
  *   .filter-summary one-line summary of the active filters (narrow screens)
- *   .filter-panel  kind, class, tree and category controls, Clear, Done
+ *   .filter-panel  kind, date range, class, tree and category controls, Clear, Done
  * On wide screens the panel is simply part of the sidebar.
  */
 function buildFilters() {
@@ -949,11 +1162,16 @@ function buildFilters() {
   const foot = el('div', 'panel-foot');
   foot.append(done);
 
+  // "Dates" names the date range group (aria-labelledby in buildDateRange).
+  const dateLabel = el('p', 'filter-label', 'Dates');
+  dateLabel.id = 'date-label';
+
   const panel = el('div', 'filter-panel');
   panel.id = 'filter-panel';
   panel.append(
     head,
     el('p', 'filter-label', 'Show'), buildKindFilter(),
+    dateLabel, buildDateRange(),
     el('p', 'filter-label', 'Class'), classGroup, treeBlock,
     el('p', 'filter-label', 'Categories'), catGroup,
     foot,
@@ -991,7 +1209,7 @@ function renderFilterBar() {
   badge.hidden = n === 0;
   badge.textContent = String(n);
   $('filters-btn').setAttribute('aria-label', n ? `Filters, ${n} active` : 'Filters');
-  const text = filterSummary(state, categories);
+  const text = filterSummary(state, categories, bounds);
   const sum = $('filter-summary');
   sum.hidden = !text;
   sum.textContent = text;
@@ -1002,7 +1220,7 @@ function renderFilterBar() {
 function renderTools() {
   const d = defaultState();
   const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.cats !== d.cats
-    || state.kind !== d.kind || state.hideClasses !== d.hideClasses;
+    || state.kind !== d.kind || state.hideClasses !== d.hideClasses || state.from !== d.from || state.to !== d.to;
   $('clear-filters').disabled = !dirty;
 }
 
@@ -1075,9 +1293,10 @@ function syncHash() {
  * @param {object} next new state
  */
 function setState(next, opts = {}) {
-  // One canonical `cats` (null when every chip is on) and one canonical class
-  // choice (a class turns "No classes" off), whatever the source.
-  state = normalizeClassState({ ...next, cats: normalizeCats(next.cats, categories) });
+  // One canonical `cats` (null when every chip is on), one canonical class
+  // choice (a class turns "No classes" off) and one canonical date range
+  // (valid, ordered, clamped to the data, ends on a bound open), whatever the source.
+  state = normalizeClassState({ ...next, cats: normalizeCats(next.cats, categories), ...normalizeDateRange(next, bounds) });
   syncHash();
   saveSelection(state);
   if (!opts.fromInput) renderSearch();
@@ -1085,6 +1304,7 @@ function setState(next, opts = {}) {
   renderSpecChips();
   renderCategoryChips();
   renderKindFilter();
+  renderDateRange();
   renderTools();
   renderResults();
 }
@@ -1093,6 +1313,8 @@ function setState(next, opts = {}) {
 function render() {
   renderHeader();
   categories = availableCategories(data);
+  dates = dataDates(data);
+  bounds = dateBounds(data);
   buildFilters();
   // Read the UI flag first: setState() rewrites the hash without it.
   const openAtStart = hasPanelFlag(location.hash);
