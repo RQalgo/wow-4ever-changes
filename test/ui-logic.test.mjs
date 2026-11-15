@@ -21,6 +21,9 @@ const data = JSON.parse(readFileSync(new URL('./fixtures/changes-sample.json', i
  * they look the hotfix day up explicitly instead.
  */
 const dayOf = (date, kind) => data.days.find((d) => d.date === date && L.dayKind(d) === kind);
+// The fixture also has two dev-post days (schema v4): 2026-11-14 (three posts,
+// one a reply about Fire mages, one tagged media) and 2026-11-13 (one reply
+// tagged only class:mage), the latter sharing its date with a patch and a hotfix day.
 
 /** Small helper to build a change object with sensible defaults. */
 const mk = (o) => ({ id: 'x', scope: 'class', category: 'Classes', class: null, spec: null, group: null, text: '', notes: [], subjects: [], ...o });
@@ -194,20 +197,22 @@ test('dayKey is date + kind, so same-date patch and hotfix differ and are all un
   assert.equal(L.dayKey({ date: '2026-11-13' }), '2026-11-13|hotfix');
   const keys = data.days.map(L.dayKey);
   assert.equal(new Set(keys).size, keys.length);
-  // Two fixture days share 2026-11-13.
-  assert.equal(data.days.filter((d) => d.date === '2026-11-13').length, 2);
+  // Three fixture days share 2026-11-13 (patch, hotfix and dev posts).
+  assert.equal(data.days.filter((d) => d.date === '2026-11-13').length, 3);
 });
 
 test('visibleDays keeps same-date days separate, in data order', () => {
   const keys = L.visibleDays(data, L.defaultState()).map((v) => L.dayKey(v.day));
-  assert.deepEqual(keys, ['2026-11-15|hotfix', '2026-11-14|patch', '2026-11-13|patch', '2026-11-13|hotfix', '2026-11-11|hotfix']);
+  assert.deepEqual(keys, ['2026-11-15|hotfix', '2026-11-14|patch', '2026-11-14|dev',
+    '2026-11-13|patch', '2026-11-13|hotfix', '2026-11-13|dev', '2026-11-11|hotfix']);
 });
 
 test('kind filter: hotfix / patch / all', () => {
   const keys = (kind) => L.visibleDays(data, { ...L.defaultState(), kind }).map((v) => L.dayKey(v.day));
   assert.deepEqual(keys('patch'), ['2026-11-14|patch', '2026-11-13|patch']);
   assert.deepEqual(keys('hotfix'), ['2026-11-15|hotfix', '2026-11-13|hotfix', '2026-11-11|hotfix']); // legacy day counts as hotfix
-  assert.equal(keys('all').length, 5);
+  assert.deepEqual(keys('dev'), ['2026-11-14|dev', '2026-11-13|dev']);
+  assert.equal(keys('all').length, 7);
   assert.equal(L.matchesKind({ kind: 'patch' }, 'hotfix'), false);
   assert.equal(L.matchesKind({}, 'hotfix'), true);
 });
@@ -311,7 +316,7 @@ test('classTagsOf / categoryTagsOf split tags; unknown category tags count as "o
 
 test('availableCategories lists only tags present in the data, in chip order', () => {
   assert.deepEqual(L.availableCategories(data).map((c) => c.slug),
-    ['items', 'quests', 'dungeons', 'world', 'races', 'bugfix', 'known-issue']);
+    ['items', 'quests', 'dungeons', 'world', 'races', 'media', 'systems', 'bugfix', 'known-issue']);
   assert.deepEqual(L.availableCategories({ days: [] }), []);
   // A line with only a class has no category, so it adds no chip.
   assert.deepEqual(L.availableCategories({ days: [{ changes: [mk({ class: 'mage' })] }] }), []);
@@ -727,4 +732,236 @@ test('No classes counts as one active filter and is named in the summary', () =>
   assert.equal(L.filterSummary(hidden({ kind: 'patch' })), 'No class changes · Patches');
   assert.equal(L.filterSummary(hidden({ cats: [] })), 'No class changes · No categories');
   assert.equal(L.filterSummary(hidden({ cats: ['items'] }), L.availableCategories(data)), 'No class changes · Items');
+});
+
+/* ---------- dev posts (schema v4): day kind, kind filter, labels ---------- */
+test('dayKind / dayKey know the dev kind; unknown kinds still mean hotfix', () => {
+  assert.equal(L.dayKind({ kind: 'dev' }), 'dev');
+  assert.equal(L.dayKind({ kind: 'DEV' }), 'hotfix'); // exact value only
+  assert.equal(L.dayKey({ date: '2026-11-13', kind: 'dev' }), '2026-11-13|dev');
+  assert.deepEqual(L.DAY_KINDS, ['patch', 'hotfix', 'dev']); // same-date order of docs/SCHEMA.md
+});
+
+test('kind filter has four values; kind=dev is encoded, decoded and round-trips', () => {
+  assert.deepEqual(L.KIND_FILTERS, ['all', 'hotfix', 'patch', 'dev']);
+  assert.equal(L.sanitizeKindFilter('dev'), 'dev');
+  assert.equal(L.sanitizeKindFilter('devs'), 'all');
+  assert.equal(L.encodeHash({ ...L.defaultState(), kind: 'dev' }), '#kind=dev');
+  assert.equal(L.decodeHash('#kind=dev').kind, 'dev');
+  assert.equal(L.decodeHash('#kind=Dev').kind, 'all'); // unknown values are ignored as before
+  const st = { ...L.defaultState(), hideClasses: true, kind: 'dev' };
+  assert.equal(L.encodeHash(st), '#class=none&kind=dev');
+  assert.deepEqual(L.decodeHash(L.encodeHash(st)), st);
+  assert.equal(L.matchesKind({ kind: 'dev' }, 'dev'), true);
+  assert.equal(L.matchesKind({ kind: 'dev' }, 'hotfix'), false);
+  assert.equal(L.matchesKind({}, 'dev'), false);
+});
+
+test('kind labels: control / summary text and the badge (singular or plural)', () => {
+  assert.deepEqual(L.KIND_FILTERS.map(L.kindFilterLabel), ['All', 'Hotfixes', 'Patches', 'Dev Posts']);
+  assert.equal(L.kindFilterLabel('junk'), 'All');
+  assert.equal(L.kindBadgeLabel({ kind: 'dev' }, 1), 'Dev Post');
+  assert.equal(L.kindBadgeLabel({ kind: 'dev' }, 3), 'Dev Posts');
+  assert.equal(L.kindBadgeLabel({ kind: 'dev' }), 'Dev Post');
+  assert.equal(L.kindBadgeLabel({ kind: 'patch' }, 5), 'Patch');
+  assert.equal(L.kindBadgeLabel({}, 5), 'Hotfix');
+});
+
+test('dev kind counts as an active filter, is named in the summary and the empty state', () => {
+  assert.equal(L.activeFilterCount({ ...L.defaultState(), kind: 'dev' }), 1);
+  assert.equal(L.filterSummary({ ...L.defaultState(), kind: 'dev' }), 'Dev Posts');
+  assert.equal(L.filterSummary({ ...L.defaultState(), cls: 'mage', kind: 'dev' }), 'Mage · Dev Posts');
+  assert.match(L.emptyMessage({ ...L.defaultState(), kind: 'dev' }).detail, /Only dev posts are being shown/);
+});
+
+test('media category: chip "Media" between Events and Systems, offered only when present', () => {
+  const slugs = L.CATEGORIES.map((c) => c.slug);
+  assert.equal(slugs.indexOf('media'), slugs.indexOf('events') + 1);
+  assert.equal(slugs.indexOf('systems'), slugs.indexOf('media') + 1);
+  assert.equal(L.CATEGORIES.find((c) => c.slug === 'media').label, 'Media');
+  const media = mk({ scope: 'general', category: 'Dev Posts', tags: ['media'] });
+  assert.deepEqual(L.categoryTagsOf(media), ['media']); // a known tag, not "other"
+  assert.deepEqual(L.availableCategories({ days: [{ changes: [media] }] }).map((c) => c.slug), ['media']);
+  assert.ok(!L.availableCategories({ days: [{ changes: [mk({ scope: 'general', category: 'Items' })] }] }).some((c) => c.slug === 'media'));
+  assert.deepEqual(L.decodeHash('#cats=media,items').cats, ['items', 'media']); // chip order
+});
+
+/* ---------- dev posts: search ---------- */
+/** A dev-post change as docs/SCHEMA.md v4 describes it. */
+const devPost = (o) => mk({
+  scope: 'general', category: 'Dev Posts', text: 'Player-Level Dungeon XP Adjustment - November 14',
+  notes: ['Yesterday, we updated dungeon play.'], url: 'https://us.forums.blizzard.com/en/wow/t/x/2416343/1',
+  author: 'Kaivax', authorTitle: 'Community Manager', postNumber: 1, tags: ['dungeons'], ...o,
+});
+
+test('isDevPost: author or postNumber marks a dev-post change', () => {
+  assert.equal(L.isDevPost(devPost()), true);
+  assert.equal(L.isDevPost(mk({ postNumber: 2 })), true);
+  assert.equal(L.isDevPost(mk({})), false);
+  assert.equal(L.isDevPost(null), false);
+});
+
+test('search: dev posts match title, notes, author, author title, subjects and tag words', () => {
+  const p = devPost({
+    tags: ['class:mage', 'spec:mage/fire', 'talent', 'media'],
+    subjects: [{ name: 'Pyroblast', type: 'spell', kind: 'talent' }],
+  });
+  for (const q of ['dungeon xp', 'yesterday', 'kaivax', 'community manager', 'pyroblast', 'mage', 'fire', 'talent', 'media'])
+    assert.ok(L.matchesQuery(p, q), q);
+  assert.ok(!L.matchesQuery(p, 'class:mage')); // raw tag spelling is not searched
+  assert.ok(!L.matchesQuery(p, 'warlock'));
+  assert.deepEqual(L.tagSearchWords(p), ['Mage', 'Fire', 'talent', 'Media']);
+  // Other lines keep searching their text only, not their tags.
+  assert.ok(!L.matchesQuery(mk({ text: 'Frost Nova', tags: ['class:mage'] }), 'mage'));
+});
+
+/* ---------- dev posts: card and line ---------- */
+test('flattenSections: a dev day is ONE "Dev Posts" card in published order, not split by category', () => {
+  const a = devPost({ id: 'a', tags: ['dungeons'] });
+  const b = devPost({ id: 'b', category: 'Something else', tags: ['class:mage'] });
+  const c = devPost({ id: 'c', tags: ['media'] });
+  const v = L.flattenSections([a, b, c], 'dev');
+  assert.equal(v.count, 3);
+  assert.equal(v.cards.length, 1);
+  assert.equal(v.cards[0].kind, 'dev');
+  assert.deepEqual(v.cards[0].headings.map((h) => h.title), [['Dev Posts']]);
+  assert.deepEqual(v.cards[0].headings[0].changes.map((x) => x.id), ['a', 'b', 'c']);
+  assert.deepEqual(L.flattenSections([], 'dev'), { count: 0, cards: [] });
+  // Other kinds (and the default) group as before.
+  assert.equal(L.flattenSections([a, b, c]).cards.length, 2);
+});
+
+test('devPostInfo: http(s) link only, author meta, "reply" for postNumber > 1', () => {
+  assert.deepEqual(L.devPostInfo(devPost()), {
+    href: 'https://us.forums.blizzard.com/en/wow/t/x/2416343/1', meta: 'Kaivax · Community Manager', reply: false,
+  });
+  assert.equal(L.devPostInfo(devPost({ postNumber: 7 })).meta, 'Kaivax · Community Manager · reply');
+  assert.equal(L.devPostInfo(devPost({ postNumber: 7 })).reply, true);
+  for (const url of ['javascript:alert(1)', '/t/x/1/1', 'data:text/html,x', 'https://', '', null, 42])
+    assert.equal(L.devPostInfo(devPost({ url })).href, null, String(url));
+  assert.equal(L.devPostInfo(devPost({ url: 'http://example.org/t/1' })).href, 'http://example.org/t/1');
+  assert.equal(L.devPostInfo(devPost({ authorTitle: null })).meta, 'Kaivax');
+  assert.equal(L.devPostInfo(devPost({ author: ' ', authorTitle: '', postNumber: 2 })).meta, 'reply');
+});
+
+test('dev posts are never class changes and keep their extra tag chips', () => {
+  const p = devPost({ tags: ['class:mage', 'spec:mage/fire', 'talent', 'media'] });
+  assert.equal(L.isClassChange(p), false);
+  assert.deepEqual(L.extraTagsForLine(p).map((t) => t.label), ['Mage', 'Talent', 'Media']);
+});
+
+/* ---------- group headings ---------- */
+test('displayGroup: " > " becomes " › ", other ">" and blanks are left alone', () => {
+  assert.equal(L.displayGroup('Gnome > Racial Traits'), 'Gnome › Racial Traits');
+  assert.equal(L.displayGroup('A > B  >  C'), 'A › B › C');
+  assert.equal(L.displayGroup('Gnome › Racial Traits'), 'Gnome › Racial Traits');
+  assert.equal(L.displayGroup('Level >60 only'), 'Level >60 only');
+  assert.equal(L.displayGroup('A>B'), 'A>B');
+  assert.equal(L.displayGroup('  The Deadmines '), 'The Deadmines');
+  assert.equal(L.displayGroup('   '), null);
+  assert.equal(L.displayGroup(null), null);
+});
+
+test('flattenSections: group headings use one separator', () => {
+  const f = L.flattenSections([mk({ scope: 'general', category: 'Races', group: 'Gnome > Racial Traits', text: 'a' })]);
+  assert.deepEqual(f.cards.map(headingTitles), [['Races › Gnome › Racial Traits']]);
+  assert.equal(f.cards[0].headings[0].group, 'Gnome › Racial Traits');
+});
+
+test('headingGroup: never repeats the category in a group heading', () => {
+  const cat = 'Gamepad Support';
+  assert.equal(L.headingGroup(cat, 'Gamepad Support'), null);
+  assert.equal(L.headingGroup(cat, 'gamepad support'), null);
+  assert.equal(L.headingGroup(cat, 'Gamepad Support has entered a functional Beta state.'), null);
+  assert.equal(L.headingGroup(cat, 'Gamepad Support: menus'), null);
+  assert.equal(L.headingGroup(cat, 'Gamepad Support > Menus'), 'Menus');
+  assert.equal(L.headingGroup(cat, 'Gamepad Support › Menus › Bags'), 'Menus › Bags');
+  assert.equal(L.headingGroup(cat, 'Steam Deck'), 'Steam Deck');
+  assert.equal(L.headingGroup('Items', 'Itemsets'), 'Itemsets'); // a longer word, not the category
+  assert.equal(L.headingGroup('Dungeons', 'The Deadmines'), 'The Deadmines');
+  assert.equal(L.headingGroup('', 'Gnome'), 'Gnome');
+  assert.equal(L.headingGroup(cat, null), null);
+});
+
+test('flattenSections: a group repeating the category joins the category heading, lines unprefixed', () => {
+  const f = L.flattenSections([
+    mk({ id: 'g1', scope: 'general', category: 'Gamepad Support', group: 'Gamepad Support has entered a functional Beta state.', text: 'a' }),
+    mk({ id: 'g2', scope: 'general', category: 'Gamepad Support', group: 'Steam Deck', text: 'b' }),
+    mk({ id: 'g3', scope: 'general', category: 'Gamepad Support', group: null, text: 'c' }),
+    mk({ id: 'g4', scope: 'general', category: 'Gamepad Support', group: 'Gamepad Support', text: 'd' }),
+    mk({ id: 'g5', scope: 'general', category: 'Gamepad Support', group: 'Gamepad Support > Steam Deck', text: 'e' }),
+  ]);
+  assert.deepEqual(f.cards.map(headingTitles), [['Gamepad Support', 'Gamepad Support › Steam Deck']]);
+  const [own, deck] = f.cards[0].headings;
+  assert.deepEqual(own.changes.map((c) => c.id), ['g3', 'g1', 'g4']); // ungrouped first, then the collapsed groups
+  assert.equal(own.group, null);
+  assert.deepEqual(deck.changes.map((c) => c.id), ['g2', 'g5']);
+  assert.equal(f.count, 5);
+  // The line text itself is not touched (no prefix added or removed).
+  assert.equal(own.changes[1].text, 'a');
+});
+
+/* ---------- dev posts in the fixture ---------- */
+test('fixture dev days carry the schema v4 fields', () => {
+  for (const day of data.days.filter((d) => L.dayKind(d) === 'dev')) {
+    assert.equal(day.title, null);
+    assert.equal(day.sourceUrl, null);
+    for (const ch of day.changes) {
+      assert.match(ch.id, new RegExp(`^${day.date}-d\\d{3}$`));
+      assert.equal(ch.scope, 'general');
+      assert.equal(ch.category, 'Dev Posts');
+      assert.ok(L.isDevPost(ch) && L.devPostInfo(ch).href, ch.id);
+      assert.equal(ch.author, 'Kaivax');
+      assert.equal(ch.authorTitle, 'Community Manager');
+      assert.ok(Array.isArray(ch.tags) && ch.tags.length, ch.id);
+    }
+  }
+  assert.equal(byId('2026-11-14-d001').postNumber, 7);
+  assert.match(byId('2026-11-14-d001').text, /^Reply in “/);
+});
+
+test('dev posts: a post tagged only class:mage shows under All classes and Mage, not Paladin', () => {
+  const id = '2026-11-13-d000';
+  assert.deepEqual(byId(id).tags, ['class:mage']);
+  assert.ok(idsFor({}).includes(id)); // All classes, categories at default
+  assert.ok(idsFor({ cls: 'mage' }).includes(id));
+  assert.ok(idsFor({ cls: 'mage', spec: 'frost' }).includes(id)); // class-wide: every tree
+  assert.ok(idsFor({ cls: 'mage', cats: [] }).includes(id)); // class-tagged: chips do not hide it
+  assert.ok(!idsFor({ cls: 'paladin' }).includes(id));
+  // Fire reply: tagged spec:mage/fire, so Fire yes, Frost no.
+  assert.ok(idsFor({ cls: 'mage', spec: 'fire' }).includes('2026-11-14-d001'));
+  assert.ok(!idsFor({ cls: 'mage', spec: 'frost' }).includes('2026-11-14-d001'));
+});
+
+test('dev posts: "No classes" keeps them, following the category chips', () => {
+  const ids = idsFor(hidden({ kind: 'dev' }));
+  assert.deepEqual(ids, ['2026-11-14-d000', '2026-11-14-d001', '2026-11-14-d002', '2026-11-13-d000']);
+  assert.deepEqual(idsFor(hidden({ kind: 'dev', cats: ['media'] })), ['2026-11-14-d002']);
+  assert.deepEqual(idsFor(hidden({ kind: 'dev', cats: ['dungeons'] })), ['2026-11-14-d000']);
+  // With classes shown, a category chip still hides an untagged-by-class dev post.
+  assert.deepEqual(idsFor({ kind: 'dev', cats: ['dungeons'] }), ['2026-11-14-d000', '2026-11-14-d001', '2026-11-13-d000']);
+});
+
+test('dev posts: one "Dev Posts" card per dev day; badge singular or plural', () => {
+  const v = L.visibleDays(data, { ...L.defaultState(), kind: 'dev' });
+  const cards = v.map(({ day, changes }) => L.flattenSections(changes, L.dayKind(day)).cards);
+  assert.deepEqual(cards.map((c) => c.map((x) => x.kind)), [['dev'], ['dev']]);
+  assert.deepEqual(v.map(({ day, changes }) => L.kindBadgeLabel(day, changes.length)), ['Dev Posts', 'Dev Post']);
+  // Filtering down to one post makes the badge singular.
+  const one = L.visibleDays(data, { ...L.defaultState(), kind: 'dev', q: 'podcast' });
+  assert.equal(L.kindBadgeLabel(one[0].day, one[0].changes.length), 'Dev Post');
+});
+
+test('dev posts: search finds them by author and tag words; suggestions include their subjects', () => {
+  assert.deepEqual(idsFor({ q: 'kaivax' }), ['2026-11-14-d000', '2026-11-14-d001', '2026-11-14-d002', '2026-11-13-d000']);
+  assert.deepEqual(idsFor({ q: 'kaivax media' }), ['2026-11-14-d002']);
+  assert.ok(idsFor({ q: 'mana regen' }).includes('2026-11-13-d000'));
+  const names = L.buildSuggestions(data, { ...L.defaultState(), kind: 'dev' }, '', 50).map((s) => s.name);
+  assert.deepEqual(names.sort(), ['Fire Blast', 'Pyroblast']);
+});
+
+test('glyphKey: dev posts get the speech bubble', () => {
+  assert.equal(L.glyphKey(devPost()), 'bubble');
+  assert.equal(L.glyphKey(byId('2026-11-13-d000')), 'bubble');
+  assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Items' })), 'gem'); // unchanged
 });

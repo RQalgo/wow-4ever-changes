@@ -14,7 +14,8 @@
  *   5. Search         : matching and highlight segmentation
  *   6. Suggestions    : skill-name suggestions for the search box
  *   7. URL hash state : encode / decode the shareable filter state
- *   8. Day kinds      : hotfix vs patch (schema v2), day identity, kind filter
+ *   8. Day kinds      : hotfix / patch / dev post (schema v2, v4), day identity,
+ *                       kind filter and badge labels
  *   9. Line decoration: extra tag chips and the icon cluster of one line
  *  10. Filter panel   : active-filter count/summary and the #filters=open flag (mobile)
  *
@@ -105,6 +106,8 @@ export const CATEGORIES = [
   { slug: 'world', label: 'World & NPCs' },
   { slug: 'races', label: 'Races' },
   { slug: 'events', label: 'Events' },
+  // Podcasts, videos and streams (mostly dev posts, schema v4).
+  { slug: 'media', label: 'Media' },
   { slug: 'systems', label: 'Systems' },
   { slug: 'bugfix', label: 'Bug fixes' },
   { slug: 'known-issue', label: 'Known issues' },
@@ -316,6 +319,52 @@ export function groupChanges(changes) {
 }
 
 /**
+ * Display form of a published `group` sub-heading: every " > " (Blizzard's
+ * own breadcrumb, which older stored data still contains) becomes the " › "
+ * the app uses everywhere else, so one heading never mixes two separators.
+ * Surrounding white space is trimmed; an empty group is null.
+ * @param {string|null|undefined} group
+ * @returns {string|null}
+ */
+export function displayGroup(group) {
+  if (typeof group !== 'string') return null;
+  // Only a ">" with white space on both sides is a separator ("<60" or "A>B" are left alone).
+  const g = group.replace(/\s+>\s+/g, ' \u203A ').trim();
+  return g || null;
+}
+
+/**
+ * The group part of a general heading, without repeating the category:
+ *  - group equal to the category (case-insensitive) -> null: the heading
+ *    is the category alone ("Gamepad Support", not "Gamepad Support ›
+ *    Gamepad Support")
+ *  - group that is a breadcrumb under the category ("Gamepad Support ›
+ *    Menus") -> the rest ("Menus")
+ *  - group that starts with the category followed by more text ("Gamepad
+ *    Support has entered a functional Beta state.") -> null as well: the
+ *    heading is the category alone and the lines are shown without any
+ *    prefix (the parser makes such text a change of its own)
+ *  - anything else -> the group (via displayGroup)
+ * The category must end at a word boundary: "Itemsets" under "Items" is a
+ * different word and stays a group.
+ * @param {string|null|undefined} category published category
+ * @param {string|null|undefined} group published group
+ * @returns {string|null} label to show after the category, or null
+ */
+export function headingGroup(category, group) {
+  const g = displayGroup(group);
+  const cat = String(category || '').trim();
+  if (!g || !cat || !g.toLowerCase().startsWith(cat.toLowerCase())) return g;
+  const rest = g.slice(cat.length);
+  if (/^[\p{L}\p{N}]/u.test(rest)) return g; // the category name is only the start of a longer word
+  const crumb = /^\s*\u203A\s*(\S.*)$/u.exec(rest);
+  return crumb ? crumb[1] : null;
+}
+
+/** Title of the single card of a dev-post day. */
+export const DEV_CARD_TITLE = 'Dev Posts';
+
+/**
  * Flatten one day's changes into "cards" with compact headings, so the page
  * never repeats a name (no "Druid" above "DRUID > RESTORATION").
  *
@@ -325,15 +374,26 @@ export function groupChanges(changes) {
  *     all in one tree therefore shows only "Druid › Restoration".
  *   - general card per published category: "Dungeons" for ungrouped lines and
  *     "Dungeons › The Deadmines" per group (the group is inline, not nested).
+ *     A group that repeats the category never shows it twice (headingGroup):
+ *     such lines join the plain "Gamepad Support" heading.
  * Order: all-classes card, classes alphabetically, then general categories in
  * first-seen order (same as groupChanges).
  *
+ * A dev-post day (`dayKind` "dev", schema v4) is different: all its lines go
+ * on ONE card titled "Dev Posts", in published order, whatever their
+ * category or tags (the tag chips under each line carry that information).
+ *
  * @param {object[]} changes changes of a single day
- * @returns {{count: number, cards: {kind: 'class'|'general', class: string|null,
+ * @param {string} [kind] the day's kind (see dayKind); only "dev" changes the result
+ * @returns {{count: number, cards: {kind: 'class'|'general'|'dev', class: string|null,
  *   category: string|null, headings: {title: string[], spec: string|null,
  *   group: string|null, changes: object[]}[]}[]}}
  */
-export function flattenSections(changes) {
+export function flattenSections(changes, kind = 'hotfix') {
+  if (kind === 'dev') {
+    const headings = changes.length ? [{ title: [DEV_CARD_TITLE], spec: null, group: null, changes }] : [];
+    return { count: changes.length, cards: headings.length ? [{ kind: 'dev', class: null, category: DEV_CARD_TITLE, headings }] : [] };
+  }
   const g = groupChanges(changes);
   const cards = [];
   for (const sec of g.classSections) {
@@ -343,12 +403,19 @@ export function flattenSections(changes) {
     cards.push({ kind: 'class', class: sec.class, category: null, headings });
   }
   for (const cat of g.general) {
-    const headings = cat.groups.map((grp) => ({
-      title: grp.group ? [cat.category, grp.group] : [cat.category],
-      spec: null,
-      group: grp.group,
-      changes: grp.changes,
-    }));
+    // Groups whose label collapses to nothing (see headingGroup) join the
+    // category's own heading, and groups that end up with the same label
+    // share one heading, so no heading is printed twice. The category-only
+    // heading stays first (groupChanges already put the ungrouped lines first).
+    const byLabel = new Map(); // label|null -> heading
+    for (const grp of cat.groups) {
+      const label = headingGroup(cat.category, grp.group);
+      if (!byLabel.has(label)) {
+        byLabel.set(label, { title: label ? [cat.category, label] : [cat.category], spec: null, group: label, changes: [] });
+      }
+      byLabel.get(label).changes.push(...grp.changes);
+    }
+    const headings = [...byLabel.values()].sort((a, b) => (a.group === null ? -1 : b.group === null ? 1 : 0));
     cards.push({ kind: 'general', class: null, category: cat.category, headings });
   }
   return { count: g.count, cards };
@@ -366,14 +433,53 @@ export function queryTerms(q) {
 }
 
 /**
+ * Is this change a dev post (schema v4)? Dev-post changes are the only ones
+ * that carry `author` / `postNumber`, so the change itself tells, without
+ * its day. (The app renders by the day's kind; this is for code that only
+ * sees a change, such as the search haystack.)
+ * @param {object} ch change
+ * @returns {boolean}
+ */
+export function isDevPost(ch) {
+  return !!ch && (typeof ch.author === 'string' || Number.isInteger(ch.postNumber));
+}
+
+/**
+ * Readable words for a change's tags, for searching: class names
+ * ("Mage"), tree names ("Fire"), "talent" and category chip labels
+ * ("Dungeons", "Media"); the raw tag spelling ("class:mage") is never
+ * searched.
+ * @param {object} ch change
+ * @returns {string[]}
+ */
+export function tagSearchWords(ch) {
+  const words = [];
+  for (const t of effectiveTags(ch)) {
+    if (t.startsWith('class:')) words.push(className(t.slice(6)));
+    else if (t.startsWith('spec:')) words.push(titleCase(t.split('/')[1] || ''));
+    else if (t === 'talent') words.push('talent');
+    else {
+      const def = CATEGORIES.find((c) => c.slug === t);
+      words.push(def ? def.label : titleCase(t));
+    }
+  }
+  return words;
+}
+
+/**
  * The text a search is run against: line text, notes, subject names and aliases, group
- * and category, lower-cased and joined.
+ * and category, lower-cased and joined. Dev posts (schema v4) add the author,
+ * the author's title and the readable tag words: their short summary leaves
+ * out most of the post, while the tags were computed from the whole post, so
+ * "mage" finds a post about mages even when the summary does not say it.
+ * Other lines do not search their tags (their text is the whole change).
  * @param {object} ch change
  * @returns {string}
  */
 export function searchHaystack(ch) {
+  const dev = isDevPost(ch) ? [ch.author, ch.authorTitle, ...tagSearchWords(ch)] : [];
   // Subject aliases are searchable too: either the published or the in-game name finds the line.
-  return [ch.text, ...(ch.notes || []), ...(ch.subjects || []).flatMap((s) => [s.name, s.alias]), ch.group, ch.category]
+  return [ch.text, ...(ch.notes || []), ...(ch.subjects || []).flatMap((s) => [s.name, s.alias]), ch.group, ch.category, ...dev]
     .filter(Boolean)
     .join('\n')
     .toLowerCase();
@@ -427,7 +533,7 @@ export function highlightSegments(text, terms) {
  * `hideClasses` is the "No classes" choice of the class row: true hides every
  * class change (see isClassChange); it is only ever true while `cls` is empty
  * (see normalizeClassState).
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch', hideClasses: boolean}}
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean}}
  */
 export function defaultState() {
   return { cls: '', spec: '', q: '', cats: null, kind: 'all', hideClasses: false };
@@ -667,11 +773,13 @@ export function iconUrl(icon) {
 /**
  * Pick which fallback glyph a change should get when it has no usable icon.
  * Class lines share one glyph (the tile colour tells the class); General
- * lines get a neutral glyph per category.
+ * lines get a neutral glyph per category; dev posts (schema v4) get a speech
+ * bubble, whatever their category.
  * @param {object} ch change
- * @returns {'spark'|'gem'|'scroll'|'arch'|'hex'}
+ * @returns {'spark'|'gem'|'scroll'|'arch'|'hex'|'bubble'}
  */
 export function glyphKey(ch) {
+  if (isDevPost(ch)) return 'bubble';
   if (ch.scope !== 'general') return 'spark';
   const cat = String(ch.category || '').toLowerCase();
   if (/item|gear|equipment/.test(cat)) return 'gem';
@@ -813,7 +921,7 @@ export function decodeCats(raw, generalOff = false) {
  * lower-case, like class slugs) hides class changes; a `spec` next to it is
  * ignored because a tree needs a class.
  * @param {string} hash e.g. "#class=paladin&q=judgement" (the "#" is optional)
- * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch', hideClasses: boolean}}
+ * @returns {{cls: string, spec: string, q: string, cats: string[]|null, kind: 'all'|'hotfix'|'patch'|'dev', hideClasses: boolean}}
  */
 export function decodeHash(hash) {
   const p = new URLSearchParams(String(hash || '').replace(/^#/, ''));
@@ -844,26 +952,33 @@ export function sanitizeStoredSelection(v) {
   return null;
 }
 
-/* ======================= 8. Day kinds (schema v2) ======================= */
+/* ======================= 8. Day kinds (schema v2, v4) ======================= */
 
-/** The kind filter values: everything, only hotfix days, only patch days. */
-export const KIND_FILTERS = ['all', 'hotfix', 'patch'];
+/**
+ * The day kinds, in their order on a shared date (docs/SCHEMA.md: patch,
+ * then hotfix, then dev): patch notes, hotfixes and Blizzard staff forum
+ * posts ("dev posts", schema v4).
+ */
+export const DAY_KINDS = ['patch', 'hotfix', 'dev'];
+
+/** The kind filter values: everything, or only one day kind. */
+export const KIND_FILTERS = ['all', 'hotfix', 'patch', 'dev'];
 
 /**
  * Normalise a day's kind. Schema v2 says a missing `kind` means "hotfix"
  * (older data has none); anything unrecognised is treated the same way so a
- * malformed file can never create a third, unstyled kind.
+ * malformed file can never create a fourth, unstyled kind.
  * @param {{kind?: unknown}} day
- * @returns {'hotfix'|'patch'}
+ * @returns {'hotfix'|'patch'|'dev'}
  */
 export function dayKind(day) {
-  return day && day.kind === 'patch' ? 'patch' : 'hotfix';
+  return day && (day.kind === 'patch' || day.kind === 'dev') ? day.kind : 'hotfix';
 }
 
 /**
- * Stable identity of a day: date + kind. A patch and a hotfix can share a
- * date and are separate days, so the date alone is NOT unique. Use this for
- * DOM ids, maps and keys.
+ * Stable identity of a day: date + kind. A patch, a hotfix and a dev-post
+ * day can share a date and are separate days, so the date alone is NOT
+ * unique. Use this for DOM ids, maps and keys.
  * @param {{date: string, kind?: unknown}} day
  * @returns {string} e.g. "2026-11-13|patch"
  */
@@ -873,22 +988,48 @@ export function dayKey(day) {
 
 /**
  * Validate a kind-filter value from untrusted input (URL hash). Anything
- * other than "hotfix" / "patch" (including "all") becomes "all".
+ * other than "hotfix" / "patch" / "dev" (including "all") becomes "all".
  * @param {unknown} v
- * @returns {'all'|'hotfix'|'patch'}
+ * @returns {'all'|'hotfix'|'patch'|'dev'}
  */
 export function sanitizeKindFilter(v) {
-  return v === 'hotfix' || v === 'patch' ? v : 'all';
+  return v === 'hotfix' || v === 'patch' || v === 'dev' ? v : 'all';
 }
 
 /**
  * Does a day pass the kind filter?
  * @param {object} day
- * @param {string} filter 'all' | 'hotfix' | 'patch'
+ * @param {string} filter 'all' | 'hotfix' | 'patch' | 'dev'
  * @returns {boolean}
  */
 export function matchesKind(day, filter) {
   return !filter || filter === 'all' || dayKind(day) === filter;
+}
+
+/**
+ * Plural display name of a kind-filter value, as used by the kind control,
+ * the filter summary and the empty state: "Hotfixes", "Patches", "Dev Posts"
+ * ("All" for the default).
+ * @param {string} filter kind-filter value (sanitised here)
+ * @returns {string}
+ */
+export function kindFilterLabel(filter) {
+  return { all: 'All', hotfix: 'Hotfixes', patch: 'Patches', dev: 'Dev Posts' }[sanitizeKindFilter(filter)];
+}
+
+/**
+ * Text of a day's kind badge. Hotfix and patch days say "Hotfix" / "Patch";
+ * a dev-post day says "Dev Post", or "Dev Posts" when it holds several posts
+ * (`count` is the number of posts shown for that day, i.e. after filtering).
+ * The text, not only the colour, tells the kinds apart.
+ * @param {object} day
+ * @param {number} [count] lines shown for the day
+ * @returns {string}
+ */
+export function kindBadgeLabel(day, count = 1) {
+  const kind = dayKind(day);
+  if (kind === 'dev') return count > 1 ? 'Dev Posts' : 'Dev Post';
+  return kind === 'patch' ? 'Patch' : 'Hotfix';
 }
 
 /* ======================= 9. Line decoration ======================= */
@@ -921,6 +1062,25 @@ export function extraTagsForLine(ch) {
     out.push({ type: 'category', slug, label: def ? def.label : titleCase(slug) });
   }
   return out;
+}
+
+/**
+ * What a dev-post line shows besides its text (schema v4):
+ *  - `href`: the post's `url` when it is an absolute http(s) URL, else null
+ *    (the data is not trusted blindly; a null href means the title is shown
+ *    as plain text)
+ *  - `meta`: "Kaivax · Community Manager", plus "· reply" for a staff reply
+ *    inside a thread (`postNumber` > 1); missing parts are left out
+ * @param {object} ch dev-post change
+ * @returns {{href: string|null, meta: string, reply: boolean}}
+ */
+export function devPostInfo(ch) {
+  const url = typeof ch.url === 'string' ? ch.url.trim() : '';
+  const href = /^https?:\/\/[^\s/]+/i.test(url) ? url : null;
+  const reply = Number.isInteger(ch.postNumber) && ch.postNumber > 1;
+  const clean = (v) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+  const meta = [clean(ch.author), clean(ch.authorTitle), reply ? 'reply' : null].filter(Boolean).join(' · ');
+  return { href, meta, reply };
 }
 
 /** Most subject icons shown on one line; further subjects stay as name chips. */
@@ -1009,7 +1169,7 @@ export function filterSummary(state, available = CATEGORIES) {
     parts.push(state.spec ? `${className(state.cls)} › ${titleCase(state.spec)}` : className(state.cls));
   }
   const kind = sanitizeKindFilter(state.kind);
-  if (kind !== 'all') parts.push(kind === 'patch' ? 'Patches' : 'Hotfixes');
+  if (kind !== 'all') parts.push(kindFilterLabel(kind));
   if (state.cats) {
     if (!state.cats.length) parts.push('No categories');
     else if (state.cats.length === 1) {
@@ -1043,7 +1203,9 @@ export function emptyMessage(state) {
   }
   const notes = ['No changes match the current filters.'];
   const kind = sanitizeKindFilter(state.kind);
-  if (kind !== 'all') notes.push(`Only ${kind === 'patch' ? 'patch notes' : 'hotfixes'} are being shown; try "All" to include both.`);
+  // Lower-case kind name for the sentence ("Only dev posts are being shown").
+  const shown = { patch: 'patch notes', hotfix: 'hotfixes', dev: 'dev posts' }[kind];
+  if (kind !== 'all') notes.push(`Only ${shown} are being shown; try "All" to include every kind.`);
   if (hidden) notes.push('Class changes are hidden; choose "All classes" to include them.');
   return { title: 'Nothing matches', detail: notes.join(' '), action: 'Clear filters', impossible: false };
 }

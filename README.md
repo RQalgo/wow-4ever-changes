@@ -22,7 +22,8 @@ searchable by skill name.
 
 Live site: https://rqalgo.github.io/wow-4ever-changes/
 
-- Pick a class, then a talent tree. A tree view also shows the class-wide and
+- Pick a class, then a talent tree (the labelled, indented *Talent tree* row
+  that appears under the classes). A tree view also shows the class-wide and
   all-class lines, since those affect the tree too.
 - *No classes* (next to *All classes*) hides every class change, i.e.
   everything published under Classes, and leaves only the category content
@@ -30,7 +31,7 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
   usual. Picking a class or *All classes* shows class changes again. With
   *No classes* and category *None* nothing can match; the page says so and
   offers to show everything again.
-- Category chips (Items, Quests, Dungeons, PvP, ...) switch non-class changes
+- Category chips (Items, Quests, Dungeons, PvP, Media, ...) switch non-class changes
   on and off; only categories that occur in the data are shown, with quick
   *All* / *None*. A line can touch several classes: it is shown once, in its
   published section, with small chips for the other classes, *Talent* and
@@ -41,12 +42,22 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
   filtered). On wide screens they stay in the sidebar and cards flow in two
   columns.
 - Tap the search box to get skill-name suggestions; type to narrow.
-- Each date shows a **Hotfix** or **Patch** badge (patch days also show the
-  patch title and a Source link). Use the *All / Hotfixes / Patches* switch to
-  show only one kind.
+- Each date shows a **Hotfix**, **Patch** or **Dev Post** badge (patch days
+  also show the patch title and a Source link). Use the *All / Hotfixes /
+  Patches / Dev Posts* switch to show only one kind. On a shared date the
+  order is patch, hotfix, dev posts.
+- **Dev Posts** are posts by Blizzard staff (e.g. Kaivax, Community Manager)
+  in the WoW: Forever General Discussion forum. A dev-post day has one *Dev
+  Posts* card; each post is one line: the topic title links to the post (new
+  tab), then the author ("· reply" for a staff reply inside a player thread),
+  tag chips (classes, Talent, categories such as Dungeons or Media) and a short
+  summary in Blizzard's words. Dev posts are not class changes: *No classes*
+  keeps them; with a class picked they show when tagged with that class,
+  otherwise the category chips decide, as for other lines. Search also finds
+  them by author and by their tags (e.g. "mage").
 - The view is stored in the URL, e.g.
   `#class=paladin&spec=retribution`, `#class=none` (no class changes),
-  `#kind=patch` or `#cats=items,quests` (enabled categories; `cats=none` for
+  `#kind=patch`, `#kind=dev` or `#cats=items,quests` (enabled categories; `cats=none` for
   none; the old `general=0` still works), so it can be bookmarked or shared.
   `#filters=open` opens the filter sheet on phones. Without a hash the page
   restores the last class choice (a class and tree, or *No classes*) from the

@@ -288,6 +288,96 @@
       ]
     },
     {
+      "date": "2026-11-14",
+      "kind": "dev",
+      "title": null,
+      "sourceUrl": null,
+      "label": "November 14, 2026",
+      "changes": [
+        {
+          "id": "2026-11-14-d000",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Player-Level Dungeon XP Adjustment - November 14",
+          "notes": [
+            "Yesterday, we updated dungeon play so that experience granted by an enemy in an instance is scaled to the level of the player who defeats it…"
+          ],
+          "url": "https://us.forums.blizzard.com/en/wow/t/player-level-dungeon-xp-adjustment-november-14/2416343/1",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 1,
+          "subjects": [],
+          "tags": [
+            "dungeons",
+            "systems"
+          ]
+        },
+        {
+          "id": "2026-11-14-d001",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Reply in “Fire Mage feedback thread”",
+          "notes": [
+            "Thanks for the reports. We are looking at how Pyroblast interacts with Fire Blast and expect a fix next week."
+          ],
+          "url": "https://us.forums.blizzard.com/en/wow/t/fire-mage-feedback-thread/2409911/7",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 7,
+          "subjects": [
+            {
+              "name": "Pyroblast",
+              "type": "spell",
+              "kind": "talent",
+              "class": "mage",
+              "tree": "fire",
+              "icon": "spell_fire_fireball02",
+              "source": "client"
+            },
+            {
+              "name": "Fire Blast",
+              "type": "spell",
+              "kind": "ability",
+              "class": "mage",
+              "icon": "spell_fire_fireball",
+              "source": "client"
+            }
+          ],
+          "tags": [
+            "class:mage",
+            "spec:mage/fire",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-14-d002",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "WoW: Forever Developer Podcast - Episode 3",
+          "notes": [
+            "The third episode of our developer podcast is out now, with a look back at the first weeks of the Beta."
+          ],
+          "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-developer-podcast-episode-3/2415502/1",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 1,
+          "subjects": [],
+          "tags": [
+            "media"
+          ]
+        }
+      ]
+    },
+    {
       "date": "2026-11-13",
       "kind": "patch",
       "title": null,
@@ -404,6 +494,35 @@
               "type": "item",
               "icon": "inv_mace_13"
             }
+          ]
+        }
+      ]
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "dev",
+      "title": null,
+      "sourceUrl": null,
+      "label": "November 13, 2026",
+      "changes": [
+        {
+          "id": "2026-11-13-d000",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Reply in “Are mages getting more mana regen?”",
+          "notes": [
+            "Not in the next build. We want to see more data from level 40 to 60 first."
+          ],
+          "url": "https://us.forums.blizzard.com/en/wow/t/are-mages-getting-more-mana-regen/2401234/3",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 3,
+          "subjects": [],
+          "tags": [
+            "class:mage"
           ]
         }
       ]

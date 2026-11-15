@@ -11,8 +11,10 @@
  * Pure logic (filtering, search, suggestions, hash encoding) lives in
  * ./logic.js so it can be unit tested without a DOM.
  *
- * Days are identified by date + kind (see dayKey in logic.js): a patch and a
- * hotfix can share a date.
+ * Days are identified by date + kind (see dayKey in logic.js): a patch, a
+ * hotfix and a dev-post day (Blizzard staff forum posts, schema v4) can share
+ * a date. A dev-post day is drawn as one "Dev Posts" card whose lines link to
+ * the posts (renderLine with `dev`).
  *
  * Sections: helpers, data loading, rendering, boot.
  */
@@ -25,6 +27,7 @@ import {
   availableCategories, toggleCategory, normalizeCats, isCategoryOn,
   activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
   classChoice, withClassChoice, normalizeClassState, sanitizeStoredSelection, emptyMessage,
+  displayGroup, kindBadgeLabel, kindFilterLabel, devPostInfo,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, enabled categories (null = all), kind filter, hideClasses ("No classes"). */
@@ -123,6 +126,8 @@ const GLYPHS = {
   scroll: 'M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z M12 8v5 M12 16v.5',
   arch: 'M4 21V11a8 8 0 0 1 16 0v10 M9 21v-7a3 3 0 0 1 6 0v7 M3 21h18',
   hex: 'M12 2.5 20 7v10l-8 4.5L4 17V7Z M12 8v8 M8 10v4 M16 10v4',
+  // Dev posts: a rounded speech bubble with a tail at the bottom left and two lines of "text".
+  bubble: 'M6 4h12a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-7l-5 4v-4H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z M7.5 9h9 M7.5 12.5h6',
 };
 
 /**
@@ -244,26 +249,58 @@ function renderTagChip(tag) {
 }
 
 /**
+ * Build the title of a dev-post line: the topic title as a link to the post
+ * (new tab, rel="noopener") when devPostInfo accepts its URL (http(s) only),
+ * otherwise plain text. Search matches are highlighted inside the link too.
+ * @param {object} ch dev-post change
+ * @returns {Node}
+ */
+function devTitle(ch) {
+  const { href } = devPostInfo(ch);
+  if (!href) return highlighted(ch.text);
+  const a = el('a', 'line-link');
+  a.href = href;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  // The new-tab hint is spoken, not shown.
+  a.append(highlighted(ch.text), el('span', 'visually-hidden', ' (opens in a new tab)'));
+  return a;
+}
+
+/**
  * Render one change line: icon cluster, text, extra tag chips (other classes,
  * Talent, other categories), overflow subject chips and notes. The line is
  * drawn once, in its published section; the chips say what else it touches.
+ * A dev-post line (`dev` true) shows its topic title as a link to the post
+ * and, under it, a muted author line ("Kaivax · Community Manager · reply");
+ * its notes are the post's short summary.
  * @param {object} ch a change from the data
+ * @param {boolean} [dev] the line belongs to a dev-post day
  * @returns {HTMLElement} <li>
  */
-function renderLine(ch) {
-  const li = el('li', 'line');
+function renderLine(ch, dev = false) {
+  const li = el('li', dev ? 'line line-dev' : 'line');
   const body = el('div', 'line-body');
   const text = el('p', 'line-text');
   // Class-scope lines can carry a sub-heading (e.g. "Cooldown Manager" under
   // Classes). General lines already show their group as a section heading,
   // so the inline label is only added for class lines.
-  if (ch.scope === 'class' && ch.group) {
+  // displayGroup: one separator (" › ") in every group text, as in the headings.
+  if (ch.scope === 'class' && displayGroup(ch.group)) {
     const label = el('span', 'line-group');
-    label.append(highlighted(ch.group));
+    label.append(highlighted(displayGroup(ch.group)));
     text.append(label, ' ');
   }
-  text.append(highlighted(ch.text));
+  text.append(dev ? devTitle(ch) : highlighted(ch.text));
   body.append(text);
+  if (dev) {
+    const { meta } = devPostInfo(ch);
+    if (meta) {
+      const m = el('p', 'line-meta');
+      m.append(highlighted(meta)); // the author is searchable, so it is highlighted too
+      body.append(m);
+    }
+  }
   const tags = extraTagsForLine(ch).map(renderTagChip);
   // Subjects beyond the icon cluster stay as search chips.
   const more = iconSlots(ch).more.map((sub) => {
@@ -291,11 +328,12 @@ function renderLine(ch) {
 /**
  * Render a <ul> of lines.
  * @param {object[]} changes
+ * @param {boolean} [dev] lines of a dev-post day (see renderLine)
  * @returns {HTMLElement}
  */
-function renderLines(changes) {
+function renderLines(changes, dev = false) {
   const ul = el('ul', 'lines');
-  for (const ch of changes) ul.append(renderLine(ch));
+  for (const ch of changes) ul.append(renderLine(ch, dev));
   return ul;
 }
 
@@ -322,23 +360,25 @@ function renderHeading(title, highlight) {
 }
 
 /**
- * Render one card: a class (or "All classes") or one general category, with
- * one or more sibling headings, each followed by its lines.
+ * Render one card: a class (or "All classes"), one general category, or the
+ * single "Dev Posts" card of a dev-post day, with one or more sibling
+ * headings, each followed by its lines.
  * @param {{kind: string, class: string|null, headings: object[]}} card from flattenSections
  * @returns {HTMLElement}
  */
 function renderCard(card) {
   const box = el('section', `card card-${card.kind}`);
-  // The class colour is exposed as a CSS variable and used only as an accent.
-  box.style.setProperty('--cc', card.kind === 'class' ? (classColor(card.class) || 'var(--accent)') : 'var(--muted)');
+  // The class colour is exposed as a CSS variable and used only as an accent;
+  // the dev card takes the dev-post azure, general cards stay neutral.
+  const accent = { class: classColor(card.class) || 'var(--accent)', dev: 'var(--dev-edge)' }[card.kind] || 'var(--muted)';
+  box.style.setProperty('--cc', accent);
+  const dev = card.kind === 'dev';
   for (const h of card.headings) {
-    box.append(renderHeading(h.title, card.kind === 'general'), renderLines(h.changes));
+    // "Dev Posts" is a fixed title, so only general headings take part in highlighting.
+    box.append(renderHeading(h.title, card.kind === 'general'), renderLines(h.changes, dev));
   }
   return box;
 }
-
-/** Visible badge text per day kind. The text (not only the colour) tells them apart. */
-const KIND_LABEL = { hotfix: 'Hotfix', patch: 'Patch' };
 
 /**
  * Build the small "Source" link for a day, or null when the day has no
@@ -354,22 +394,25 @@ function sourceLink(day) {
   a.href = url;
   a.target = '_blank';
   a.rel = 'noopener';
-  a.setAttribute('aria-label', `Source for the ${KIND_LABEL[dayKind(day)].toLowerCase()} of ${day.label || day.date} (opens in a new tab)`);
+  a.setAttribute('aria-label', `Source for the ${kindBadgeLabel(day).toLowerCase()} of ${day.label || day.date} (opens in a new tab)`);
   return a;
 }
 
 /**
  * Render one day: sticky heading (date, kind badge, optional patch title,
- * relative hint, Source link, count) and its sections. Hotfix and patch days
- * get a different class so patches stand out while scrolling.
+ * relative hint, Source link, count) and its sections. Each kind gets its own
+ * class (day-hotfix / day-patch / day-dev) so patch and dev-post days stand
+ * out while scrolling. The badge text comes from kindBadgeLabel ("Hotfix",
+ * "Patch", "Dev Post" or, with several posts shown, "Dev Posts").
  * @param {object} day a day from the data
  * @param {object[]} changes the visible changes of that day (already filtered,
  *   so the count below always reflects what is shown)
  * @returns {HTMLElement}
  */
 function renderDay(day, changes) {
-  const view = flattenSections(changes);
   const kind = dayKind(day);
+  // The kind decides the cards: a dev day is one "Dev Posts" card.
+  const view = flattenSections(changes, kind);
   const sec = el('section', `day day-${kind}`);
   // Date + kind: two days on the same date need different anchors.
   sec.id = `d-${dayKey(day).replace('|', '-')}`;
@@ -378,7 +421,7 @@ function renderDay(day, changes) {
   // Badge and title live in one group so they wrap together on narrow screens
   // ("Patch · Beta build notes" never breaks right after the badge).
   const kindGroup = el('span', 'day-kind');
-  kindGroup.append(el('span', `kind-badge kind-${kind}`, KIND_LABEL[kind]));
+  kindGroup.append(el('span', `kind-badge kind-${kind}`, kindBadgeLabel(day, view.count)));
   // The title is shown for patch days only.
   if (kind === 'patch' && typeof day.title === 'string' && day.title.trim()) {
     kindGroup.append(el('span', 'day-title', day.title.trim()));
@@ -500,17 +543,30 @@ function scrollPressedIntoView(row) {
 /**
  * Rebuild the talent-tree row. Only shown once a class is chosen; offers the
  * vanilla trees plus any trees that appear in the data for that class.
+ *
+ * The row must not read as more class chips (it sits right under them), so
+ * it lives in its own indented block with a visible "Talent tree" label and
+ * a rule in the class colour, and its chips look different: no colour dot,
+ * outlined, squarer and (on desktop) a little smaller. The class colour only
+ * marks the pressed tree.
  */
 function renderSpecChips() {
+  const group = $('spec-group');
   const row = $('spec-row');
-  row.hidden = !state.cls;
+  group.hidden = !state.cls;
   if (!state.cls) { row.replaceChildren(); return; }
   row.setAttribute('aria-label', `${className(state.cls)} talent tree`);
-  const color = classColor(state.cls);
-  const chips = [chip('All trees', !state.spec, () => setState({ ...state, spec: '' }), color)];
+  group.style.setProperty('--cc', classColor(state.cls) || 'var(--accent)');
+  /** A tree chip: a plain chip (no dot) with the tree look. */
+  const treeChip = (label, pressed, onClick) => {
+    const b = chip(label, pressed, onClick);
+    b.classList.add('chip-tree');
+    return b;
+  };
+  const chips = [treeChip('All trees', !state.spec, () => setState({ ...state, spec: '' }))];
   for (const spec of specsForClass(data, state.cls)) {
-    chips.push(chip(titleCase(spec), state.spec === spec,
-      () => setState({ ...state, spec: state.spec === spec ? '' : spec }), color));
+    chips.push(treeChip(titleCase(spec), state.spec === spec,
+      () => setState({ ...state, spec: state.spec === spec ? '' : spec })));
   }
   replaceChips(row, chips);
 }
@@ -546,12 +602,9 @@ function renderCategoryChips() {
   replaceChips(row, chips);
 }
 
-/** Segment labels of the kind filter, keyed by filter value. */
-const KIND_FILTER_LABEL = { all: 'All', hotfix: 'Hotfixes', patch: 'Patches' };
-
 /**
- * Build the three-way kind control "All / Hotfixes / Patches" as a radio
- * group: role=radiogroup with role=radio buttons, aria-checked, roving
+ * Build the four-way kind control "All / Hotfixes / Patches / Dev Posts"
+ * (labels from kindFilterLabel) as a radio group: role=radiogroup with role=radio buttons, aria-checked, roving
  * tabindex (only the selected segment is in the tab order) and arrow-key
  * navigation, like a native radio group. Created once; renderKindFilter()
  * keeps it in sync with the state.
@@ -561,9 +614,9 @@ function buildKindFilter() {
   const group = el('div', 'segmented');
   group.id = 'kind-row';
   group.setAttribute('role', 'radiogroup');
-  group.setAttribute('aria-label', 'Show hotfixes or patch notes');
+  group.setAttribute('aria-label', 'Show hotfixes, patch notes or dev posts');
   for (const value of KIND_FILTERS) {
-    const b = el('button', 'segment', KIND_FILTER_LABEL[value]);
+    const b = el('button', 'segment', kindFilterLabel(value));
     b.type = 'button';
     b.dataset.kind = value;
     b.setAttribute('role', 'radio');
@@ -853,7 +906,12 @@ function buildFilters() {
   const specGroup = el('div', 'chip-row');
   specGroup.id = 'spec-row';
   specGroup.setAttribute('role', 'group');
-  specGroup.hidden = true;
+  // The tree row and its label sit in an indented block under the class row
+  // (hidden until a class is chosen), so the hierarchy is visible.
+  const treeBlock = el('div', 'tree-group');
+  treeBlock.id = 'spec-group';
+  treeBlock.hidden = true;
+  treeBlock.append(el('p', 'filter-label tree-label', 'Talent tree'), specGroup);
   // Category chips (non-class changes): multi-select row built by renderCategoryChips().
   const catGroup = el('div', 'chip-row chip-row-cats');
   catGroup.id = 'cat-row';
@@ -882,7 +940,7 @@ function buildFilters() {
   panel.append(
     head,
     el('p', 'filter-label', 'Show'), buildKindFilter(),
-    el('p', 'filter-label', 'Class'), classGroup, specGroup,
+    el('p', 'filter-label', 'Class'), classGroup, treeBlock,
     el('p', 'filter-label', 'Categories'), catGroup,
     foot,
   );
