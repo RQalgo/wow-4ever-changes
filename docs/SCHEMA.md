@@ -271,6 +271,9 @@ Transient field `_fullText` (never in `data/changes.json`):
   dev posts; removing a dev day from the file makes the posts still on the
   tracker be fetched and tagged again.)
 
+Source entry: `categoryId` may also be a list (`[347, 352]`) to keep several
+forum categories from the one feed; all their posts become Dev Posts.
+
 Tracker paging (`discourse-tracker`): pages are read with `before_post_id`
 until a page is empty, or a page's oldest post is older than the cutoff
 (default: the oldest date of any stored day, or 2026-09-01 when nothing is
