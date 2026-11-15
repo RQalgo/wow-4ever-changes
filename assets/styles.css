@@ -197,7 +197,8 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   background: color-mix(in srgb, var(--cc, var(--accent)) 24%, var(--surface));
   border-color: var(--cc, var(--accent)); box-shadow: inset 0 0 0 1px var(--cc, var(--accent));
 }
-/* "All" / "None" quick buttons in the category row: square-ish, dashed, so they read as actions not toggles. */
+/* Quick choices: "All" / "None" in the category row (actions) and "All classes" / "No classes" in the
+   class row (toggles). Square-ish and dashed so both pairs read alike and apart from the item chips. */
 .chip-quick { border-style: dashed; border-radius: 8px; }
 /* The colour dot gets a ring so white/yellow stay visible on light parchment. */
 .chip-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 45%, transparent); }

@@ -3,7 +3,8 @@
  *
  * Responsibilities:
  *   - load ./data/changes.json and show loading / error / empty states
- *   - own the UI state (class, spec, query, category chips, kind) and re-render
+ *   - own the UI state (class choice incl. "No classes", spec, query, category
+ *     chips, kind) and re-render
  *   - build every DOM node with createElement/textContent (data is never
  *     inserted through innerHTML)
  *
@@ -23,9 +24,10 @@ import {
   dayKind, dayKey, KIND_FILTERS, sanitizeKindFilter,
   availableCategories, toggleCategory, normalizeCats, isCategoryOn,
   activeFilterCount, filterSummary, hasPanelFlag, withPanelFlag,
+  classChoice, withClassChoice, normalizeClassState,
 } from './logic.js';
 
-/** Current UI state: class, spec, search text, enabled categories (null = all), kind filter. */
+/** Current UI state: class, spec, search text, enabled categories (null = all), kind filter, hideClasses ("No classes"). */
 let state = defaultState();
 
 /** The loaded dataset (see docs/SCHEMA.md), or null before loading. */
@@ -231,7 +233,8 @@ function renderTagChip(tag) {
     b.style.setProperty('--cc', tag.color || 'var(--muted)');
     b.append(el('span', 'chip-dot'), tag.label);
     b.title = `Show only ${tag.label} changes`;
-    b.addEventListener('click', () => setState({ ...state, cls: tag.slug, spec: '' }));
+    // Picking a class also ends "No classes" (withClassChoice turns the hiding off).
+    b.addEventListener('click', () => setState(withClassChoice(state, tag.slug)));
   } else {
     b.textContent = tag.label;
     b.title = `Show only ${tag.label}`;
@@ -437,14 +440,28 @@ function chip(label, pressed, onClick, color) {
   return b;
 }
 
-/** Rebuild the class chip row from the current state. */
+/**
+ * Rebuild the class chip row from the current state. The row is a three-way
+ * choice (see classChoice in logic.js): "All classes" (default), "No classes"
+ * (hide every class change, leaving only the category content), or one class.
+ * The two quick choices come first and use the dashed look of the
+ * categories' All / None, so the rows read alike. Every chip is an
+ * aria-pressed toggle; pressing the selected class or "No classes" again
+ * returns to "All classes".
+ */
 function renderClassChips() {
   const row = $('class-row');
-  const chips = [chip('All classes', !state.cls, () => setState({ ...state, cls: '', spec: '' }))];
-  for (const c of CLASSES) {
-    chips.push(chip(c.name, state.cls === c.slug,
-      () => setState({ ...state, cls: state.cls === c.slug ? '' : c.slug, spec: '' }), c.color));
-  }
+  const current = classChoice(state);
+  /** Choose `choice`, or go back to "All classes" when it is already chosen. */
+  const pick = (choice) => () => setState(withClassChoice(state, current === choice ? 'all' : choice));
+  const all = chip('All classes', current === 'all', () => setState(withClassChoice(state, 'all')));
+  all.classList.add('chip-quick');
+  all.title = 'Show the changes of every class';
+  const none = chip('No classes', current === 'none', pick('none'));
+  none.classList.add('chip-quick');
+  none.title = 'Hide all class changes and show only the categories below';
+  const chips = [all, none];
+  for (const c of CLASSES) chips.push(chip(c.name, current === c.slug, pick(c.slug), c.color));
   row.replaceChildren(...chips);
   scrollPressedIntoView(row);
 }
@@ -892,7 +909,8 @@ function renderFilterBar() {
 /** Sync the clear button with the state (enabled only when something differs from the defaults). */
 function renderTools() {
   const d = defaultState();
-  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.cats !== d.cats || state.kind !== d.kind;
+  const dirty = state.cls !== d.cls || state.spec !== d.spec || state.q !== d.q || state.cats !== d.cats
+    || state.kind !== d.kind || state.hideClasses !== d.hideClasses;
   $('clear-filters').disabled = !dirty;
 }
 
@@ -964,8 +982,9 @@ function syncHash() {
  * @param {object} next new state
  */
 function setState(next, opts = {}) {
-  // One canonical `cats` (null when every chip is on), whatever the source.
-  state = { ...next, cats: normalizeCats(next.cats, categories) };
+  // One canonical `cats` (null when every chip is on) and one canonical class
+  // choice (a class turns "No classes" off), whatever the source.
+  state = normalizeClassState({ ...next, cats: normalizeCats(next.cats, categories) });
   syncHash();
   saveSelection(state);
   if (!opts.fromInput) renderSearch();
