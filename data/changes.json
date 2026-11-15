@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T00:47:42Z",
+  "generatedAt": "2026-11-15T00:51:43Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -395,13 +395,7 @@
           "group": null,
           "text": "Darkspear signet rings have had their Mp5 corrected and now match Alliance-equivalent rings.",
           "notes": [],
-          "subjects": [
-            {
-              "name": "Darkspear",
-              "type": "item",
-              "icon": "inv_spear_08"
-            }
-          ]
+          "subjects": []
         },
         {
           "id": "2026-11-13-028",
@@ -1285,11 +1279,6 @@
               "name": "Voidwalker",
               "type": "spell",
               "icon": "spell_shadow_summonvoidwalker"
-            },
-            {
-              "name": "Health",
-              "type": "spell",
-              "icon": "inv_misc_enggizmos_27"
             }
           ]
         },
@@ -1302,13 +1291,7 @@
           "group": null,
           "text": "Incubus base Health increased by ~15%.",
           "notes": [],
-          "subjects": [
-            {
-              "name": "Health",
-              "type": "spell",
-              "icon": "inv_misc_enggizmos_27"
-            }
-          ]
+          "subjects": []
         },
         {
           "id": "2026-11-10-020",
@@ -1319,13 +1302,7 @@
           "group": null,
           "text": "Succubus base Health increased by ~15%.",
           "notes": [],
-          "subjects": [
-            {
-              "name": "Health",
-              "type": "spell",
-              "icon": "inv_misc_enggizmos_27"
-            }
-          ]
+          "subjects": []
         },
         {
           "id": "2026-11-10-021",
@@ -2364,11 +2341,6 @@
           "notes": [],
           "subjects": [
             {
-              "name": "Spawn",
-              "type": "spell",
-              "icon": "trade_engineering"
-            },
-            {
               "name": "Dream Eater",
               "type": "spell",
               "icon": "inv_weapon_shortblade_92"
@@ -2763,9 +2735,9 @@
           "id": "2026-11-06-002",
           "scope": "class",
           "category": "Classes",
-          "class": "cooldown-manager",
+          "class": null,
           "spec": null,
-          "group": null,
+          "group": "Cooldown Manager",
           "text": "The Cooldown Manager will now correctly display the duration of crowd control spells at all times, even when diminishing returns or mechanic reductions (like orc stun reduction) are factors.",
           "notes": [],
           "subjects": []
@@ -2847,18 +2819,7 @@
           "group": null,
           "text": "Fixed an issue where Mages were still learning the Research spell and then losing it upon relogging. This spell should not exist, and you should only have the Study spell after completing the relevant quest.",
           "notes": [],
-          "subjects": [
-            {
-              "name": "Research",
-              "type": "spell",
-              "icon": "spell_holy_mindsooth"
-            },
-            {
-              "name": "Study",
-              "type": "spell",
-              "icon": "trade_archaeology_silverscrollcase"
-            }
-          ]
+          "subjects": []
         },
         {
           "id": "2026-11-06-008",
@@ -3074,7 +3035,13 @@
           "group": null,
           "text": "Searing Dagger is now only activated by spells that have a damaging component.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Searing Dagger",
+              "type": "item",
+              "icon": "inv_weapon_shortblade_03"
+            }
+          ]
         },
         {
           "id": "2026-11-06-023",
@@ -3086,6 +3053,11 @@
           "text": "Tanning Rack skill requirement lowered to 125 (was 140). This prevents it from being an obstacle to crafting various Leatherworking patterns that require 125 skill. Tanning Rack skill-ups lowered by 15 skill points to account for this.",
           "notes": [],
           "subjects": [
+            {
+              "name": "Tanning Rack",
+              "type": "item",
+              "icon": "inv_10_skinning_leather_rarehide_color1"
+            },
             {
               "name": "Leatherworking",
               "type": "spell",
@@ -3113,7 +3085,13 @@
           "group": null,
           "text": "Brewed a fresh pot of Darnassus’s finest coffee for Kerlonian Evershade so he falls asleep less often during \"The Sleeper Has Awakened\". Players now also start with the Horn of Awakening item to wake him up when needed.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Horn of Awakening",
+              "type": "item",
+              "icon": "inv_misc_horn_03"
+            }
+          ]
         },
         {
           "id": "2026-11-06-026",
@@ -3124,7 +3102,13 @@
           "group": null,
           "text": "The quest \"Rough Wolf Pelts\" is now automatically cancelled if you unlearn the Skinning skill.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Skinning",
+              "type": "spell",
+              "icon": "inv_misc_pelt_wolf_01"
+            }
+          ]
         },
         {
           "id": "2026-11-06-027",
@@ -3190,7 +3174,13 @@
           "group": null,
           "text": "Damp Note drop rate increased. Eww.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Damp Note",
+              "type": "item",
+              "icon": "inv_misc_note_06"
+            }
+          ]
         },
         {
           "id": "2026-11-06-033",
@@ -3295,7 +3285,13 @@
           "group": null,
           "text": "Fixed an issue where trade supply vendors on Zephras Isle didn't sell apprentice tradeskill bags.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Zephras Isle",
+              "type": "spell",
+              "icon": "achievement_dungeon_skywall"
+            }
+          ]
         },
         {
           "id": "2026-11-05-006",
@@ -3306,7 +3302,13 @@
           "group": null,
           "text": "Mild Spices now sell to vendors for 1 copper each (was 2 copper).",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Mild Spices",
+              "type": "item",
+              "icon": "inv_misc_food_wheat_02"
+            }
+          ]
         },
         {
           "id": "2026-11-05-007",
@@ -3317,7 +3319,13 @@
           "group": null,
           "text": "Fixed an issue where Plainsrunning could be stacked in a battleground's preparation phase.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Plainsrunning",
+              "type": "spell",
+              "icon": "achievement_zone_barrens_01"
+            }
+          ]
         },
         {
           "id": "2026-11-05-008",
@@ -3328,7 +3336,13 @@
           "group": null,
           "text": "Plainsrunning can no longer stack and stacks will be cancelled when carrying a flag in a battleground.",
           "notes": [],
-          "subjects": []
+          "subjects": [
+            {
+              "name": "Plainsrunning",
+              "type": "spell",
+              "icon": "achievement_zone_barrens_01"
+            }
+          ]
         },
         {
           "id": "2026-11-05-009",

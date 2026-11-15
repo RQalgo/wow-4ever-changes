@@ -1,4 +1,5 @@
 {
+  "abomimable head": null,
   "action bar": null,
   "addressed": null,
   "alliance-equivalent": null,
@@ -35,6 +36,8 @@
     "type": "spell",
     "icon": "spell_shadow_curseofsargeras"
   },
+  "barbershop": null,
+  "baron in the ruins of lordaeron": null,
   "bear form": {
     "name": "Bear Form",
     "type": "spell",
@@ -62,6 +65,8 @@
     "icon": "spell_nature_ancestralguardian"
   },
   "blackfathom deeps": null,
+  "blackmaw hold": null,
+  "blackmaw hold and the drowned city": null,
   "blacksmithing": {
     "name": "Blacksmithing",
     "type": "spell",
@@ -97,11 +102,13 @@
     "type": "spell",
     "icon": "inv_misc_herb_felblossom"
   },
+  "blooming lashers": null,
   "boot knife": {
     "name": "Boot Knife",
     "type": "spell",
     "icon": "inv_sword_32"
   },
+  "brewed": null,
   "brightfire in valanaar": null,
   "broken frond of celastrus": {
     "name": "Broken Frond of Celastrus",
@@ -164,11 +171,17 @@
     "type": "spell",
     "icon": "inv_misc_flower_01"
   },
+  "damp note": {
+    "name": "Damp Note",
+    "type": "item",
+    "icon": "inv_misc_note_06"
+  },
   "darkspear": {
     "name": "Darkspear",
     "type": "item",
     "icon": "inv_spear_08"
   },
+  "darnassus": null,
   "dash": {
     "name": "Dash",
     "type": "spell",
@@ -185,8 +198,10 @@
   "deathless marrow": null,
   "deathless sorcerer's fireball": null,
   "deathless watcher's charge": null,
+  "deathstalker erland": null,
   "defeating balnazzar": null,
   "defeating zarla ober": null,
+  "deployed": null,
   "dexterity: intellect to attack power": null,
   "divine spirit": {
     "name": "Divine Spirit",
@@ -215,6 +230,7 @@
     "icon": "spell_shadow_lifedrain"
   },
   "drowned city": null,
+  "dustwallow marsh": null,
   "earthen silk slippers": {
     "name": "Earthen Silk Slippers",
     "type": "item",
@@ -227,6 +243,7 @@
     "type": "item",
     "icon": "inv_misc_eye_01"
   },
+  "eww": null,
   "executioner morg": null,
   "experience": null,
   "fang and nightbane tainted ones": null,
@@ -276,6 +293,7 @@
     "type": "spell",
     "icon": "racial_troll_berserk"
   },
+  "grol'bolar quarry": null,
   "hand weapon": null,
   "hawk": null,
   "hawk mana": null,
@@ -290,6 +308,7 @@
     "type": "item",
     "icon": "inv_misc_book_09"
   },
+  "hold and the drowned city": null,
   "holy nova": {
     "name": "Holy Nova",
     "type": "spell",
@@ -299,6 +318,11 @@
     "name": "Holy Strike",
     "type": "spell",
     "icon": "classicon_paladin"
+  },
+  "horn of awakening": {
+    "name": "Horn of Awakening",
+    "type": "item",
+    "icon": "inv_misc_horn_03"
   },
   "hyjal owl nests": null,
   "idol of ferocity": {
@@ -335,12 +359,15 @@
     "type": "spell",
     "icon": "ability_warrior_innerrage"
   },
+  "kerlonian evershade": null,
   "killing": null,
+  "krek the noxious": null,
   "lacerate": {
     "name": "Lacerate",
     "type": "spell",
     "icon": "ability_druid_lacerate"
   },
+  "lasher sproutlings": null,
   "leatherworking": {
     "name": "Leatherworking",
     "type": "spell",
@@ -374,6 +401,7 @@
   },
   "loch modan": null,
   "look": null,
+  "lotheluum starbreeze": null,
   "lowered": null,
   "maelstrom weapon": {
     "name": "Maelstrom Weapon",
@@ -390,6 +418,11 @@
   "master spelunker": null,
   "mental dexterity: intellect": null,
   "mental dexterity: intellect to attack power": null,
+  "mild spices": {
+    "name": "Mild Spices",
+    "type": "item",
+    "icon": "inv_misc_food_wheat_02"
+  },
   "minor arcane elixir": {
     "name": "Minor Arcane Elixir",
     "type": "item",
@@ -433,13 +466,20 @@
     "type": "spell",
     "icon": "spell_nature_crystalball"
   },
+  "orc command": null,
   "our": null,
   "owen thadd": null,
   "owen thadd and garion wendell": null,
   "owl nests": null,
+  "pelluk": null,
   "perk the quick and the dead": null,
   "pets": null,
   "pix xizzix": null,
+  "plainsrunning": {
+    "name": "Plainsrunning",
+    "type": "spell",
+    "icon": "achievement_zone_barrens_01"
+  },
   "please": null,
   "pouch of violet dust": {
     "name": "Pouch of Violet Dust",
@@ -479,6 +519,7 @@
     "type": "spell",
     "icon": "ability_druid_ravage"
   },
+  "ravage and pounce": null,
   "reckless swings": {
     "name": "Reckless Swings",
     "type": "spell",
@@ -504,6 +545,7 @@
     "type": "spell",
     "icon": "spell_holy_mindvision"
   },
+  "ridgeshade lurkers": null,
   "ring of the fallen soldier": {
     "name": "Ring of the Fallen Soldier",
     "type": "item",
@@ -511,6 +553,7 @@
   },
   "riverglades": null,
   "rock elemental": null,
+  "ruins of lordaeron": null,
   "runed golden rod": {
     "name": "Runed Golden Rod",
     "type": "item",
@@ -527,12 +570,18 @@
     "type": "spell",
     "icon": "ability_paladin_empoweredsealstruth"
   },
+  "searing dagger": {
+    "name": "Searing Dagger",
+    "type": "item",
+    "icon": "inv_weapon_shortblade_03"
+  },
   "secondary talents": null,
   "shadowform": {
     "name": "Shadowform",
     "type": "spell",
     "icon": "spell_shadow_shadowform"
   },
+  "shadowmelded druids": null,
   "shank": {
     "name": "Shank",
     "type": "spell",
@@ -553,6 +602,11 @@
     "name": "Siphon Life",
     "type": "spell",
     "icon": "spell_shadow_requiem"
+  },
+  "skinning": {
+    "name": "Skinning",
+    "type": "spell",
+    "icon": "inv_misc_pelt_wolf_01"
   },
   "skonk": null,
   "sneed": null,
@@ -627,6 +681,11 @@
     "icon": "trade_tailoring"
   },
   "tainted ones": null,
+  "tanning rack": {
+    "name": "Tanning Rack",
+    "type": "item",
+    "icon": "inv_10_skinning_leather_rarehide_color1"
+  },
   "taran icebreaker": {
     "name": "Taran Icebreaker",
     "type": "item",
@@ -639,11 +698,13 @@
   "thadd and garion wendell": null,
   "the dead": null,
   "the dead legacy talent": null,
+  "the drowned city": null,
   "the quick and the dead": {
     "name": "The Quick and the Dead",
     "type": "spell",
     "icon": "achievement_guildperk_quick-and-dead"
   },
+  "the ruins of lordaeron": null,
   "the shrieklings of zephras": null,
   "theradras in maraudon": null,
   "they're": null,
@@ -689,6 +750,7 @@
   "watcher's charge": null,
   "waylaid crates": null,
   "waylaid crates and craftsman's writs": null,
+  "we": null,
   "weapon": null,
   "wild growth": {
     "name": "Wild Growth",
@@ -710,6 +772,8 @@
     "type": "spell",
     "icon": "ability_deathknight_hemorrhagicfever"
   },
+  "wrathvine": null,
+  "yarrog baneshadow": null,
   "yashiro": null,
   "young diemetradons": null,
   "zaetar": null,
@@ -720,5 +784,10 @@
     "icon": "inv_staff_2h_skybornec60_b_01"
   },
   "zephrali greatstaff and fallen dragon's scepter": null,
+  "zephras isle": {
+    "name": "Zephras Isle",
+    "type": "spell",
+    "icon": "achievement_dungeon_skywall"
+  },
   "zul'farrak": null
 }
