@@ -367,6 +367,13 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
   .site-footer { padding: 1rem 1.5rem; }
 }
 
+/* Wide screens: cards flow into two columns inside a day. */
+@media (min-width: 1100px) {
+  .layout, .site-header, .site-footer { max-width: 1480px; }
+  .cards { column-count: 2; column-gap: .75rem; }
+  .card { break-inside: avoid; }
+}
+
 /* ---------- Motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
