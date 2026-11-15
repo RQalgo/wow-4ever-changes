@@ -14,7 +14,7 @@
  */
 
 import {
-  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays, specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms, highlightSegments,
+  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays, specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms, highlightSegments, buildSuggestions,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, General toggle. */
@@ -353,9 +353,11 @@ function renderSpecChips() {
 }
 
 /**
- * Build the search box. The input is created once and never re-rendered, so
- * typing keeps focus; renderSearch() only syncs its value.
- * @returns {HTMLElement} wrapper containing label + input
+ * Build the search box with its suggestion dropdown (ARIA combobox pattern:
+ * input role=combobox -> listbox of role=option, aria-activedescendant tracks
+ * the keyboard-highlighted option). The input is created once and never
+ * re-rendered, so typing keeps focus; renderSearch() only syncs its value.
+ * @returns {HTMLElement} wrapper containing label, input and listbox
  */
 function buildSearch() {
   const wrap = el('div', 'search');
@@ -368,8 +370,106 @@ function buildSearch() {
   input.autocomplete = 'off';
   input.spellcheck = false;
   input.enterKeyHint = 'search';
-  input.addEventListener('input', () => setState({ ...state, q: input.value }, { fromInput: true }));
-  wrap.append(label, input);
+  input.setAttribute('role', 'combobox');
+  input.setAttribute('aria-autocomplete', 'list');
+  input.setAttribute('aria-expanded', 'false');
+  input.setAttribute('aria-controls', 'suggest');
+  const list = el('ul', 'suggest');
+  list.id = 'suggest';
+  list.setAttribute('role', 'listbox');
+  list.setAttribute('aria-label', 'Skill suggestions');
+  list.hidden = true;
+  wrap.append(label, input, list);
+
+  /** Suggestions currently shown and the keyboard-highlighted index (-1 = none). */
+  let items = [];
+  let active = -1;
+
+  /** Close the dropdown. */
+  const close = () => {
+    list.hidden = true;
+    items = [];
+    active = -1;
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+  };
+
+  /** Mark option `i` active (visually + aria) and scroll it into view. */
+  const setActive = (i) => {
+    active = i;
+    [...list.children].forEach((li, n) => li.setAttribute('aria-selected', String(n === i)));
+    if (i >= 0) {
+      input.setAttribute('aria-activedescendant', `sug-${i}`);
+      list.children[i].scrollIntoView({ block: 'nearest' });
+    } else {
+      input.removeAttribute('aria-activedescendant');
+    }
+  };
+
+  /** Choose a suggestion: fill the search with its name and run it. */
+  const choose = (sug) => {
+    input.value = sug.name;
+    close();
+    setState({ ...state, q: sug.name }, { fromInput: true });
+  };
+
+  /** (Re)build the list for the text currently in the input and show it. */
+  const open = () => {
+    items = buildSuggestions(data, state, input.value);
+    if (!items.length) { close(); return; }
+    const inputTerms = queryTerms(input.value);
+    list.replaceChildren(...items.map((sug, i) => {
+      const li = el('li', 'suggest-item');
+      li.id = `sug-${i}`;
+      li.setAttribute('role', 'option');
+      li.setAttribute('aria-selected', 'false');
+      const ic = el('span', 'suggest-icon');
+      const url = iconUrl(sug.icon);
+      if (url) {
+        const img = new Image(24, 24);
+        img.alt = '';
+        img.loading = 'lazy';
+        img.addEventListener('error', () => img.remove(), { once: true }); // leaves the neutral tile
+        img.src = url;
+        ic.append(img);
+      }
+      const name = el('span', 'suggest-name');
+      for (const seg of highlightSegments(sug.name, inputTerms)) {
+        name.append(seg.match ? el('mark', null, seg.text) : document.createTextNode(seg.text));
+      }
+      li.append(ic, name, el('span', 'suggest-count', `\u00D7${sug.count}`));
+      li.addEventListener('click', () => choose(sug));
+      return li;
+    }));
+    list.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    active = -1;
+  };
+
+  input.addEventListener('focus', open);
+  input.addEventListener('click', () => { if (list.hidden) open(); });
+  input.addEventListener('input', () => {
+    setState({ ...state, q: input.value }, { fromInput: true });
+    open();
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (list.hidden) { open(); if (list.hidden) return; }
+      const n = items.length;
+      setActive(e.key === 'ArrowDown' ? (active + 1) % n : (active - 1 + n) % n);
+    } else if (e.key === 'Enter') {
+      if (!list.hidden && active >= 0) { e.preventDefault(); choose(items[active]); }
+      else close();
+    } else if (e.key === 'Escape') {
+      if (!list.hidden) { e.preventDefault(); close(); }
+    } else if (e.key === 'Tab') {
+      close();
+    }
+  });
+  // Keep focus in the input while pressing/tapping an option (blur would close the list first).
+  list.addEventListener('mousedown', (e) => e.preventDefault());
+  wrap.addEventListener('focusout', (e) => { if (!wrap.contains(e.relatedTarget)) close(); });
   return wrap;
 }
 

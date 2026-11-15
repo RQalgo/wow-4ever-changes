@@ -203,3 +203,20 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 /* Invisible padding grows the touch target to ~44px without enlarging the chip. */
 .subject-chip::after { content: ""; position: absolute; inset: -8px -2px; }
 .subject-chip:hover { border-color: var(--accent); }
+
+/* Suggestion dropdown (combobox listbox) */
+.suggest {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30; margin: 0; padding: .25rem; list-style: none;
+  max-height: min(55vh, 22rem); overflow-y: auto; overscroll-behavior: contain;
+  background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.suggest[hidden] { display: none; }
+.suggest-item { display: flex; align-items: center; gap: .6rem; min-height: 44px; padding: .25rem .5rem; border-radius: 6px; cursor: pointer; }
+.suggest-item:hover { background: var(--surface-2); }
+.suggest-item[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.suggest-item[aria-selected="true"] .suggest-count { color: inherit; }
+.suggest-icon { flex: none; width: 28px; height: 28px; border-radius: 5px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; display: grid; place-items: center; }
+.suggest-icon img { width: 26px; height: 26px; display: block; }
+.suggest-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggest-count { font-size: .75rem; color: var(--muted); }
+.suggest-item[aria-selected="true"] mark { background: var(--accent-ink); color: var(--accent); }
