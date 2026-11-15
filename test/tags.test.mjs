@@ -5,7 +5,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeTags, addTags, classMentions } from '../scripts/tags.mjs';
+import { computeTags, addTags, classMentions, isNpcOwned } from '../scripts/tags.mjs';
 
 /** Build a change; defaults describe a general line with no subjects. */
 const ch = (o) => ({ scope: 'general', category: 'Items', class: null, spec: null, group: null, notes: [], subjects: [], ...o });
@@ -155,5 +155,45 @@ describe('addTags', () => {
   test('re-tagging replaces old tags (rules revised on every run)', () => {
     const days = [{ date: 'd', changes: [{ ...cls('mage', null, 'Frost Nova.'), tags: ['stale', 'old'] }] }];
     assert.deepEqual(addTags(days)[0].changes[0].tags, ['class:mage']);
+  });
+});
+
+describe('NPC abilities outside Classes', () => {
+  test('isNpcOwned: "<Name>\'s <Skill>" and "’s", optional quote; not class owners or pronouns', () => {
+    assert.equal(isNpcOwned('Shield Slam', "Reduced the cast frequency of the Deathless Guardian's Shield Slam ability by about 50%."), true);
+    assert.equal(isNpcOwned('Fireball', 'Lowered the damage of the Deathless Sorcerer’s Fireball by 25%.'), true);
+    assert.equal(isNpcOwned('Smash', 'The Twilight Enforcer\'s "Smash" deals less damage.'), true);
+    assert.equal(isNpcOwned('Charge', 'Hogger’s Charge stuns for less time.'), true);
+    assert.equal(isNpcOwned('Retribution Aura', 'The Paladin’s Retribution Aura is fixed.'), false);
+    assert.equal(isNpcOwned('Hunter’s Mark', 'Hunter’s Mark now lasts longer.'), false);
+    assert.equal(isNpcOwned('Fireball', "It's Fireball that hits hard."), false);
+    assert.equal(isNpcOwned('Slam', "The Deathless Guardian's Shield Slam is weaker."), false); // whole words only
+    assert.equal(isNpcOwned('Fireball', 'Fireball is fine.'), false);
+  });
+
+  test('the Deathless Guardian\'s Shield Slam keeps its icon but adds no class or talent tag', () => {
+    const c = ch({ category: 'Dungeons', group: 'The Drowned City › Deathless Marrow',
+      text: "Reduced the cast frequency of the Deathless Guardian's Shield Slam ability by about 50%.",
+      subjects: [subj('Shield Slam', 'talent', 'warrior', 'protection')] });
+    assert.deepEqual(computeTags(c), ['dungeons']);
+    assert.equal(c.subjects.length, 1); // the subject (icon) stays
+  });
+
+  test('the same possessive under Classes still counts (only lines outside Classes are guarded)', () => {
+    const c = cls('warrior', null, "The Deathless Guardian's Shield Slam no longer resets.", {
+      subjects: [subj('Shield Slam', 'talent', 'warrior', 'protection')] });
+    assert.deepEqual(computeTags(c), ['class:warrior', 'spec:warrior/protection', 'talent']);
+  });
+
+  test('outside Classes an NPC-ability line is never "talent", even when it says talent', () => {
+    const c = ch({ category: 'Dungeons', text: 'The Deathless Sorcerer’s Fireball now ignores the Fire Ward talent.',
+      subjects: [subj('Fireball', 'ability', 'mage')] });
+    assert.deepEqual(computeTags(c), ['dungeons']);
+  });
+
+  test('a player talent named outside Classes still tags class and talent', () => {
+    const c = ch({ category: 'Bug Fixes', text: 'Roots from procs now have Diminishing Returns. Includes Entrapment.',
+      subjects: [subj('Entrapment', 'talent', 'hunter', 'survival')] });
+    assert.deepEqual(computeTags(c), ['class:hunter', 'spec:hunter/survival', 'talent', 'bugfix']);
   });
 });

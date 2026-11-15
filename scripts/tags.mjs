@@ -14,6 +14,12 @@
 //   pipeline over stored days (which update.mjs does on every run) yields the
 //   same tags unless the rules or the subjects changed.
 //
+//   Outside the Classes category a skill name is not always a player skill:
+//   "the Deathless Guardian's Shield Slam" is a dungeon boss's ability that
+//   shares a name with a Warrior talent. Subjects written as the possession
+//   of such a name (isNpcOwned) keep their icon but add no class / spec /
+//   talent tag, and such a line is never tagged "talent".
+//
 //   Output order (stable, so diffs of data/changes.json stay small):
 //     class tags  - the published class first, then the others alphabetically
 //     spec tags   - the published spec first, then others alphabetically
@@ -163,6 +169,71 @@ export function classMentions(text) {
 }
 
 // ---------------------------------------------------------------------------
+// NPC ABILITIES OUTSIDE CLASSES
+// ---------------------------------------------------------------------------
+
+/**
+ * Escape a string for literal use inside a RegExp.
+ * @param {string} s
+ * @returns {string}
+ */
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Single capitalised words that own something in prose without being a name
+ * ("It's", "That's" at a sentence start): never an NPC owner.
+ */
+const NON_NAME_OWNERS = new Set(['it', 'that', 'this', 'there', 'here', 'what', 'who', 'one', 'everyone', 'nobody', 'let']);
+
+/**
+ * True when the skill `name` is written in `text` as the possession of a
+ * capitalised name phrase that is not a class word, i.e. it is an NPC's
+ * ability that merely shares a name with a player skill:
+ *   "Reduced the cast frequency of the Deathless Guardian's Shield Slam …"
+ *   "Lowered the damage of the Deathless Sorcerer’s Fireball by 25%."
+ *   'Twilight Enforcer's "Smash" …'   (an opening quote may sit between)
+ * Not NPC-owned: "the Paladin’s Retribution Aura" (owner is a class word),
+ * "It's Fireball" (sentence-start pronoun), or a name that contains the
+ * possessive itself ("Hunter’s Mark", matched as the whole name).
+ *
+ * @param {string} name Subject name as written in the text.
+ * @param {string} text Change text, a note, or the full text of a dev post.
+ * @returns {boolean}
+ */
+export function isNpcOwned(name, text) {
+  if (!name || !text) return false;
+  // Group 1 = the owner: one or more Capitalised words, not glued to a
+  // preceding letter (lookbehind), then 's or ’s, optional opening quote,
+  // then the subject name ending at a non-letter. Case-sensitive on purpose:
+  // the owner must be capitalised to be a name.
+  const re = new RegExp(
+    String.raw`(?<![\p{L}\p{N}'’-])((?:\p{Lu}[\p{L}\p{N}-]*\s+)*\p{Lu}[\p{L}\p{N}-]*)['’]s\s+["“‘']?${escapeRe(name)}(?![\p{L}\p{N}])`,
+    'gu',
+  );
+  for (const m of String(text).matchAll(re)) {
+    const words = m[1].split(/\s+/);
+    const last = words[words.length - 1].toLowerCase();
+    if (CLASSES.includes(last)) continue; // the class's own skill
+    if (words.length === 1 && NON_NAME_OWNERS.has(last)) continue;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * True when a change was published under the Classes category (class and
+ * tree headings and the all-class lines), the only place where a skill name
+ * is reliably a player skill.
+ * @param {{ scope?: string, category?: string }} change
+ * @returns {boolean}
+ */
+function publishedInClasses(change) {
+  return change.scope === 'class' || String(change.category ?? '').trim().toLowerCase() === 'classes';
+}
+
+// ---------------------------------------------------------------------------
 // computeTags / addTags
 // ---------------------------------------------------------------------------
 
@@ -200,10 +271,20 @@ export function computeTags(change) {
   const notes = Array.isArray(change.notes) ? change.notes : [];
   const bodies = [change.text ?? '', ...notes];
 
+  // --- NPC abilities (outside Classes only) ---
+  // A subject owned by an NPC name ("Deathless Guardian's Shield Slam") keeps
+  // its icon but adds no class, spec or talent tag; a line with such a
+  // subject is an NPC-ability line and never gets "talent" either.
+  const outsideClasses = !publishedInClasses(change);
+  const npcOwned = new Set(outsideClasses
+    ? subjects.filter((s) => bodies.some((b) => isNpcOwned(s.name, b)))
+    : []);
+  const playerSubjects = subjects.filter((s) => !npcOwned.has(s));
+
   // --- classes ---
   const classes = new Set();
   const published = change.class && CLASSES.includes(change.class) ? change.class : null;
-  for (const s of subjects) {
+  for (const s of playerSubjects) {
     if ((s.kind === 'talent' || s.kind === 'ability') && CLASSES.includes(s.class)) classes.add(s.class);
   }
   for (const b of bodies) for (const c of classMentions(b)) classes.add(c);
@@ -216,14 +297,17 @@ export function computeTags(change) {
   // --- specs ---
   const specs = new Set();
   const publishedSpec = published && change.spec ? `spec:${published}/${change.spec}` : null;
-  for (const s of subjects) {
+  for (const s of playerSubjects) {
     if (s.kind === 'talent' && CLASSES.includes(s.class) && s.tree) specs.add(`spec:${s.class}/${s.tree}`);
   }
   if (publishedSpec) specs.delete(publishedSpec);
   const specTags = [...(publishedSpec ? [publishedSpec] : []), ...[...specs].sort()];
 
   // --- talent ---
-  const isTalent = subjects.some((s) => s.kind === 'talent') || bodies.some((b) => TALENT_TEXT_RE.test(b));
+  // The text says "talent" / "Row N", or a (non-NPC) subject is a talent.
+  // Outside Classes an NPC-ability line is never a talent line.
+  const isTalent = (playerSubjects.some((s) => s.kind === 'talent') || bodies.some((b) => TALENT_TEXT_RE.test(b)))
+    && !(outsideClasses && npcOwned.size > 0);
 
   // --- categories ---
   const cats = new Set();
