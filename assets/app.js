@@ -432,12 +432,26 @@ function renderDay(day, changes) {
   if (src) head.append(src);
   head.append(el('span', 'day-count', `${view.count} ${view.count === 1 ? 'change' : 'changes'}`));
   sec.append(head);
-  // Cards sit in a wrapper so wide screens can flow them into columns (see .cards in styles.css).
+  // Cards sit in a wrapper so wide screens can flow them into columns (see
+  // .cards in styles.css). The card count decides how many columns there may
+  // be: a day with one card spans the full width instead of sitting in the
+  // left half of a two-column flow with the right half empty.
   const cards = el('div', 'cards');
-  for (const card of view.cards) cards.append(renderCard(card));
+  cards.dataset.count = String(Math.min(view.cards.length, 3));
+  for (const card of view.cards) {
+    const node = renderCard(card);
+    // Long cards may continue in the next column (between lines, never inside
+    // a line), so one tall card next to a short one does not leave a large
+    // empty area under the short one.
+    if (node.querySelectorAll('.line').length > LONG_CARD_LINES) node.classList.add('card--long');
+    cards.append(node);
+  }
   sec.append(cards);
   return sec;
 }
+
+/** A card with more lines than this may be split across columns. */
+const LONG_CARD_LINES = 8;
 
 /**
  * Re-render the results area for the current state; shows an empty state
