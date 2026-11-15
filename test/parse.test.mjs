@@ -380,3 +380,34 @@ describe('Change Log headings', () => {
     assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => c.category), ['General']);
   });
 });
+
+describe('talent-tree rule', () => {
+  test('talentTreeSlug knows each class\'s trees and maps Feral Combat to feral', async () => {
+    const { talentTreeSlug } = await import('../scripts/parse.mjs');
+    assert.equal(talentTreeSlug('druid', 'Feral Combat'), 'feral');
+    assert.equal(talentTreeSlug('druid', 'Feral'), 'feral');
+    assert.equal(talentTreeSlug('hunter', 'Beast Mastery'), 'beast-mastery');
+    assert.equal(talentTreeSlug('paladin', 'Holy'), 'holy');
+    assert.equal(talentTreeSlug('warrior', 'Holy'), null, 'not a warrior tree');
+    assert.equal(talentTreeSlug('hunter', 'Pets'), null);
+    assert.equal(talentTreeSlug(null, 'Fire'), null);
+  });
+
+  test('under a class, a real tree is a spec; anything else is a group', () => {
+    const html = day('Classes', `<ul>
+      <li><strong>Hunter</strong><ul>
+        <li><strong>Pets</strong><ul><li>Pet line.</li></ul></li>
+        <li><strong>Marksmanship</strong><ul><li>Aimed line.</li></ul></li>
+      </ul></li>
+      <li><strong>Druid</strong><ul>
+        <li><strong>Feral Combat</strong><ul><li>Cat line.</li></ul></li>
+        <li><strong>Gnome</strong><ul><li>Odd line.</li></ul></li>
+      </ul></li></ul>`);
+    assert.deepEqual(changes(parseHotfixHtml(html)).map((c) => [c.class, c.spec, c.group, c.text]), [
+      ['hunter', null, 'Pets', 'Pet line.'],
+      ['hunter', 'marksmanship', null, 'Aimed line.'],
+      ['druid', 'feral', null, 'Cat line.'],
+      ['druid', null, 'Gnome', 'Odd line.'],
+    ]);
+  });
+});

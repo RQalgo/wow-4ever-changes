@@ -319,11 +319,43 @@ function makeChange(ctx, text) {
 const KNOWN_CLASSES = new Set(['druid', 'hunter', 'mage', 'paladin', 'priest', 'rogue', 'shaman', 'warlock', 'warrior']);
 
 /**
+ * Talent trees of each class (WoW: Forever / Classic), as heading slugs.
+ * Maps a heading slug to the spec slug stored in the data; "Feral Combat",
+ * the tree's in-game name, is stored as "feral".
+ */
+const TALENT_TREES = {
+  druid: { balance: 'balance', feral: 'feral', 'feral-combat': 'feral', restoration: 'restoration' },
+  hunter: { 'beast-mastery': 'beast-mastery', marksmanship: 'marksmanship', survival: 'survival' },
+  mage: { arcane: 'arcane', fire: 'fire', frost: 'frost' },
+  paladin: { holy: 'holy', protection: 'protection', retribution: 'retribution' },
+  priest: { discipline: 'discipline', holy: 'holy', shadow: 'shadow' },
+  rogue: { assassination: 'assassination', combat: 'combat', subtlety: 'subtlety' },
+  shaman: { elemental: 'elemental', enhancement: 'enhancement', restoration: 'restoration' },
+  warlock: { affliction: 'affliction', demonology: 'demonology', destruction: 'destruction' },
+  warrior: { arms: 'arms', fury: 'fury', protection: 'protection' },
+};
+
+/**
+ * Spec slug for a sub-heading under a class, or null when the heading is not
+ * one of that class's talent trees.
+ *
+ * @param {string|null} classSlug e.g. "druid"
+ * @param {string} heading e.g. "Feral Combat"
+ * @returns {string|null} e.g. "feral"
+ */
+export function talentTreeSlug(classSlug, heading) {
+  const trees = classSlug ? TALENT_TREES[classSlug] : undefined;
+  if (!trees) return null;
+  return Object.hasOwn(trees, slugify(heading)) ? trees[slugify(heading)] : null;
+}
+
+/**
  * Return the context for the children of a bold heading `<li>`.
  *
  * Inside Classes the first heading level is the class, the second the spec
- * (talent tree); anything deeper, and every heading level in other
- * categories, is appended to `group` (joined later as "A > B").
+ * (only if it is a real talent tree of that class, see TALENT_TREES);
+ * anything else, and every heading level in other categories, is appended
+ * to `group` (joined later as "A > B").
  * @param {object} ctx
  * @param {string} heading
  */
@@ -337,7 +369,13 @@ function descend(ctx, heading) {
     if (ctx.group.length === 0 && KNOWN_CLASSES.has(slug)) return { ...ctx, class: slug };
     return { ...ctx, group: [...ctx.group, heading] };
   }
-  if (ctx.inClasses && ctx.spec === null) return { ...ctx, spec: slugify(heading) };
+  // The second level is a spec only when it names a real talent tree of that
+  // class and no group heading sits in between; anything else ("Pets", a race
+  // name, "Seals") is a group, so the spec filter never lists invented specs.
+  if (ctx.inClasses && ctx.spec === null && ctx.group.length === 0) {
+    const spec = talentTreeSlug(ctx.class, heading);
+    if (spec) return { ...ctx, spec };
+  }
   return { ...ctx, group: [...ctx.group, heading] };
 }
 
