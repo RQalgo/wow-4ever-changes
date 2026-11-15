@@ -14,7 +14,9 @@
  */
 
 import {
-  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays, specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms, highlightSegments, buildSuggestions,
+  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays,
+  specsForClass, titleCase, className, iconUrl, glyphKey, queryTerms,
+  highlightSegments, buildSuggestions, encodeHash, decodeHash, sanitizeSelection,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, General toggle. */
@@ -519,12 +521,64 @@ function renderTools() {
   $('clear-filters').disabled = !dirty;
 }
 
+/** localStorage key for the remembered class/spec. */
+const STORAGE_KEY = 'wow4ever.filter';
+
+/**
+ * Remember the class/spec for the next visit. localStorage can throw
+ * (private mode, blocked storage), so every access is wrapped.
+ * @param {{cls: string, spec: string}} st
+ */
+function saveSelection(st) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cls: st.cls, spec: st.spec }));
+  } catch (_) { /* storage unavailable: ignore */ }
+}
+
+/**
+ * Read the remembered class/spec (validated), or null.
+ * @returns {{cls: string, spec: string}|null}
+ */
+function loadSelection() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const v = JSON.parse(raw);
+    const sel = sanitizeSelection(v && v.cls, v && v.spec);
+    return sel.cls ? sel : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Decide the initial state: the URL hash wins; with an empty hash restore
+ * the last class/spec from localStorage.
+ * @returns {object} state
+ */
+function initialState() {
+  if (location.hash.length > 1) return decodeHash(location.hash);
+  return { ...defaultState(), ...(loadSelection() || {}) };
+}
+
+/**
+ * Write the state into the URL hash (replaceState: typing must not flood the
+ * browser history, and it does not fire hashchange).
+ */
+function syncHash() {
+  const want = encodeHash(state);
+  if (want === location.hash) return;
+  history.replaceState(null, '', want || location.pathname + location.search);
+}
+
 /**
  * Replace the state, then refresh filters and results.
  * @param {object} next new state
  */
 function setState(next, opts = {}) {
   state = next;
+  syncHash();
+  saveSelection(state);
   if (!opts.fromInput) renderSearch();
   renderClassChips();
   renderSpecChips();
@@ -536,7 +590,12 @@ function setState(next, opts = {}) {
 function render() {
   renderHeader();
   buildFilters();
+  state = initialState();
   setState(state);
+  // Back/forward or a manually edited hash: re-read the state from the URL.
+  window.addEventListener('hashchange', () => {
+    if (encodeHash(state) !== location.hash) setState(decodeHash(location.hash));
+  });
 }
 
 /** Load the data, handle failure with a retry button, then render. */
