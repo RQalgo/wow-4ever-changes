@@ -182,6 +182,14 @@ function renderLine(ch) {
   const li = el('li', 'line');
   const body = el('div', 'line-body');
   const text = el('p', 'line-text');
+  // Class-scope lines can carry a sub-heading (e.g. "Cooldown Manager" under
+  // Classes). General lines already show their group as a section heading,
+  // so the inline label is only added for class lines.
+  if (ch.scope === 'class' && ch.group) {
+    const label = el('span', 'line-group');
+    label.append(highlighted(ch.group));
+    text.append(label, ' ');
+  }
   text.append(highlighted(ch.text));
   body.append(text);
   // Extra subjects (beyond the one used for the icon) become search chips.
