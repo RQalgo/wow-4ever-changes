@@ -14,7 +14,7 @@
  */
 
 import {
-  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays, specsForClass, titleCase, className,
+  CLASSES, groupChanges, relativeDay, classColor, defaultState, visibleDays, specsForClass, titleCase, className, iconUrl, glyphKey,
 } from './logic.js';
 
 /** Current UI state: class, spec, search text, General toggle. */
@@ -85,9 +85,76 @@ function renderHeader() {
   if (url && /^https?:\/\//i.test(url)) $('source-link').href = url;
 }
 
+/** SVG path data (24x24 viewBox, stroke only) for the original fallback glyphs. */
+const GLYPHS = {
+  spark: 'M12 2.5 14.3 9.7 21.5 12 14.3 14.3 12 21.5 9.7 14.3 2.5 12 9.7 9.7Z',
+  gem: 'M6 4h12l4 6-10 11L2 10Z M2 10h20 M9 4l-2 6 5 11 5-11-2-6',
+  scroll: 'M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z M12 8v5 M12 16v.5',
+  arch: 'M4 21V11a8 8 0 0 1 16 0v10 M9 21v-7a3 3 0 0 1 6 0v7 M3 21h18',
+  hex: 'M12 2.5 20 7v10l-8 4.5L4 17V7Z M12 8v8 M8 10v4 M16 10v4',
+};
+
 /**
- * Render one change line (text only for now; icons, notes and highlighting
- * are layered on in later steps).
+ * Build the inline SVG fallback glyph for a change.
+ * @param {object} ch change (scope/category decide the glyph)
+ * @returns {SVGElement}
+ */
+function glyphSvg(ch) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '22');
+  svg.setAttribute('height', '22');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.8');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('stroke-linecap', 'round');
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', GLYPHS[glyphKey(ch)]);
+  svg.append(path);
+  return svg;
+}
+
+/**
+ * Build the fixed 36px icon box for a line. The box always has the same
+ * size, so the image loading (or failing) never shifts the layout. Uses the
+ * first subject's Wowhead icon; falls back to a coloured glyph tile when
+ * there is no subject, the name is unusable, or the image fails to load.
+ * @param {object} ch change
+ * @returns {HTMLElement}
+ */
+function renderIcon(ch) {
+  const box = el('div', 'icon');
+  box.style.setProperty('--cc', classColor(ch.class) || 'var(--muted)');
+  const subject = (ch.subjects || [])[0];
+  const url = subject ? iconUrl(subject.icon) : null;
+
+  /** Swap whatever is in the box for the glyph tile. */
+  const useFallback = () => {
+    box.classList.add('icon-fallback');
+    box.classList.toggle('icon-class', ch.scope !== 'general' && !!ch.class);
+    box.replaceChildren(glyphSvg(ch));
+  };
+
+  if (!url) {
+    useFallback();
+    return box;
+  }
+  const img = new Image(36, 36);
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.alt = subject.name || '';
+  img.addEventListener('error', useFallback, { once: true });
+  img.src = url;
+  box.append(img);
+  return box;
+}
+
+/**
+ * Render one change line: icon, text and notes (highlighting and extra
+ * subject chips are layered on in the search step).
  * @param {object} ch a change from the data
  * @returns {HTMLElement} <li>
  */
@@ -96,7 +163,7 @@ function renderLine(ch) {
   const body = el('div', 'line-body');
   body.append(el('p', 'line-text', ch.text));
   for (const note of ch.notes || []) body.append(el('p', 'line-note', note));
-  li.append(body);
+  li.append(renderIcon(ch), body);
   return li;
 }
 

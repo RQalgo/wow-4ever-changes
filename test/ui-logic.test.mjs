@@ -83,3 +83,18 @@ test('General toggle hides every general change but keeps class lines', () => {
   const on = L.visibleDays(data, { ...L.defaultState(), cls: 'druid' }).flatMap((d) => d.changes);
   assert.ok(on.some((c) => c.scope === 'general'));
 });
+
+/* ---------- icons ---------- */
+test('iconUrl builds the Wowhead URL and rejects odd names', () => {
+  assert.equal(L.iconUrl('inv_mace_13'), 'https://wow.zamimg.com/images/wow/icons/medium/inv_mace_13.jpg');
+  assert.equal(L.iconUrl('../evil'), null);
+  assert.equal(L.iconUrl(undefined), null);
+});
+
+test('glyphKey picks neutral glyphs per general category', () => {
+  assert.equal(L.glyphKey(mk({})), 'spark');
+  assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Items' })), 'gem');
+  assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Quests' })), 'scroll');
+  assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Dungeons' })), 'arch');
+  assert.equal(L.glyphKey(mk({ scope: 'general', category: 'Zones' })), 'hex');
+});

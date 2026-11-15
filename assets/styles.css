@@ -173,3 +173,14 @@ mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; pa
 .toggle-box::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text); transition: transform .15s; }
 .toggle[aria-checked="true"] .toggle-box { background: var(--accent); }
 .toggle[aria-checked="true"] .toggle-box::after { transform: translateX(14px); background: var(--accent-ink); }
+
+/* Icon box: fixed 36px so images loading or failing never move the layout. */
+.icon {
+  flex: none; width: 36px; height: 36px; border-radius: 6px; overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cc, var(--muted)) 70%, var(--border));
+  background: var(--surface-2); display: grid; place-items: center; margin-top: 2px;
+}
+.icon img { display: block; width: 36px; height: 36px; object-fit: cover; }
+/* Fallback tile: tinted with the class colour; glyph stays in the text colour for contrast. */
+.icon-fallback { color: var(--text); background: color-mix(in srgb, var(--muted) 18%, var(--surface-2)); }
+.icon-fallback.icon-class { background: color-mix(in srgb, var(--cc) 30%, var(--surface-2)); border-color: var(--cc); }

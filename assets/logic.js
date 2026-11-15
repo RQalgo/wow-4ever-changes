@@ -245,3 +245,32 @@ export function specsForClass(data, cls) {
   }
   return [...base, ...[...extra].sort()];
 }
+
+/* ======================= Icons ======================= */
+
+/**
+ * Build the Wowhead icon URL for an icon name, or null when the name is
+ * missing or has unexpected characters (defence against malformed data).
+ * @param {string|undefined} icon icon name without extension
+ * @returns {string|null}
+ */
+export function iconUrl(icon) {
+  if (!icon || !/^[A-Za-z0-9_\-]+$/.test(icon)) return null;
+  return `https://wow.zamimg.com/images/wow/icons/medium/${icon}.jpg`;
+}
+
+/**
+ * Pick which fallback glyph a change should get when it has no usable icon.
+ * Class lines share one glyph (the tile colour tells the class); General
+ * lines get a neutral glyph per category.
+ * @param {object} ch change
+ * @returns {'spark'|'gem'|'scroll'|'arch'|'hex'}
+ */
+export function glyphKey(ch) {
+  if (ch.scope !== 'general') return 'spark';
+  const cat = String(ch.category || '').toLowerCase();
+  if (/item|gear|equipment/.test(cat)) return 'gem';
+  if (/quest/.test(cat)) return 'scroll';
+  if (/dungeon|raid|instance/.test(cat)) return 'arch';
+  return 'hex';
+}
