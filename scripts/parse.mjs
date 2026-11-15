@@ -201,6 +201,9 @@ function collectBlocks(node, out = []) {
 // List walker
 // ---------------------------------------------------------------------------
 
+/** Block wrappers inside an <li> that are transparent to the list walker. */
+const LI_WRAPPER_TAGS = new Set(['p', 'div', 'span']);
+
 /**
  * Split an <li>'s children into its own inline content and its nested lists.
  * @param {import('node-html-parser').HTMLElement} li
@@ -208,7 +211,20 @@ function collectBlocks(node, out = []) {
 function splitListItem(li) {
   const own = [];
   const nested = [];
-  for (const n of li.childNodes) (LIST_TAGS.has(tagOf(n)) ? nested : own).push(n);
+  // Some CMS output wraps list-item content in a block element
+  // ("loose" lists: <li><p><strong>Paladin</strong></p><ul>…</ul></li>).
+  // Those wrappers carry no meaning here, so look through them; otherwise
+  // "<p><strong>Paladin</strong></p>" would not count as a bold-only heading
+  // and a nested list inside the wrapper would be missed.
+  const visit = (nodes) => {
+    for (const n of nodes) {
+      const tag = tagOf(n);
+      if (LIST_TAGS.has(tag)) nested.push(n);
+      else if (LI_WRAPPER_TAGS.has(tag)) visit(n.childNodes);
+      else own.push(n);
+    }
+  };
+  visit(li.childNodes);
   return { own, nested };
 }
 
@@ -431,6 +447,57 @@ export function findArticleHtmlInScripts(htmlOrRoot) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Find every date heading element in document order (same recognition rules
+ * as collectBlocks: not inside lists, scripts or styles).
+ * @param {import('node-html-parser').Node} node
+ * @param {import('node-html-parser').HTMLElement[]} [out]
+ */
+function findDateHeadings(node, out = []) {
+  for (const child of node.childNodes) {
+    const tag = tagOf(child);
+    if (!tag || LIST_TAGS.has(tag) || tag === 'script' || tag === 'style') continue;
+    const text = headingText(child);
+    if (text !== null) {
+      if (parseDateLabel(text)) out.push(child);
+      continue;
+    }
+    findDateHeadings(child, out);
+  }
+  return out;
+}
+
+/**
+ * The smallest element that contains every date heading as a descendant:
+ * the parent of the date headings when they are siblings (the real page),
+ * or their lowest common ancestor when each day sits in its own wrapper.
+ * Returns `root` itself when there are no date headings.
+ * @param {import('node-html-parser').HTMLElement} root
+ */
+function articleContainer(root) {
+  const headings = findDateHeadings(root);
+  if (headings.length === 0) return root;
+  // Chain of ancestors of a node, outermost first.
+  const chain = (n) => {
+    const c = [];
+    for (let p = n.parentNode; p; p = p.parentNode) c.unshift(p);
+    return c;
+  };
+  let common = chain(headings[0]);
+  for (const h of headings.slice(1)) {
+    const c = chain(h);
+    let i = 0;
+    while (i < common.length && i < c.length && common[i] === c[i]) i++;
+    common = common.slice(0, i);
+  }
+  // A date heading may sit alone in its own wrapper with the lists in a
+  // sibling wrapper. Climb until the container really holds a list, so the
+  // changes are never cut off from their date.
+  let i = common.length - 1;
+  while (i > 0 && !common[i].querySelector('ul, ol')) i--;
+  return common[i] ?? root;
+}
+
+/**
  * Parse an HTML document or fragment into days of changes.
  * @param {import('node-html-parser').HTMLElement} root
  * @returns {Array<{date:string,label:string,changes:object[]}>} Days in document order.
@@ -440,7 +507,10 @@ function parseDays(root) {
   let day = null;
   let category = null;
 
-  for (const block of collectBlocks(root)) {
+  // Only walk the element that actually holds the article body. Without this,
+  // lists that follow the article in the page (related links, the site
+  // footer's navigation) would be read as changes of the oldest day.
+  for (const block of collectBlocks(articleContainer(root))) {
     if (block.type === 'heading') {
       const iso = parseDateLabel(block.text);
       if (iso) {

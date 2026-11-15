@@ -329,3 +329,36 @@ describe('<script> fallback', () => {
     assert.deepEqual(parseHotfixHtml(html), { days: [] });
   });
 });
+
+// --- Review additions -------------------------------------------------------
+
+test('lists outside the article body (nav, related links, footer) are ignored', () => {
+  const html =
+    '<body><nav><ul><li>Games</li></ul></nav><main><article><div><hr>' +
+    '<p><strong>November 9, 2026</strong></p><p><strong>Items</strong></p>' +
+    '<ul><li>Foo fixed.</li></ul></div>' +
+    '<div class="related"><ul><li>Related article</li></ul></div></article></main>' +
+    '<footer><ul><li>Careers</li><li>Privacy</li></ul></footer></body>';
+  const { days } = parseHotfixHtml(html);
+  assert.deepEqual(days[0].changes.map((c) => c.text), ['Foo fixed.']);
+});
+
+test('days in separate wrappers are all found via their common ancestor', () => {
+  const day = (d) => `<section><p><strong>${d}</strong></p><p><strong>Items</strong></p><ul><li>X ${d}</li></ul></section>`;
+  const html = `<article>${day('November 9, 2026')}${day('November 6, 2026')}</article><footer><ul><li>Careers</li></ul></footer>`;
+  const { days } = parseHotfixHtml(html);
+  assert.equal(days.length, 2);
+  assert.equal(days.flatMap((d) => d.changes).length, 2);
+});
+
+test('list items whose content is wrapped in <p> still yield class headings', () => {
+  const html =
+    '<div><p><b>November 9, 2026</b></p><p><strong>Classes</strong></p>' +
+    '<ul><li><p><strong>Paladin</strong></p><ul><li><p>Fixed Consecration.</p></li>' +
+    "<li><p><em>Developers' note: x</em></p></li></ul></li></ul></div>";
+  const [c, ...rest] = parseHotfixHtml(html).days[0].changes;
+  assert.equal(rest.length, 0);
+  assert.equal(c.class, 'paladin');
+  assert.equal(c.text, 'Fixed Consecration.');
+  assert.deepEqual(c.notes, ["Developers' note: x"]);
+});
