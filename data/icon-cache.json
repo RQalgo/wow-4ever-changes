@@ -15,6 +15,7 @@
   },
   "abomimable head": null,
   "about tech": null,
+  "abyssal bubble": null,
   "accelerant": {
     "name": "Accelerant",
     "type": "spell",
@@ -97,6 +98,7 @@
     "type": "spell",
     "icon": "spell_magic_lesserinvisibilty"
   },
+  "arathi basin gold mine": null,
   "arcane blast": {
     "name": "Arcane Blast",
     "type": "spell",
@@ -171,6 +173,7 @@
   },
   "aspect of the hawk: ranged attack power": null,
   "astor hadren": null,
+  "atal'alarion": null,
   "attack power": null,
   "attack speed": null,
   "attention oceanic": null,
@@ -247,6 +250,7 @@
   "base": null,
   "base mana": null,
   "baseline abilities": null,
+  "basin gold mine": null,
   "bastion": {
     "name": "Bastion",
     "type": "spell",
@@ -394,6 +398,7 @@
     "icon": "spell_frost_icestorm"
   },
   "blizzcon": null,
+  "bloated fish": null,
   "blood craze": {
     "name": "Blood Craze",
     "type": "spell",
@@ -513,6 +518,7 @@
   },
   "boundless light in row": null,
   "boundless rage": null,
+  "braxton": null,
   "brewed": null,
   "brightfire in valanaar": null,
   "brilliant wizard oil": {
@@ -572,6 +578,7 @@
     "class": null,
     "icon": "ability_racial_cannibalize"
   },
+  "captain dreadrise": null,
   "carnage": {
     "name": "Carnage",
     "type": "spell",
@@ -1120,6 +1127,7 @@
     "type": "spell",
     "icon": "spell_holy_divinespirit"
   },
+  "doctor zum'rah": null,
   "dodging": null,
   "does": null,
   "doomguard xarkul": null,
@@ -1179,6 +1187,7 @@
   "duskwood": null,
   "dustwallow marsh": null,
   "dwarf": null,
+  "dying in arathi basin gold mine": null,
   "early": null,
   "early demise": {
     "name": "Early Demise",
@@ -1260,6 +1269,7 @@
   "elwynn forest": null,
   "embrace healing": null,
   "emperor thaurissan": null,
+  "enchant boots": null,
   "enchant bracer": null,
   "enchant weapon": null,
   "end of beta special": null,
@@ -1303,6 +1313,13 @@
   },
   "eww": null,
   "excavation site: wetlands": null,
+  "execute": {
+    "name": "Execute",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warrior",
+    "icon": "inv_sword_48"
+  },
   "executioner morg": null,
   "expeditionary force": null,
   "experience": null,
@@ -1548,6 +1565,7 @@
   "forging forever": null,
   "form only": null,
   "form: the": null,
+  "formula: enchant boots": null,
   "forsaken": null,
   "forum right this way": null,
   "frame manager": null,
@@ -1710,6 +1728,7 @@
   },
   "gnolls": null,
   "gold": null,
+  "gold mine": null,
   "gore drinker": {
     "name": "Gore Drinker",
     "type": "spell",
@@ -2352,6 +2371,7 @@
   "ironic": null,
   "is": null,
   "islands in world of warcraft": null,
+  "isle of dread": null,
   "issue for oceanic players": null,
   "issues resolved": null,
   "issues resolved for invite-a-friend players": null,
@@ -2461,6 +2481,13 @@
     "icon": "inv_misc_armorkit_17"
   },
   "legacy challenge master spelunker": null,
+  "legacy of valor": {
+    "name": "Legacy of Valor",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "achievement_quests_completed_03"
+  },
   "legacy perk": null,
   "legacy perk the quick": null,
   "legacy perk the quick and the dead": null,
@@ -2771,6 +2798,7 @@
     "type": "spell",
     "icon": "ability_rogue_deadlybrew"
   },
+  "mutilate and execute": null,
   "mutilates": null,
   "mystic mushroom": {
     "name": "Mystic Mushroom",
@@ -2904,6 +2932,13 @@
   "our": null,
   "our world of warcraft": null,
   "out episode": null,
+  "outrider's gloves": {
+    "name": "Outrider's Gloves",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_gauntlets_19"
+  },
   "over": null,
   "overall": null,
   "overlook standing stones": null,
@@ -2979,6 +3014,7 @@
     "icon": "spell_frost_frostbolt"
   },
   "pirate": null,
+  "pit of refuse": null,
   "pix xizzix": null,
   "plainsrunning": {
     "name": "Plainsrunning",
@@ -3347,6 +3383,7 @@
     "icon": "spell_holy_mindvision"
   },
   "revelation enchant": null,
+  "revered champion": null,
   "reverence": {
     "name": "Reverence",
     "type": "spell",
@@ -3392,6 +3429,7 @@
     "icon": "spell_nature_rockbiter"
   },
   "rockbiter weapon to the weapon imbues": null,
+  "rogue poison": null,
   "rogue poisons": null,
   "role poll frames": null,
   "roleplay": null,
@@ -3480,6 +3518,7 @@
     "class": null,
     "icon": "inv_misc_fish_69"
   },
+  "scout": null,
   "scroll of liminal passage": {
     "name": "Scroll of Liminal Passage",
     "type": "item",
@@ -3646,6 +3685,7 @@
     "class": "paladin",
     "icon": "spell_holy_greaterblessingofsanctuary"
   },
+  "shieldworn": null,
   "shifting power": {
     "name": "Shifting Power",
     "type": "spell",
@@ -3826,6 +3866,13 @@
     "icon": "inv_spear_01"
   },
   "specifically": null,
+  "speed": {
+    "name": "Speed",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_kick"
+  },
   "speed running classes": null,
   "speedrunning classes": null,
   "spell added: shank": null,
@@ -4094,6 +4141,7 @@
   "the wow": null,
   "the wow portal room": null,
   "theradras in maraudon": null,
+  "theramore": null,
   "theramore expeditionary force": null,
   "they're": null,
   "thick hide": {
@@ -4136,6 +4184,13 @@
     "kind": "spell",
     "class": null,
     "icon": "ability_thunderclap"
+  },
+  "thundering strikes": {
+    "name": "Thundering Strikes",
+    "type": "spell",
+    "kind": "talent",
+    "class": "shaman",
+    "icon": "ability_thunderbolt"
   },
   "tidal focus": {
     "name": "Tidal Focus",
@@ -4248,6 +4303,7 @@
     "icon": "spell_holy_healingfocus"
   },
   "twilight forgemaster": null,
+  "twilight's shroud": null,
   "twin disciplines": {
     "name": "Twin Disciplines",
     "type": "spell",
@@ -4324,6 +4380,7 @@
   "use compact action bar": null,
   "users": null,
   "valanaar": null,
+  "vale screamers": null,
   "vampiric embrace": {
     "name": "Vampiric Embrace",
     "type": "spell",
@@ -4363,6 +4420,13 @@
     "name": "Vindication",
     "type": "spell",
     "icon": "spell_holy_vindication"
+  },
+  "violet tragan": {
+    "name": "Violet Tragan",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_mushroom_06"
   },
   "visual updates": null,
   "visually": null,
@@ -4510,6 +4574,7 @@
   "winter's chill: bonus": null,
   "winter's chill: bonus to cone of cold": null,
   "winter's chill: redesigned": null,
+  "witch doctor zum'rah": null,
   "with devs": null,
   "witherbark mallet": {
     "name": "Witherbark Mallet",

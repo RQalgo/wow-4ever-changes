@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T20:23:02Z",
+  "generatedAt": "2026-11-17T07:45:25Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -22,6 +22,876 @@
     }
   ],
   "days": [
+    {
+      "date": "2026-11-16",
+      "kind": "hotfix",
+      "title": null,
+      "sourceUrl": "https://news.blizzard.com/en-us/article/24315281",
+      "label": "November 16, 2026",
+      "changes": [
+        {
+          "id": "2026-11-16-001",
+          "scope": "general",
+          "category": "Camping",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Fishing Rack now provides lures for everyone.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Fishing Rack",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_2h_draenorfishingpole_a_01",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-16-002",
+          "scope": "general",
+          "category": "Camping",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Bloated Fish caught from the Fishing Rack effect have had their drop chance increased and their loot tables adjusted accordingly.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Fishing Rack",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_2h_draenorfishingpole_a_01",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-16-003",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where ranks of Wild Growth were not going on cooldown.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Wild Growth",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "restoration",
+              "icon": "ability_druid_flourish",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/restoration",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-004",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "balance",
+          "group": null,
+          "text": "Fixed an issue where the Genesis talent was not increasing the damage of Pounce's bleed.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Genesis",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_arcane_arcane03",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Pounce",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "feral",
+              "icon": "ability_druid_supriseattack",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-005",
+          "scope": "class",
+          "category": "Classes",
+          "class": "priest",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Dark Inspiration was stacking if there were multiple Shadow priests in the same party.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Dark Inspiration",
+              "type": "spell",
+              "kind": "talent",
+              "class": "priest",
+              "tree": "shadow",
+              "icon": "spell_warlock_demonsoul",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:priest",
+            "spec:priest/shadow",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-006",
+          "scope": "class",
+          "category": "Classes",
+          "class": "priest",
+          "spec": null,
+          "group": null,
+          "text": "[With scheduled weekly maintenance] Vampiric Embrace healing is now based on 10% of the Shadow damage done by the casting Priest (was 20%). The casting Priest receives 100% increased healing from this effect.",
+          "notes": [
+            "Developers’ notes: This change results in no difference for Priest solo play."
+          ],
+          "subjects": [
+            {
+              "name": "Vampiric Embrace",
+              "type": "spell",
+              "kind": "talent",
+              "class": "priest",
+              "tree": "shadow",
+              "icon": "spell_shadow_unsummonbuilding",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:priest",
+            "spec:priest/shadow",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-16-007",
+          "scope": "class",
+          "category": "Classes",
+          "class": "rogue",
+          "spec": null,
+          "group": null,
+          "text": "Rogue Poison ranks can no longer go above the maximum rank.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:rogue"
+          ]
+        },
+        {
+          "id": "2026-11-16-008",
+          "scope": "class",
+          "category": "Classes",
+          "class": "rogue",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where using Shank on a target that didn't have your combo points active on them would remove your combo points on other targets, even if Boot Knife wasn't talented.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Shank",
+              "type": "spell",
+              "kind": "ability",
+              "class": "rogue",
+              "tree": "combat",
+              "icon": "ability_theblackarrow",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Boot Knife",
+              "type": "spell",
+              "kind": "talent",
+              "class": "rogue",
+              "tree": "subtlety",
+              "icon": "inv_sword_32",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:rogue",
+            "spec:rogue/subtlety",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-009",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Windfury Totem attacks were ignoring armor and had no internal cooldown.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Windfury Totem",
+              "type": "spell",
+              "kind": "ability",
+              "class": "shaman",
+              "tree": "enhancement",
+              "icon": "spell_nature_windfury",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-010",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue causing Windfury Totem extra attacks to not generate Rage.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Windfury Totem",
+              "type": "spell",
+              "kind": "ability",
+              "class": "shaman",
+              "tree": "enhancement",
+              "icon": "spell_nature_windfury",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-011",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Mutilate and Execute would have an extra attempt to activate Windfury Totem.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Mutilate",
+              "type": "spell",
+              "kind": "talent",
+              "class": "rogue",
+              "tree": "assassination",
+              "icon": "ability_rogue_deadlybrew",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Execute",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "tree": "fury",
+              "icon": "inv_sword_48",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Windfury Totem",
+              "type": "spell",
+              "kind": "ability",
+              "class": "shaman",
+              "tree": "enhancement",
+              "icon": "spell_nature_windfury",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "class:rogue",
+            "class:warrior",
+            "spec:rogue/assassination",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-012",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Shield Slam, Shield Bash, and Shieldworn empowered Holy Strikes could attempt to activate Windfury Totem.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Shield Slam",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warrior",
+              "tree": "protection",
+              "icon": "inv_shield_05",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Shield Bash",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "tree": "protection",
+              "icon": "ability_warrior_shieldbash",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Windfury Totem",
+              "type": "spell",
+              "kind": "ability",
+              "class": "shaman",
+              "tree": "enhancement",
+              "icon": "spell_nature_windfury",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "class:warrior",
+            "spec:warrior/protection",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-013",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": "enhancement",
+          "group": null,
+          "text": "Fixed an issue where Maelstrom Weapon could benefit two casts.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Maelstrom Weapon",
+              "type": "spell",
+              "kind": "talent",
+              "class": "shaman",
+              "tree": "enhancement",
+              "icon": "spell_shaman_maelstromweapon",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "spec:shaman/enhancement",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-014",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": "enhancement",
+          "group": null,
+          "text": "Fixed an issue where the Thundering Strikes talent required a weapon equipped to grant its critical strike chance.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Thundering Strikes",
+              "type": "spell",
+              "kind": "talent",
+              "class": "shaman",
+              "tree": "enhancement",
+              "icon": "ability_thunderbolt",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "spec:shaman/enhancement",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-015",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warrior",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue that prevented the Revered Champion from offering Legacy of Valor to qualified Warriors.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Legacy of Valor",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_holy_mindvision",
+              "source": "client",
+              "verified": false
+            }
+          ],
+          "tags": [
+            "class:warrior",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-016",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warrior",
+          "spec": "fury",
+          "group": null,
+          "text": "Fixed an issue where Unbridled Wrath was not activated by Cleave or Heroic Strike.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Unbridled Wrath",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warrior",
+              "tree": "fury",
+              "icon": "spell_nature_stoneclawtotem",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Cleave",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "tree": "fury",
+              "icon": "ability_warrior_cleave",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Heroic Strike",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "tree": "arms",
+              "icon": "ability_rogue_ambush",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:warrior",
+            "spec:warrior/fury",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-017",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warrior",
+          "spec": "fury",
+          "group": null,
+          "text": "Fixed an issue where Flurry stacks were consumed by Cleave or Heroic Strike.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Flurry",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warrior",
+              "tree": "fury",
+              "icon": "ability_ghoulfrenzy",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Cleave",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "tree": "fury",
+              "icon": "ability_warrior_cleave",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Heroic Strike",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "tree": "arms",
+              "icon": "ability_rogue_ambush",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:warrior",
+            "spec:warrior/fury",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-018",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warrior",
+          "spec": "fury",
+          "group": null,
+          "text": "Fixed an issue where Reckless Swings was not activated by Cleave or Heroic Strike.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Reckless Swings",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warrior",
+              "tree": "fury",
+              "icon": "ability_warrior_bloodfrenzy",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Cleave",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "tree": "fury",
+              "icon": "ability_warrior_cleave",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Heroic Strike",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warrior",
+              "tree": "arms",
+              "icon": "ability_rogue_ambush",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:warrior",
+            "spec:warrior/fury",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-16-019",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warrior",
+          "spec": "fury",
+          "group": null,
+          "text": "Reckless Swings adjusted in the cooldown manager for tracking.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Reckless Swings",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warrior",
+              "tree": "fury",
+              "icon": "ability_warrior_bloodfrenzy",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:warrior",
+            "spec:warrior/fury",
+            "talent",
+            "ui"
+          ]
+        },
+        {
+          "id": "2026-11-16-020",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "The Drowned City",
+          "text": "Captain Dreadrise is no longer immune to stun effects.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-16-021",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "The Drowned City",
+          "text": "The rare spawn \"Pyromancer\" Braxton is now less focused on his duties and will respond to combat.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-16-022",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "The Drowned City",
+          "text": "The Abyssal Bubble summoned by Captain Dreadrise can no longer block, dodge or parry.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-16-023",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "Sunken Temple",
+          "text": "Fixed an issue that stopped the Atal’alarion serpent statues in the Pit of Refuse to become non-interactive if activated in the wrong order.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-16-024",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Formula: Enchant Boots - Speed from reputation is now bind-on-pickup, as intended.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Speed",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "ability_kick",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-16-025",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Outrider's Gloves now work correctly.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Outrider's Gloves",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_gauntlets_19",
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-16-026",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Violet Tragan no longer breaks crowd control effects.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Violet Tragan",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_mushroom_06",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-16-027",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Dying in Arathi Basin Gold Mine should no longer port you to a graveyard in Riverglades.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-16-028",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The drop rate of \"Blood Red Bandanas\" has been increased.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-16-029",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Resolved an issue where Witch Doctor Zum'rah may not spawn properly during \"The Talisman of Kazdor\".",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-16-030",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Scout prisoners in Twilight's Shroud will now grant credit for “No Soldier Left Behind” for the entire party.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-16-031",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Vale Screamers have found a new home on the Isle of Dread coastline for “Screecher Spirits”.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-16-032",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The repeatable quest “Water Pouch Bounty” no longer grants experience.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-16-033",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue that could halt progress on the Theramore quest \"The Return of the King?\".",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "quests"
+          ]
+        }
+      ]
+    },
     {
       "date": "2026-11-14",
       "kind": "dev",
