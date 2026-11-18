@@ -1419,6 +1419,7 @@
     "class": "druid",
     "icon": "ability_hunter_pet_hyena"
   },
+  "finding": null,
   "fingers of frost": {
     "name": "Fingers of Frost",
     "type": "spell",

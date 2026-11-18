@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T07:45:25Z",
+  "generatedAt": "2026-11-18T02:50:48Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -22,6 +22,36 @@
     }
   ],
   "days": [
+    {
+      "date": "2026-11-17",
+      "kind": "dev",
+      "title": null,
+      "sourceUrl": null,
+      "label": "November 17, 2026",
+      "changes": [
+        {
+          "id": "2026-11-17-d001",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Actions For Blackmaw Hold Abuse - November 17",
+          "notes": [
+            "As players continue their journey into WoW Forever’s higher-level content, we are closely monitoring the game economy to ensure that gold sources and costs are well balanced. Finding efficient farming spots has always been part of the game, and is how most players have earned their epic mounts since 2004. When a single location proves so lucrative that it overshadows all other sources, we…"
+          ],
+          "url": "https://us.forums.blizzard.com/en/wow/t/actions-for-blackmaw-hold-abuse-november-17/2419757/1",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 1,
+          "subjects": [],
+          "tags": [
+            "dungeons",
+            "systems"
+          ]
+        }
+      ]
+    },
     {
       "date": "2026-11-16",
       "kind": "hotfix",
