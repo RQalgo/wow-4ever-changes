@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T02:50:48Z",
+  "generatedAt": "2026-11-18T11:30:18Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -22,6 +22,914 @@
     }
   ],
   "days": [
+    {
+      "date": "2026-11-17",
+      "kind": "hotfix",
+      "title": null,
+      "sourceUrl": "https://news.blizzard.com/en-us/article/24315281",
+      "label": "November 17, 2026",
+      "changes": [
+        {
+          "id": "2026-11-17-001",
+          "scope": "general",
+          "category": "Camping",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Mounted Players will no longer be permitted to sleep while saddled up atop the Cozy Sleeping Bag.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Cozy Sleeping Bag",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_bag_bigbagofenchantments",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-17-002",
+          "scope": "general",
+          "category": "Camping",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Cozy Sleeping Bag can now be placed in specific locations, like hunter traps.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Cozy Sleeping Bag",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_bag_bigbagofenchantments",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-17-003",
+          "scope": "general",
+          "category": "Camping",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Cozy Sleeping Bag will now provide a Resting aura indicating when you are within its area of effect.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Cozy Sleeping Bag",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_bag_bigbagofenchantments",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Resting",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_drink_05",
+              "source": "client",
+              "verified": false
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-17-004",
+          "scope": "class",
+          "category": "Classes",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Might of Stormwind and Warchief's Blessing should now always correctly cancel on death.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Might of Stormwind",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_arcane_teleportstormwind",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Warchief's Blessing",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_arcane_teleportorgrimmar",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "other"
+          ]
+        },
+        {
+          "id": "2026-11-17-005",
+          "scope": "class",
+          "category": "Classes",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Might of Stormwind and Warchief's Blessing are no longer applied to non-players.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Might of Stormwind",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_arcane_teleportstormwind",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Warchief's Blessing",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_arcane_teleportorgrimmar",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "other"
+          ]
+        },
+        {
+          "id": "2026-11-17-006",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Flurry incorrectly lost stacks when Windfury totem attacks landed.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Flurry",
+              "type": "spell",
+              "kind": "talent",
+              "class": "shaman",
+              "tree": "enhancement",
+              "icon": "ability_ghoulfrenzy",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "spec:shaman/enhancement",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-17-007",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "Upper Blackrock Spire",
+          "text": "Corrected an issue causing enemy health and damage to be significantly lower than intended.",
+          "notes": [
+            "Developers’ notes: This should bring UBRS back in line with its intended difficulty, and it again requires a full complement of diligent players to complete."
+          ],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-17-008",
+          "scope": "general",
+          "category": "Enemies and NPCs",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Thousand Needles - Fixed an issue where a Pesterhide Snarler or Needles Cougar could spawn inside a rock.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "world"
+          ]
+        },
+        {
+          "id": "2026-11-17-009",
+          "scope": "general",
+          "category": "Enemies and NPCs",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Thousand Needles - Fixed an issue where a Gravelysnout Digger or Surveyour could path inside a rock.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "world"
+          ]
+        },
+        {
+          "id": "2026-11-17-010",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Shadow Priests can now hold a Night Watchman's Torch.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Night Watchman's Torch",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_torch_lit",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:priest",
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-17-011",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Escape Plan now has correct range and damage values.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Escape Plan",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_musket_02",
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-17-012",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Corrected Whiteout Staff and Crackling Staff so that they have the same stats: 25 Stamina, 25 Intellect, 74 Spell Power from Weapon damage.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Whiteout Staff",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_staff_30",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Crackling Staff",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_staff_20",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "bugfix",
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-17-013",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": "Paladin",
+          "text": "Soulforge Armor (upgraded Dungeon Set for tanks) now has Spell Power (was Strength).",
+          "notes": [
+            "Developers’ notes: We are leaning more into Paladin tanks favoring Spell Power as their primary stat for dealing damage."
+          ],
+          "subjects": [],
+          "tags": [
+            "class:paladin",
+            "dungeons",
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-17-014",
+          "scope": "general",
+          "category": "Legacy",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Reagent Economy should no longer randomly stop working.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Reagent Economy",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_candle_02",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "other"
+          ]
+        },
+        {
+          "id": "2026-11-17-015",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue allowing players to mount up in the starting rooms in Warsong Gulch.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-17-016",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Battle for Alterac Valley quests now require level 58 to accept.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-017",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug that allowed for certain Waylaid Crate conversions to reward an obsolete turn-in item. Players affected can now turn these crates in for the intended reward.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Waylaid Crate",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_crate_05",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "bugfix",
+            "items",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-17-018",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Various Paletusks can no longer be pickpocketed",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-17-019",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Blacksmithing",
+          "text": "The quest \"The Old Ways\" now grants the Orcish War Leggings recipe via an item. Players who did not receive their recipe, or lose it, can acquire a replacement from Sumi inside the nearby blacksmithing hut once the quest is completed.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Orcish War Leggings",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_pants_03",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items",
+            "professions",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-020",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Blacksmithing",
+          "text": "Bronze Mace is now Bind on Equip (was unbound). This also allows it to be added to the Transmog Collection.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Bronze Mace",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_mace_08",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Bind",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_holy_innerfire",
+              "source": "client"
+            }
+          ],
+          "tags": [
+            "items",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-17-021",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Blacksmithing",
+          "text": "Craftsman's Writ: Golden Scale Gauntlets now correctly directs players to the completion NPC when ready to turn-in.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Craftsman's Writ: Golden Scale Gauntlets",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_note_01",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-17-022",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Herbalism",
+          "text": "Fixed a bug that prevented Cultivation from working correctly on Mageroyal.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Cultivation",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_flower_01",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Mageroyal",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_jewelry_talisman_03",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "bugfix",
+            "items",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-17-023",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Herbalism",
+          "text": "Wildflowers for the quest \"Her World\" will no longer be tracked by Find Herb unless you are on the quest.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "professions",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-024",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Skinning",
+          "text": "Skinners can no longer skin a few creatures that typically are not skinnable.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-17-025",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "A bin of mail has been discovered in SI:7 quarters and Mathias Shaw can now give rogues the letter that they've been expecting for \"The Manor, Ravenholdt\".",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:rogue",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-026",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "\"Show Them How It's Done\" can now be properly seen on your map.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-027",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Questing players should now encounter more Fen Creepers in Wetlands for “Blisters on the Land”.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-028",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Quest \"Step One: Rock\" rockpiles will now be tracked via Find Minerals (was Find Treasure) while on the quest.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Find Minerals",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_nature_earthquake",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-029",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "There are now more Gravelsnout Diggers and Surveyors available for the quest \"A New Ore Sample\". You may take ore sample, but we strongly advise you do not take candle.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-030",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "Repairing pylon objectives for \"Powering the Pylons\" is now shared with nearby party members.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Repairing",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "ability_creature_disease_01",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-031",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "The Depleted Crystal Heart for the quest \"Heart of Crystal\" now drops for all players in a party.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Depleted Crystal Heart",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_gem_sapphire_01",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-032",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "Rokren for the Gelkis escort quest \"Going Home\" has had his escape speed reduced.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-033",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "Miners can now track “Spectral Iron Ore”.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-034",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "Spectral Iron Ore spawn rate increased.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Spectral Iron Ore",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_ore_ghostiron",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-035",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "Reduced the frequency that Bristleback Skullcrushers cast their abilities.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-036",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "Reduced the frequency that Decrepit Pylon Protectors cast their abilities.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-037",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "Summon Undead Ravager cast by various necromancers can now be interrupted.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Summon Undead Ravager",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_shadow_raisedead",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-038",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": "Shen'dralas",
+          "text": "The quest \"Agamaggan's Blood\" is no longer a Dungeon Quest and can be completed in the elite area outside of Razorfen Downs.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "dungeons",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-17-039",
+          "scope": "general",
+          "category": "User Interface",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug preventing players’ ignore lists from persisting through logging out of the game.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "ui"
+          ]
+        },
+        {
+          "id": "2026-11-17-040",
+          "scope": "general",
+          "category": "User Interface",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fix a UI bug with Master Swordsmith, Master Axesmith, Master Hammersmith.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Master Swordsmith",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_sword_41",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Master Axesmith",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_axe_05",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Master Hammersmith",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_hammer_23",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "ui"
+          ]
+        }
+      ]
+    },
     {
       "date": "2026-11-17",
       "kind": "dev",

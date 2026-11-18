@@ -70,6 +70,7 @@
   "alliance in eu roleplay-pvp": null,
   "alliance outrunners": null,
   "alliance-equivalent": null,
+  "alterac valley": null,
   "ambush": {
     "name": "Ambush",
     "type": "spell",
@@ -259,6 +260,7 @@
     "icon": "inv_shield_04"
   },
   "bat": null,
+  "battle for alterac valley": null,
   "battle for the darkspear islands in world of warcraft": null,
   "battle shout": {
     "name": "Battle Shout",
@@ -321,6 +323,7 @@
   "beta launch": null,
   "beta special": null,
   "beyond": null,
+  "bind": null,
   "binding heal": {
     "name": "Binding Heal",
     "type": "spell",
@@ -528,10 +531,18 @@
     "class": null,
     "icon": "inv_potion_105"
   },
+  "bristleback skullcrushers": null,
   "broken frond of celastrus": {
     "name": "Broken Frond of Celastrus",
     "type": "item",
     "icon": "inv_misc_plant_03"
+  },
+  "bronze mace": {
+    "name": "Bronze Mace",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_mace_08"
   },
   "burning crusade": null,
   "burning crusade-": null,
@@ -813,10 +824,32 @@
     "type": "spell",
     "icon": "inv_sword_87"
   },
+  "cozy sleeping bag": {
+    "name": "Cozy Sleeping Bag",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_bag_bigbagofenchantments"
+  },
+  "crackling staff": {
+    "name": "Crackling Staff",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_staff_20"
+  },
+  "craftsman's writ: golden scale gauntlets": {
+    "name": "Craftsman's Writ: Golden Scale Gauntlets",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_note_01"
+  },
   "craftsman's writs": null,
   "crates and craftsman's writs": null,
   "create": null,
   "creating": null,
+  "creepers in wetlands": null,
   "critical mass": {
     "name": "Critical Mass",
     "type": "spell",
@@ -959,6 +992,7 @@
     "class": null,
     "icon": "ability_creature_cursed_02"
   },
+  "decrepit pylon protectors": null,
   "deep dives": null,
   "deep wounds": {
     "name": "Deep Wounds",
@@ -1005,6 +1039,13 @@
     "kind": "ability",
     "class": "warrior",
     "icon": "ability_warrior_warcry"
+  },
+  "depleted crystal heart": {
+    "name": "Depleted Crystal Heart",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_gem_sapphire_01"
   },
   "deployed": null,
   "designer aidan moon": null,
@@ -1176,6 +1217,7 @@
   "due": null,
   "dun morogh": null,
   "dungeon": null,
+  "dungeon quest": null,
   "dungeon quest rewards": null,
   "dungeon xp adjustment": null,
   "dungeons of world of warcraft": null,
@@ -1298,6 +1340,14 @@
     "icon": "spell_nature_stranglevines"
   },
   "ep": null,
+  "equip": null,
+  "escape plan": {
+    "name": "Escape Plan",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_musket_02"
+  },
   "eu roleplay-pvp": null,
   "eureka": null,
   "even": null,
@@ -1393,6 +1443,8 @@
     "icon": "ability_rogue_feigndeath"
   },
   "felsteed": null,
+  "fen creepers": null,
+  "fen creepers in wetlands": null,
   "feral charge": {
     "name": "Feral Charge",
     "type": "spell",
@@ -1418,6 +1470,14 @@
     "kind": "talent",
     "class": "druid",
     "icon": "ability_hunter_pet_hyena"
+  },
+  "find herb": null,
+  "find minerals": {
+    "name": "Find Minerals",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_nature_earthquake"
   },
   "finding": null,
   "fingers of frost": {
@@ -1744,6 +1804,8 @@
     "icon": "spell_nature_invisibilitytotem"
   },
   "grand marshal": null,
+  "gravelsnout diggers": null,
+  "gravelysnout digger": null,
   "greater blessing of salvation": null,
   "greater friend of the library": null,
   "greater heal": {
@@ -2635,6 +2697,13 @@
     "icon": "spell_shaman_maelstromweapon"
   },
   "maelstrom weapon: chance": null,
+  "mageroyal": {
+    "name": "Mageroyal",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_jewelry_talisman_03"
+  },
   "magic": null,
   "magram": null,
   "main": null,
@@ -2673,6 +2742,13 @@
   "marks of honor": null,
   "mass salvation": null,
   "mass: this": null,
+  "master axesmith": {
+    "name": "Master Axesmith",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "inv_axe_05"
+  },
   "master chef": {
     "name": "Master Chef",
     "type": "spell",
@@ -2680,8 +2756,23 @@
     "class": null,
     "icon": "achievement_profession_chefhat"
   },
+  "master hammersmith": {
+    "name": "Master Hammersmith",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "inv_hammer_23"
+  },
   "master spelunker": null,
+  "master swordsmith": {
+    "name": "Master Swordsmith",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "inv_sword_41"
+  },
   "masters": null,
+  "mathias shaw": null,
   "mausoleum trigger": null,
   "max": null,
   "maximum": null,
@@ -2711,6 +2802,13 @@
     "class": "priest",
     "icon": "spell_nature_enchantarmor"
   },
+  "might of stormwind": {
+    "name": "Might of Stormwind",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_arcane_teleportstormwind"
+  },
   "mild spices": {
     "name": "Mild Spices",
     "type": "item",
@@ -2731,6 +2829,7 @@
     "icon": "spell_holy_mindvision"
   },
   "mine": null,
+  "miners": null,
   "minimap": null,
   "minions of sethir": null,
   "minor arcane elixir": {
@@ -2781,6 +2880,7 @@
   "most": null,
   "mother fang": null,
   "mount hyjal": null,
+  "mounted players": null,
   "movement impairing effects": null,
   "moving": null,
   "mrrglrlrlrmgrr": null,
@@ -2832,6 +2932,7 @@
     "type": "spell",
     "icon": "spell_nature_ravenform"
   },
+  "needles cougar": null,
   "neeru fireblade": null,
   "nerds lore-ing out": null,
   "nethergarde keep": null,
@@ -2928,6 +3029,13 @@
     "icon": "ability_warrior_warcry"
   },
   "orc command": null,
+  "orcish war leggings": {
+    "name": "Orcish War Leggings",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_pants_03"
+  },
   "order and windshaper skyborne": null,
   "order skyborne": null,
   "our": null,
@@ -2995,6 +3103,7 @@
   "periodic effects": null,
   "perk the quick": null,
   "perk the quick and the dead": null,
+  "pesterhide snarler": null,
   "pet happiness": null,
   "pet move": null,
   "pets": null,
@@ -3169,6 +3278,7 @@
   "pvp episode": null,
   "pvp progression": null,
   "pvp progression in world of warcraft": null,
+  "pylon protectors": null,
   "pyrewood village": null,
   "pyroblast": {
     "name": "Pyroblast",
@@ -3179,6 +3289,7 @@
   },
   "quest dialogue": null,
   "quest rewards": null,
+  "questing": null,
   "quests": null,
   "queueing heroic strike": null,
   "quick and the dead": null,
@@ -3247,6 +3358,13 @@
     "kind": "spell",
     "class": null,
     "icon": "ability_mage_incantersabsorbtion"
+  },
+  "reagent economy": {
+    "name": "Reagent Economy",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "inv_misc_candle_02"
   },
   "reagent economy legacy perk": null,
   "real": null,
@@ -3337,6 +3455,13 @@
     "class": "priest",
     "icon": "spell_holy_renew"
   },
+  "repairing": {
+    "name": "Repairing",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_creature_disease_01"
+  },
   "repentance": {
     "name": "Repentance",
     "type": "spell",
@@ -3362,6 +3487,13 @@
     "kind": "talent",
     "class": "hunter",
     "icon": "ability_hunter_resourcefulness"
+  },
+  "resting": {
+    "name": "Resting",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "inv_misc_bag_bigbagofenchantments"
   },
   "restorative totems": {
     "name": "Restorative Totems",
@@ -3432,6 +3564,7 @@
   "rockbiter weapon to the weapon imbues": null,
   "rogue poison": null,
   "rogue poisons": null,
+  "rokren for the gelkis": null,
   "role poll frames": null,
   "roleplay": null,
   "roleplay-pvp": null,
@@ -3725,6 +3858,7 @@
     "icon": "spell_shadow_vampiricaura"
   },
   "shrieklings of zephras": null,
+  "si": null,
   "sides: swaps": null,
   "significantly": null,
   "silence": {
@@ -3746,6 +3880,7 @@
     "icon": "spell_shadow_requiem"
   },
   "site: wetlands": null,
+  "skinners": null,
   "skinning": {
     "name": "Skinning",
     "type": "spell",
@@ -3841,6 +3976,7 @@
     "type": "spell",
     "icon": "spell_shadow_lifedrain02"
   },
+  "soulforge armor": null,
   "souvenir sea shell": {
     "name": "Souvenir Sea Shell",
     "type": "item",
@@ -3867,6 +4003,13 @@
     "icon": "inv_spear_01"
   },
   "specifically": null,
+  "spectral iron ore": {
+    "name": "Spectral Iron Ore",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_ore_ghostiron"
+  },
   "speed": {
     "name": "Speed",
     "type": "spell",
@@ -3982,6 +4125,7 @@
   "subjective": null,
   "subtlety: this": null,
   "succubus": null,
+  "sumi": null,
   "summon hawk": {
     "name": "Summon Hawk",
     "type": "spell",
@@ -3995,6 +4139,13 @@
     "class": "warlock",
     "icon": "ability_warlock_incubus"
   },
+  "summon undead ravager": {
+    "name": "Summon Undead Ravager",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_shadow_raisedead"
+  },
   "sunday": null,
   "sunder armor": {
     "name": "Sunder Armor",
@@ -4003,6 +4154,8 @@
     "class": "warrior",
     "icon": "ability_warrior_sunder"
   },
+  "surveyors": null,
+  "surveyour": null,
   "survive": null,
   "swap friendly target action sides: swaps": null,
   "swap hostile target action sides: swaps": null,
@@ -4128,6 +4281,7 @@
   "the drowned city": null,
   "the frost": null,
   "the future of skyborne visual updates": null,
+  "the gelkis": null,
   "the latest beta build": null,
   "the loch": null,
   "the quick": null,
@@ -4272,6 +4426,7 @@
     "icon": "inv_misc_web_02"
   },
   "transmog": null,
+  "transmog collection": null,
   "traps": null,
   "trial by fire": {
     "name": "Trial by Fire",
@@ -4340,6 +4495,7 @@
     "type": "spell",
     "icon": "inv_hammer_04"
   },
+  "ubrs": null,
   "uldaman": null,
   "unarmed weapon": null,
   "unbridled rage": null,
@@ -4391,6 +4547,7 @@
   "various": null,
   "various dungeon quest rewards": null,
   "various enchanting-produced": null,
+  "various paletusks": null,
   "vengeance": {
     "name": "Vengeance",
     "type": "spell",
@@ -4476,6 +4633,13 @@
     "class": null,
     "icon": "ability_warstomp"
   },
+  "warchief's blessing": {
+    "name": "Warchief's Blessing",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_arcane_teleportorgrimmar"
+  },
   "warcraft": null,
   "warcraft: forever": null,
   "warcraft: forever- the future of skyborne visual updates": null,
@@ -4494,6 +4658,13 @@
     "kind": "talent",
     "class": "shaman",
     "icon": "ability_shaman_watershield"
+  },
+  "waylaid crate": {
+    "name": "Waylaid Crate",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_crate_05"
   },
   "waylaid crates": null,
   "waylaid crates and craftsman's writs": null,
@@ -4538,6 +4709,13 @@
   },
   "whispering wood": null,
   "white": null,
+  "whiteout staff": {
+    "name": "Whiteout Staff",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_staff_30"
+  },
   "who list": null,
   "why": null,
   "why'd": null,
@@ -4548,6 +4726,7 @@
   },
   "wild growth: now": null,
   "wild: the": null,
+  "wildflowers": null,
   "wind-blessed haste": null,
   "windfury": null,
   "windfury totem": {
