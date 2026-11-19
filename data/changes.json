@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T11:30:18Z",
+  "generatedAt": "2026-11-19T20:27:06Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -22,6 +22,33 @@
     }
   ],
   "days": [
+    {
+      "date": "2026-11-19",
+      "kind": "dev",
+      "title": null,
+      "sourceUrl": null,
+      "label": "November 19, 2026",
+      "changes": [
+        {
+          "id": "2026-11-19-d001",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The WoW Forever Podcast: Episode 8 - Catching Up On Classes",
+          "notes": [],
+          "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-8-catching-up-on-classes/2422535/1",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 1,
+          "subjects": [],
+          "tags": [
+            "media"
+          ]
+        }
+      ]
+    },
     {
       "date": "2026-11-17",
       "kind": "hotfix",

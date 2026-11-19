@@ -610,6 +610,7 @@
     "icon": "ability_druid_catform"
   },
   "cat form only": null,
+  "catching up on classes": null,
   "cd": null,
   "cenarion moondust": {
     "name": "Cenarion Moondust",
@@ -3008,6 +3009,7 @@
     "type": "spell",
     "icon": "spell_nature_crystalball"
   },
+  "on classes": null,
   "one": null,
   "one-handed weapon specialization": {
     "name": "One-Handed Weapon Specialization",
@@ -4534,6 +4536,7 @@
     "type": "spell",
     "icon": "spell_holy_unyieldingfaith"
   },
+  "up on classes": null,
   "use compact action bar": null,
   "users": null,
   "valanaar": null,
