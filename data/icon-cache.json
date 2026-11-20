@@ -99,6 +99,7 @@
     "type": "spell",
     "icon": "spell_magic_lesserinvisibilty"
   },
+  "apprentice": null,
   "arathi basin gold mine": null,
   "arcane blast": {
     "name": "Arcane Blast",
@@ -1076,6 +1077,7 @@
   },
   "dexterity: intellect to attack power": null,
   "dice": null,
+  "dig site": null,
   "diminishing returns": null,
   "dire bear": null,
   "dire bear form": {
@@ -1331,6 +1333,13 @@
     "kind": "talent",
     "class": "warrior",
     "icon": "spell_shadow_unholyfrenzy"
+  },
+  "ensorcelled parchment": {
+    "name": "Ensorcelled Parchment",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_scroll_02"
   },
   "ensured": null,
   "entrapment": {
@@ -1757,6 +1766,7 @@
     "icon": "spell_arcane_arcane03"
   },
   "genesis: now": null,
+  "genn fairweather": null,
   "get": null,
   "get to know the world of warcraft": null,
   "ghost wolf": {
@@ -1989,6 +1999,7 @@
   "high-definition druid": null,
   "hillsbrad foothills": null,
   "hit chance": null,
+  "hive drone": null,
   "hold and the drowned city": null,
   "holds for rmt": null,
   "holy binding": {
@@ -2030,6 +2041,7 @@
     "icon": "classicon_paladin"
   },
   "holy tree": null,
+  "honored": null,
   "hope": null,
   "horn of awakening": {
     "name": "Horn of Awakening",
@@ -2458,6 +2470,13 @@
     "type": "item",
     "icon": "inv_camelot_camping_welcomingcampfire"
   },
+  "journeyman riding": {
+    "name": "Journeyman Riding",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_nature_swiftness"
+  },
   "judgement": null,
   "judgement of command": {
     "name": "Judgement of Command",
@@ -2878,7 +2897,9 @@
     "class": null,
     "icon": "inv_staff_05"
   },
+  "mosh'gra": null,
   "most": null,
+  "motes of unstable magic": null,
   "mother fang": null,
   "mount hyjal": null,
   "mounted players": null,
@@ -3155,6 +3176,13 @@
     "icon": "spell_shadow_corpseexplode"
   },
   "poison attack power": null,
+  "poison shock": {
+    "name": "Poison Shock",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_nature_acid_01"
+  },
   "poisons": {
     "name": "Poisons",
     "type": "spell",
@@ -3276,6 +3304,13 @@
     "name": "Purifying Power",
     "type": "spell",
     "icon": "spell_holy_purifyingpower"
+  },
+  "purple lotus": {
+    "name": "Purple Lotus",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_herb_17"
   },
   "pvp episode": null,
   "pvp progression": null,
@@ -3553,6 +3588,7 @@
     "icon": "spell_nature_riptide"
   },
   "riverglades": null,
+  "rix xizzix": null,
   "rmt": null,
   "rmt in the wow": null,
   "rock elemental": null,
@@ -3595,6 +3631,7 @@
     "icon": "ability_rogue_rupture"
   },
   "rupture and garrote": null,
+  "rustmaul dig site": null,
   "ruthless": {
     "name": "Ruthless",
     "type": "spell",
@@ -3654,6 +3691,13 @@
     "class": null,
     "icon": "inv_misc_fish_69"
   },
+  "scarce herb seeds": {
+    "name": "Scarce Herb Seeds",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_farm_pumpkinseed_blue"
+  },
   "scout": null,
   "scroll of liminal passage": {
     "name": "Scroll of Liminal Passage",
@@ -3703,6 +3747,14 @@
   "secondary talents": null,
   "see": null,
   "see items": null,
+  "seed hybridization": null,
+  "seed hybridizer": {
+    "name": "Seed Hybridizer",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_farm_herbseed"
+  },
   "select": null,
   "senior game designer aidan moon": null,
   "senior game designer josh greenfield": null,
@@ -3721,6 +3773,7 @@
     "type": "spell",
     "icon": "spell_nature_mirrorimage"
   },
+  "shade of the archmage": null,
   "shadow and flame": {
     "name": "Shadow and Flame",
     "type": "spell",
@@ -3869,6 +3922,7 @@
     "icon": "spell_shadow_impphaseshift"
   },
   "silence resolve": null,
+  "silithid hive drone": null,
   "sinister strike": {
     "name": "Sinister Strike",
     "type": "spell",
@@ -4037,6 +4091,7 @@
     "type": "spell",
     "icon": "ability_rogue_sprint"
   },
+  "squall-breaker's potion": null,
   "stables": null,
   "stake": null,
   "stance": null,
@@ -4530,6 +4585,7 @@
     "type": "spell",
     "icon": "spell_holy_blessedresillience"
   },
+  "unstable magic": null,
   "unstable package": null,
   "unyielding faith": {
     "name": "Unyielding Faith",
@@ -4591,6 +4647,7 @@
   },
   "visual updates": null,
   "visually": null,
+  "vitrix's poison shock": null,
   "voice channel transcription": null,
   "voice chat": null,
   "voice mode": null,
