@@ -1021,6 +1021,27 @@
   },
   "defias messenger": null,
   "deflection's parry": null,
+  "demon armor": {
+    "name": "Demon Armor",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warlock",
+    "icon": "spell_shadow_ragingscream"
+  },
+  "demon skin": {
+    "name": "Demon Skin",
+    "type": "spell",
+    "kind": "ability",
+    "class": "warlock",
+    "icon": "spell_shadow_ragingscream"
+  },
+  "demonic aegis": {
+    "name": "Demonic Aegis",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warlock",
+    "icon": "spell_shadow_ragingscream"
+  },
   "demonic brand": {
     "name": "Demonic Brand",
     "type": "spell",
@@ -1171,6 +1192,7 @@
     "type": "spell",
     "icon": "spell_holy_divinespirit"
   },
+  "doctor ti'ik": null,
   "doctor zum'rah": null,
   "dodging": null,
   "does": null,
@@ -1225,6 +1247,7 @@
   "dungeon xp adjustment": null,
   "dungeons of world of warcraft": null,
   "dungeons with devs": null,
+  "dunston willis": null,
   "duplicate": null,
   "duration": null,
   "during": null,
@@ -1801,6 +1824,7 @@
   "gnolls": null,
   "gold": null,
   "gold mine": null,
+  "gor'marok": null,
   "gore drinker": {
     "name": "Gore Drinker",
     "type": "spell",
@@ -2797,6 +2821,7 @@
   "max": null,
   "maximum": null,
   "maximum mana": null,
+  "mayhoa skyhoof": null,
   "meet the new skyborne": null,
   "members of the horde": null,
   "mend pet": {
@@ -3123,6 +3148,13 @@
     "icon": "spell_holy_penance"
   },
   "percent of intellect": null,
+  "perfect yeti hide": {
+    "name": "Perfect Yeti Hide",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_pelt_boar_02"
+  },
   "periodic effects": null,
   "perk the quick": null,
   "perk the quick and the dead": null,
@@ -4143,6 +4175,13 @@
   "stolen weapons": null,
   "stones in shen'dar highlands": null,
   "stonetalon mountains": null,
+  "stormshroud armor": {
+    "name": "Stormshroud Armor",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_chest_leather_08"
+  },
   "stormstrike": {
     "name": "Stormstrike",
     "type": "spell",
@@ -4183,6 +4222,7 @@
   "subtlety: this": null,
   "succubus": null,
   "sumi": null,
+  "summit of eternity": null,
   "summon hawk": {
     "name": "Summon Hawk",
     "type": "spell",
@@ -4426,6 +4466,7 @@
   "to classic": null,
   "today": null,
   "tooltip of life tap": null,
+  "toron rockhoof": null,
   "total": null,
   "totem: buff": null,
   "totemic call": {
@@ -4814,6 +4855,7 @@
   "winter's chill: bonus": null,
   "winter's chill: bonus to cone of cold": null,
   "winter's chill: redesigned": null,
+  "witch doctor ti'ik": null,
   "witch doctor zum'rah": null,
   "with devs": null,
   "witherbark mallet": {

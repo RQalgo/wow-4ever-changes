@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T11:21:35Z",
+  "generatedAt": "2026-11-21T02:06:51Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -22,6 +22,265 @@
     }
   ],
   "days": [
+    {
+      "date": "2026-11-20",
+      "kind": "hotfix",
+      "title": null,
+      "sourceUrl": "https://news.blizzard.com/en-us/article/24315281",
+      "label": "November 20, 2026",
+      "changes": [
+        {
+          "id": "2026-11-20-001",
+          "scope": "class",
+          "category": "Classes",
+          "class": "rogue",
+          "spec": "combat",
+          "group": null,
+          "text": "Blade Flurry will now correctly cause Shank's damage to hit an additional target.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Blade Flurry",
+              "type": "spell",
+              "kind": "talent",
+              "class": "rogue",
+              "tree": "combat",
+              "icon": "ability_warrior_punishingblow",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Shank",
+              "type": "spell",
+              "kind": "ability",
+              "class": "rogue",
+              "tree": "combat",
+              "icon": "ability_theblackarrow",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:rogue",
+            "spec:rogue/combat",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-20-002",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warlock",
+          "spec": "demonology",
+          "group": null,
+          "text": "Fixed a bug where the effects of the Demonic Aegis talent could be snapshotted into your Demon Armor or Demon Skin and then untalented to retain the effects. Demonic Aegis and Demon Skin are removed when your talents are unlearned.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Demonic Aegis",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warlock",
+              "tree": "demonology",
+              "icon": "spell_shadow_ragingscream",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Demon Armor",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warlock",
+              "tree": "demonology",
+              "icon": "spell_shadow_ragingscream",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Demon Skin",
+              "type": "spell",
+              "kind": "ability",
+              "class": "warlock",
+              "tree": "demonology",
+              "icon": "spell_shadow_ragingscream",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:warlock",
+            "spec:warlock/demonology",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-20-003",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Players can now reset and enter each dungeon a maximum of 5 times per hour (was 10).",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-20-004",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "Blackrock Spire",
+          "text": "A rebel stone pillar should no longer trap unsuspecting adventurers.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-20-005",
+          "scope": "general",
+          "category": "Enemies and NPCs",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Orgrimmar - Mayhoa Skyhoof no longer has glowing eyes.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "world"
+          ]
+        },
+        {
+          "id": "2026-11-20-006",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Stormshroud Armor 3-piece bonus changed to a 3% chance (was 4%) on melee attack of restoring 18 energy (was 30).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Stormshroud Armor",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_chest_leather_08",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-20-007",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Toron Rockhoof has repaired his forge and anvil in Summit of Eternity and they should now be usable for blacksmithing and smelting.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-20-008",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Hinterlands - Witch Doctor Ti'ik now drops multiple copies of his head when killed by a group that have the quest \"Witch Doctor Ti'ik.\" It be da voodoo, mon.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-20-009",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Feralas - Fixed an issue where Perfect Yeti Hide could drop again while you’re already on the quest it starts, \"Perfect Yeti Hide.\"",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Perfect Yeti Hide",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_pelt_boar_02",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "bugfix",
+            "items",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-20-010",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Tanaris - Gor'marok now respawns more quickly for the quest \"The Dunemaul Compound.\"",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-20-011",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Riverglades - Dunston Willis no longer runs partway through the quest \"Dunston Checks Out.\"",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-20-012",
+          "scope": "general",
+          "category": "User Interface",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Resolved an issue that caused some players to see fewer groups than intended when looking for a group.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "ui"
+          ]
+        }
+      ]
+    },
     {
       "date": "2026-11-19",
       "kind": "hotfix",
