@@ -12,7 +12,22 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, stat, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { mergeDays, sameContent, runUpdate, dayKind, normalizeGroupSeparators } from '../scripts/update.mjs';
+import { mergeDays, sameContent, runUpdate, dayKind, normalizeGroupSeparators, trackerOptionsFromEnv } from '../scripts/update.mjs';
+
+// TRACKER_CUTOFF (set by a manual workflow run) overrides the tracker's
+// default cutoff for one-off backfills; anything but a real date is ignored.
+test('trackerOptionsFromEnv: a YYYY-MM-DD TRACKER_CUTOFF becomes cutoffDate; empty or bad values are ignored', () => {
+  const logs = [];
+  const log = (m) => logs.push(m);
+  assert.deepEqual(trackerOptionsFromEnv({ TRACKER_CUTOFF: '2026-11-01' }, log), { cutoffDate: '2026-11-01' });
+  assert.deepEqual(trackerOptionsFromEnv({ TRACKER_CUTOFF: ' 2026-11-01 ' }, log), { cutoffDate: '2026-11-01' });
+  assert.deepEqual(trackerOptionsFromEnv({}, log), {});
+  assert.deepEqual(trackerOptionsFromEnv({ TRACKER_CUTOFF: '' }, log), {}, 'scheduled runs pass an empty string');
+  const before = logs.length;
+  assert.deepEqual(trackerOptionsFromEnv({ TRACKER_CUTOFF: 'last week' }, log), {});
+  assert.deepEqual(trackerOptionsFromEnv({ TRACKER_CUTOFF: '2026-13-45' }, log), {});
+  assert.equal(logs.length, before + 2, 'each ignored value is logged');
+});
 
 /**
  * Build a minimal schema-shaped day with n changes.

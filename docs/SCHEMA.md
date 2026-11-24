@@ -288,11 +288,16 @@ Transient field `_fullText` (never in `data/changes.json`):
 
 Source entry: `categoryId` may also be a list (`[347, 352]`) to keep several
 forum categories from the one feed; all their posts become Dev Posts.
+Optional `excludeTopicTitle`: a regular expression (case-insensitive); posts
+in a topic whose title matches are dropped before any body request. The
+shipped source uses `[347, 352]` with `"^WoW: Forever Hotfixes"`, so the Bug
+Report forum's copy of the hotfix news post is not shown twice.
 
 Tracker paging (`discourse-tracker`): pages are read with `before_post_id`
 until a page is empty, or a page's oldest post is older than the cutoff
-(default: the oldest date of any stored day, or 2026-09-01 when nothing is
-stored), or 30 pages; 500 ms between requests. Posts older than the cutoff
+(default: the newest stored dev day minus 7 days, or 2026-09-01 when no dev
+day is stored; the TRACKER_CUTOFF environment variable, set by the
+workflow's manual *tracker_cutoff* input, overrides it), or 30 pages; 500 ms between requests. Posts older than the cutoff
 and posts with a `post_type` other than 1 are dropped. A body that cannot be
 fetched falls back to the feed's excerpt.
 

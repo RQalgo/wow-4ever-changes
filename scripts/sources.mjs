@@ -42,9 +42,11 @@ export const SOURCE_TYPES = new Set(['news-rolling', 'discourse-topic', 'discour
  * @param {string} [where='sources'] Name used in error messages (file path).
  * A "discourse-tracker" entry also needs `categoryId`: the forum category
  * whose posts are kept, a positive integer, or a non-empty array of them to
- * keep several categories (one feed, read once).
+ * keep several categories (one feed, read once). It may also carry
+ * `excludeTopicTitle`, a case-insensitive regular expression: posts in a
+ * topic whose title matches are skipped.
  *
- * @returns {Array<{kind:string,type:string,url:string,title?:string|null,categoryId?:number|number[]}>} `list`, validated.
+ * @returns {Array<{kind:string,type:string,url:string,title?:string|null,categoryId?:number|number[],excludeTopicTitle?:string}>} `list`, validated.
  * @throws {Error} when the list or an entry is malformed.
  */
 export function validateSources(list, where = 'sources') {
@@ -66,6 +68,14 @@ export function validateSources(list, where = 'sources') {
       const ids = Array.isArray(s.categoryId) ? s.categoryId : [s.categoryId];
       if (!ids.length || !ids.every((id) => Number.isInteger(id) && id > 0)) {
         throw new Error(`${at}: "categoryId" must be a positive integer or an array of them for a discourse-tracker source (got ${JSON.stringify(s.categoryId)})`);
+      }
+      // Optional: a regular expression (case-insensitive) for topic titles to
+      // skip, e.g. the forum mirror of the hotfix news post, whose replies
+      // repeat what the hotfix source already shows.
+      if (s.excludeTopicTitle !== undefined) {
+        let compiles = false;
+        try { compiles = typeof s.excludeTopicTitle === 'string' && s.excludeTopicTitle !== '' && !!new RegExp(s.excludeTopicTitle, 'i'); } catch { /* invalid pattern */ }
+        if (!compiles) throw new Error(`${at}: "excludeTopicTitle" must be a non-empty regular expression string (got ${JSON.stringify(s.excludeTopicTitle)})`);
       }
     }
   });
@@ -313,7 +323,8 @@ export function devPostChange(post, parsed, base) {
  *    The first page failing fails the source (its stored days are kept by
  *    the merge); a later page failing just ends the paging (logged).
  * 2. FILTER. Keep posts whose `category_id` is `source.categoryId` (or one
- *    of them, when it is an array), a regular
+ *    of them, when it is an array), whose topic title does not match
+ *    `source.excludeTopicTitle` (when set), a regular
  *    post type (1, or missing), a readable date on or after the cutoff; drop
  *    duplicates (same id on two pages).
  * 3. CHANGES. A post whose link (`url`) is already stored in a dev day is
@@ -326,7 +337,7 @@ export function devPostChange(post, parsed, base) {
  *    get the next free numbers of their day in feed order oldest -> newest,
  *    so ids never change once given.
  *
- * @param {{kind:string,url:string,categoryId:number|number[]}} source
+ * @param {{kind:string,url:string,categoryId:number|number[],excludeTopicTitle?:string}} source
  * @param {object} opts
  * @param {Function} opts.fetchJson (url) => Promise<unknown>
  * @param {Function} opts.parseDevPost (html, {title}) => {notes, fullText}
@@ -396,10 +407,17 @@ export async function fetchTrackerDays(source, opts) {
   // 2. Filter: the category (or categories), regular posts, inside the
   //    window, no repeats.
   const categories = new Set(Array.isArray(source.categoryId) ? source.categoryId : [source.categoryId]);
+  // Topics to skip by title (source.excludeTopicTitle), e.g. "^WoW: Forever
+  // Hotfixes": Blizzard mirrors the hotfix news post in the Bug Report forum
+  // and replies to that thread with each update, which the hotfix source
+  // already covers.
+  const excludeTitle = source.excludeTopicTitle ? new RegExp(source.excludeTopicTitle, 'i') : null;
+  let excluded = 0;
   const seen = new Set();
   const posts = [];
   for (const post of feed) {
     if (!categories.has(post?.category_id)) continue;
+    if (excludeTitle && excludeTitle.test(String(post.topic_title ?? ''))) { excluded++; continue; }
     if (post.post_type !== undefined && post.post_type !== 1) continue; // small actions, whispers
     const date = postDate(post);
     if (!date || date < cutoff || typeof post.url !== 'string' || seen.has(post.id)) continue;
@@ -466,7 +484,8 @@ export async function fetchTrackerDays(source, opts) {
     day.urls.add(url);
   }
   log(`tracker: ${pages} page(s), ${posts.length} post(s) in category ${[...categories].join('/')} since ${cutoff}: `
-    + `${fetched} new, ${reused} already stored, ${fallbacks} from the excerpt`);
+    + `${fetched} new, ${reused} already stored, ${fallbacks} from the excerpt`
+    + (excluded ? `; ${excluded} skipped by excludeTopicTitle` : ''));
 
   const idNumber = (c) => Number(/-d(\d+)$/.exec(c.id ?? '')?.[1] ?? 0);
   return [...byDate.entries()]
