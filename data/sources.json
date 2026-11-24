@@ -14,7 +14,8 @@
     "kind": "dev",
     "type": "discourse-tracker",
     "url": "https://us.forums.blizzard.com/en/wow/groups/blizzard-tracker/posts.json",
-    "categoryId": 347,
+    "categoryId": [347, 352],
+    "excludeTopicTitle": "^WoW: Forever Hotfixes",
     "title": "Dev Posts"
   }
 ]

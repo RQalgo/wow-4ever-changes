@@ -244,7 +244,31 @@ async function loadDefaultDeps() {
     // The game-client data index is a separate module that may be missing or
     // fail; runUpdate treats any problem as "client data unavailable".
     loadGameIndex: async (opts) => (await import('./gamedata.mjs')).loadGameIndex(opts),
+    trackerOptions: trackerOptionsFromEnv(process.env),
   };
+}
+
+/**
+ * Tracker options taken from the environment, for one-off backfills:
+ * TRACKER_CUTOFF=YYYY-MM-DD makes the tracker source page back to that date
+ * instead of the default (newest stored dev day minus 7 days). Used after a
+ * forum category is added to data/sources.json, so its older staff posts are
+ * picked up too. The workflow sets it from the "tracker_cutoff" input of a
+ * manual run. An empty or malformed value is ignored (logged).
+ *
+ * @param {Record<string, string|undefined>} env Usually process.env.
+ * @param {(msg: string) => void} [log=console.error]
+ * @returns {{cutoffDate?: string}}
+ */
+export function trackerOptionsFromEnv(env, log = console.error) {
+  const raw = String(env?.TRACKER_CUTOFF ?? '').trim();
+  if (!raw) return {};
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw) || Number.isNaN(Date.parse(`${raw}T00:00:00Z`))) {
+    log(`TRACKER_CUTOFF ${JSON.stringify(raw)} is not a YYYY-MM-DD date; using the default cutoff`);
+    return {};
+  }
+  log(`tracker: cutoff ${raw} from TRACKER_CUTOFF`);
+  return { cutoffDate: raw };
 }
 
 /**

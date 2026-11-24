@@ -128,3 +128,24 @@ filter state in the URL hash, light/dark.
   fired).
 - Not verified against the live endpoints from the development sandbox (no
   access); the code is tested against fixtures with the feed's real shape.
+
+## Missed posts fix (2026-11-24)
+
+Posts seen on Reddit were missing from the site although every run succeeded.
+Checked against the live sources in a browser:
+
+- **Dev posts:** only category 347 (General Discussion) was read. Blizzard
+  also posts staff announcements in 352 (WoW Forever Bug Report), e.g.
+  "Lockbox exploit and economy hold heuristic" (Nov 23) and "Lost Training
+  Purchase Refunds - November 13". The tracker source now reads
+  `[347, 352]` and skips the Bug Report copy of the hotfix news post
+  (`excludeTopicTitle: "^WoW: Forever Hotfixes"`).
+- **Hotfixes:** the November 23 section was missing. Blizzard's forum copy of
+  it was posted at 02:06 UTC, one minute before a run read the news page;
+  the parser handles the section fine. GitHub had been starting only about 3
+  of the 8 scheduled daily runs, so nothing re-read the page for 10+ hours.
+  The workflow now runs hourly at :41.
+- **Backfill:** the manual run has a *tracker_cutoff* input (TRACKER_CUTOFF)
+  so older posts of a newly added category can be read once.
+- Stored hotfix days Nov 5 – Nov 20 were compared with the live post: none
+  is missing items.

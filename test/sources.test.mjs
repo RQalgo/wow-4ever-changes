@@ -35,8 +35,13 @@ describe('loadSources', () => {
     assert.deepEqual(list.map((s) => [s.kind, s.type]), [['hotfix', 'news-rolling'], ['patch', 'discourse-topic'], ['dev', 'discourse-tracker']]);
     assert.deepEqual(list[2], {
       kind: 'dev', type: 'discourse-tracker', url: 'https://us.forums.blizzard.com/en/wow/groups/blizzard-tracker/posts.json',
-      categoryId: 347, title: 'Dev Posts',
+      // 352 = WoW Forever Bug Report, where staff also post announcements;
+      // the hotfix-post mirror thread there is skipped by title.
+      categoryId: [347, 352], excludeTopicTitle: '^WoW: Forever Hotfixes', title: 'Dev Posts',
     });
+    const skip = new RegExp(list[2].excludeTopicTitle, 'i');
+    assert.ok(skip.test('WoW: Forever Hotfixes - November 23, 2026'));
+    assert.ok(!skip.test('Lockbox exploit and economy hold heuristic'));
   });
 
   test('reads a valid list', async () => {
@@ -284,6 +289,38 @@ describe('discourse-tracker (fixtures: tracker-page1/2.json, tracker-post-*.json
     const texts = days.flatMap((d) => d.changes.map((c) => c.text));
     assert.equal(texts.length, 4);
     assert.ok(texts.includes('Raid Encounter Design in Season 3'));
+  });
+
+  // The live configuration: General Discussion (347) plus Bug Report (352),
+  // where Blizzard posts staff announcements such as "Lockbox exploit and
+  // economy hold heuristic" — but 352 also holds the forum mirror of the
+  // hotfix news post ("WoW: Forever Hotfixes - <date>"), whose replies repeat
+  // the hotfix source and must not become Dev Posts.
+  test('excludeTopicTitle skips matching topics (no body request); other posts of the category stay', async () => {
+    const s = stub();
+    const logs = [];
+    const days = await fetchSourceDays(
+      { ...DEV, categoryId: [347, 352], excludeTopicTitle: '^WoW: Forever Hotfixes' },
+      { fetchJson: s.fetchJson, delayMs: 0, log: (m) => logs.push(m) },
+    );
+    const texts = days.flatMap((d) => d.changes.map((c) => c.text));
+    assert.equal(texts.length, 3, 'the three category-347 posts; the 352 hotfix mirror is skipped');
+    assert.ok(!texts.some((t) => /Hotfixes/.test(t)));
+    assert.ok(!s.urls.includes(`${FORUM}/posts/30899768.json`), 'no body request for a skipped post');
+    assert.ok(logs.some((m) => /1 skipped by excludeTopicTitle/.test(m)), 'the skip is counted in the log line');
+    // Matching is case-insensitive; without the option the 352 post is kept.
+    const lower = await fetchSourceDays({ ...DEV, categoryId: [347, 352], excludeTopicTitle: '^wow: forever hotfixes' },
+      { fetchJson: stub().fetchJson, delayMs: 0, log: () => {} });
+    assert.equal(lower.flatMap((d) => d.changes).length, 3);
+    const kept = await fetchSourceDays({ ...DEV, categoryId: [347, 352] }, { fetchJson: stub().fetchJson, delayMs: 0, log: () => {} });
+    assert.ok(kept.flatMap((d) => d.changes).some((c) => /Hotfixes - November 13/.test(c.text)));
+  });
+
+  test('validateSources: excludeTopicTitle must be a non-empty, valid regular expression string', () => {
+    assert.equal(validate([{ ...DEV, excludeTopicTitle: '^WoW: Forever Hotfixes' }])[0].excludeTopicTitle, '^WoW: Forever Hotfixes');
+    assert.throws(() => validate([{ ...DEV, excludeTopicTitle: '' }]), /"excludeTopicTitle"/);
+    assert.throws(() => validate([{ ...DEV, excludeTopicTitle: 5 }]), /"excludeTopicTitle"/);
+    assert.throws(() => validate([{ ...DEV, excludeTopicTitle: '(' }]), /"excludeTopicTitle"/);
   });
 
   test('stop rule: a page whose oldest post is older than the cutoff ends the paging; older posts dropped', async () => {

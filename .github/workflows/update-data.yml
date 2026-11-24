@@ -1,6 +1,6 @@
 # .github/workflows/update-data.yml
 #
-# Scheduled data update: fetches every source in data/sources.json (Blizzard's
+# Scheduled data update (hourly): fetches every source in data/sources.json (Blizzard's
 # rolling "WoW: Forever Hotfixes" post, the forum's patch-notes topic and the
 # forum's Blizzard tracker for dev posts), regenerates data/changes.json via
 # scripts/update.mjs, and commits the result to main only when something
@@ -19,17 +19,33 @@ name: Update data
 
 on:
   schedule:
-    # Every 3 hours at minute 41 (UTC): 00:41, 03:41, ... 21:41. Blizzard
-    # posts hotfixes at varying times and staff forum posts (Dev Posts) appear
-    # several times a day, so polling every 3 hours catches them reasonably
-    # soon. Minute :41 is off-peak: GitHub delays or drops scheduled runs in
-    # the congested slots at and just after the top of the hour.
+    # Every hour at minute 41 (UTC). GitHub delays scheduled runs and drops
+    # many of them when its runners are busy: with the earlier 3-hourly
+    # schedule ('09 */3 * * *') only about 3 of the 8 daily runs actually
+    # started, so a hotfix posted just after a run could wait 10+ hours to
+    # appear (Blizzard's forum copy of the November 23, 2026 hotfixes was
+    # posted one minute before a run read the news page, and no run followed
+    # for over 10 hours). Hourly runs keep
+    # the gap short even when some are dropped. Each run makes only a few
+    # requests (one news page, one forum topic, two or three tracker pages;
+    # post bodies only for new posts), and Actions minutes are free for
+    # public repositories. Minute :41 is off-peak: GitHub delays or drops
+    # scheduled runs most in the congested slots at the top of the hour.
     # Note: GitHub registers a schedule when the workflow file on the default
-    # branch changes. The previous line ('17 */6 * * *') never fired on its
-    # own; editing the cron expression makes GitHub register it afresh.
-    - cron: '09 */3 * * *'
+    # branch changes.
+    - cron: '41 * * * *'
   # Allow running it manually from the Actions tab.
   workflow_dispatch:
+    inputs:
+      tracker_cutoff:
+        # One-off backfill: page the Blizzard tracker back to this date
+        # (YYYY-MM-DD) instead of the usual "newest stored dev day minus 7
+        # days", e.g. after adding a forum category to data/sources.json.
+        # Leave empty for a normal run. Read by scripts/update.mjs as the
+        # TRACKER_CUTOFF environment variable.
+        description: 'Optional: page dev posts back to this date (YYYY-MM-DD)'
+        required: false
+        default: ''
 
 # The job commits data files back to the repository.
 permissions:
@@ -80,6 +96,11 @@ jobs:
       - name: Run update
         id: update
         shell: bash
+        # Empty on scheduled runs; set from the manual-run input otherwise.
+        # Passed as an environment variable, never interpolated into the
+        # script, so its content cannot run as shell code.
+        env:
+          TRACKER_CUTOFF: ${{ inputs.tracker_cutoff }}
         run: |
           set -o pipefail
           node scripts/update.mjs | tee update.log

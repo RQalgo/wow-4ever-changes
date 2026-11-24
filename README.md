@@ -80,9 +80,9 @@ Live site: https://rqalgo.github.io/wow-4ever-changes/
 
 ## How the data stays current
 
-`.github/workflows/update-data.yml` runs every 3 hours, at minute 41 UTC
-(00:41, 03:41, ... 21:41; an off-peak minute, because GitHub delays or skips
-scheduled runs at busy times), and on demand from the Actions tab. It
+`.github/workflows/update-data.yml` runs every hour at minute 41 UTC (an
+off-peak minute; GitHub still delays or skips many scheduled runs at busy
+times, which is why it runs this often), and on demand from the Actions tab. It
 downloads every source, parses it, looks up icons, and commits
 `data/changes.json` when something changed. GitHub Pages (deploy from branch
 `main`, root) then republishes by itself. Days that Blizzard later drops from
@@ -93,11 +93,13 @@ hotfix post (`kind: "hotfix"`), Blizzard's forum topic of build notes
 (`kind: "patch"`, one dated entry per Blizzard post), and the forum's
 [Blizzard tracker](https://us.forums.blizzard.com/en/wow/g/blizzard-tracker/activity/posts)
 (`kind: "dev"`, shown as **Dev Posts**): every staff post in *World of
-Warcraft: Forever General Discussion* becomes one line with the thread title
+Warcraft: Forever General Discussion* and *WoW Forever Bug Report* (except
+the forum copy of the hotfix post, which the hotfix source already covers)
+becomes one line with the thread title
 (or "Reply in “…”"), a short summary in Blizzard's words, the author and a
 link to the post. Its tags come from the whole post, not just the summary.
-The tracker is read page by page back to the oldest stored date (at most 30
-pages, 500 ms apart); a post's full text is fetched once, when it first
+The tracker is read page by page back to a week before the newest stored dev
+post (at most 30 pages, 500 ms apart); a post's full text is fetched once, when it first
 appears, and stored posts are kept when they drop off the tracker. When
 Blizzard publishes a new patch-notes topic, add an entry like the existing
 `discourse-topic` one with its forum URL; it is not discovered automatically.
@@ -140,7 +142,13 @@ it locally with `node scripts/gamedata.mjs "Mortal Strike"`.
   (`…/groups/blizzard-tracker/posts.json`). Its posts then appear as Dev
   Posts too. Use one entry with a list rather than a second entry: both would
   produce `kind: "dev"` days for the same dates, and days are keyed by date +
-  kind, so one would replace the other.
+  kind, so one would replace the other. To skip a thread in those categories,
+  set `excludeTopicTitle` to a regular expression for its title (matched
+  case-insensitively); today it is `"^WoW: Forever Hotfixes"`, Blizzard's
+  forum copy of the hotfix post. Normal runs only read back a week before the
+  newest stored dev post, so to pick up the new category's older posts, run
+  **Update data** by hand (Actions tab → Run workflow) with a date in
+  *tracker_cutoff*, e.g. `2026-11-01`.
 - **Re-tag stored dev posts after a tag-rule change:** their full text is not
   stored, so they keep the tags they got when first fetched. Delete their
   `kind: "dev"` days from `data/changes.json`; the next run fetches the posts
