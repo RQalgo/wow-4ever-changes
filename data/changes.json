@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21T02:06:51Z",
+  "generatedAt": "2026-11-24T12:30:18Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -22,6 +22,553 @@
     }
   ],
   "days": [
+    {
+      "date": "2026-11-23",
+      "kind": "hotfix",
+      "title": null,
+      "sourceUrl": "https://news.blizzard.com/en-us/article/24315281",
+      "label": "November 23, 2026",
+      "changes": [
+        {
+          "id": "2026-11-23-001",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": null,
+          "group": null,
+          "text": "The 4-piece Feralheart set for Druids now correctly grants 4 Energy regeneration every 1 second for 5 seconds.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:druid"
+          ]
+        },
+        {
+          "id": "2026-11-23-002",
+          "scope": "class",
+          "category": "Classes",
+          "class": "priest",
+          "spec": null,
+          "group": null,
+          "text": "Mind Vision should no longer proc effects.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Mind Vision",
+              "type": "spell",
+              "kind": "ability",
+              "class": "priest",
+              "tree": null,
+              "icon": "spell_holy_mindvision",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:priest"
+          ]
+        },
+        {
+          "id": "2026-11-23-003",
+          "scope": "class",
+          "category": "Classes",
+          "class": "priest",
+          "spec": "shadow",
+          "group": null,
+          "text": "Fixed an issue where Dark Inspiration was not granting the correct amount of %Spirit increase if Mind Flay was used to activate it.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Dark Inspiration",
+              "type": "spell",
+              "kind": "talent",
+              "class": "priest",
+              "tree": "shadow",
+              "icon": "spell_warlock_demonsoul",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Mind Flay",
+              "type": "spell",
+              "kind": "talent",
+              "class": "priest",
+              "tree": "shadow",
+              "icon": "spell_shadow_siphonmana",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:priest",
+            "spec:priest/shadow",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-23-004",
+          "scope": "class",
+          "category": "Classes",
+          "class": "priest",
+          "spec": "shadow",
+          "group": null,
+          "text": "Fixed an issue where Chastise was not usable in Shadowform.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Chastise",
+              "type": "spell",
+              "kind": "ability",
+              "class": "priest",
+              "tree": "holy",
+              "icon": "spell_holy_chastise",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Shadowform",
+              "type": "spell",
+              "kind": "talent",
+              "class": "priest",
+              "tree": "shadow",
+              "icon": "spell_shadow_shadowform",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:priest",
+            "spec:priest/shadow",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-23-005",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warlock",
+          "spec": "destruction",
+          "group": null,
+          "text": "Fixed an issue where Intensity was not working on Incinerate.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Intensity",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warlock",
+              "tree": "destruction",
+              "icon": "spell_fire_lavaspawn",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Incinerate",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warlock",
+              "tree": "destruction",
+              "icon": "spell_fire_burnout",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:warlock",
+            "spec:warlock/destruction",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-23-006",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warrior",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where players could have and use Mortal Strike from their spellbook, even without the Mortal Strike talent. This does not remove it from their spellbook but prevents it from being used without the talent point spent.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Mortal Strike",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warrior",
+              "tree": "arms",
+              "icon": "ability_warrior_savageblow",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:warrior",
+            "spec:warrior/arms",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-23-007",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "Uldaman",
+          "text": "The Obsidian Sentinel drops loot as intended.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-23-008",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Filcher's Cowl no longer has a level requirement.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Filcher's Cowl",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_cape_02",
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-23-009",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Cooking",
+          "text": "Boiled Clams, Clam Chowder, Goblin Deviled Clams, Giant Clam Scorcho, Undermine Clam Chowder, and Clam Linguine each now offer the correct Well Fed bonuses and have been recategorized in the recipe list under \"Stamina Food\".",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Boiled Clams",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_shell_02",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Clam Chowder",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_potion_01",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Goblin Deviled Clams",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_shell_01",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Giant Clam Scorcho",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_ammo_firetar",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Undermine Clam Chowder",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_drink_17",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Clam Linguine",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_bowl_01",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-23-010",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Cooking",
+          "text": "Murloc Fin Soup has had its recovery and Well-Fed amounts increased to the next tier of food, bringing it closer to other food of that level.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Murloc Fin Soup",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_bowl_01",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-23-011",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Engineering",
+          "text": "Fixed a bug that caused Goblin Engineer's Renewal Gift and Gnome Engineer's Renewal Gift to appear as broken, unusable question marks in the inventory.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Goblin Engineer's Renewal Gift",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_gift_04",
+              "source": "wowhead"
+            },
+            {
+              "name": "Gnome Engineer's Renewal Gift",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_gift_05",
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "bugfix",
+            "items",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-23-012",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Engineering",
+          "text": "Fixed a bug that prevented \"The Mortar: Reloaded\" recipe from being learned upon learning the \"Goblin Mortar\" recipe.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-23-013",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Leatherworking",
+          "text": "Fixed a bug that prevented Pattern: Centaur Hoofwarmers from being learnable.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Pattern: Centaur Hoofwarmers",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_scroll_06",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "bugfix",
+            "items",
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-23-014",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Riverglades - Dunston Willis once again runs near the end of the escort \"Dunston Checks Out.\"",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-23-015",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Wetlands - After further study, the quest \"For Further Study\" now has rewards.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-23-016",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Wetlands - The quest \"Uncovering the Past\" now rewards Ironforge reputation.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-23-017",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Wetlands - The quest \"Gleaning Our Future\" now rewards Ironforge reputation.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-23-018",
+          "scope": "general",
+          "category": "Races",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Wisp Form could be applied to players while they were alive.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "races"
+          ]
+        },
+        {
+          "id": "2026-11-23-019",
+          "scope": "general",
+          "category": "Spells",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where a few spells and abilities were causing more weapon procs than intended.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-23-020",
+          "scope": "general",
+          "category": "Spells",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where World Buffs would fall off when changing areas. They will still fall off when entering raid instances.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-23-021",
+          "scope": "general",
+          "category": "Spells",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Fengus' Ferocity was granting twice as much Spell Power as intended.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Fengus' Ferocity",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_nature_undyingstrength",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-23-022",
+          "scope": "general",
+          "category": "Spells",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Darkmoon Faire buffs were granting twice as much power as intended.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "events"
+          ]
+        }
+      ]
+    },
     {
       "date": "2026-11-20",
       "kind": "hotfix",

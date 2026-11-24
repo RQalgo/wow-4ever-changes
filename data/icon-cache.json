@@ -478,6 +478,13 @@
     "icon": "inv_hammer_08"
   },
   "boe": null,
+  "boiled clams": {
+    "name": "Boiled Clams",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_shell_02"
+  },
   "bonsu": null,
   "book bag": {
     "name": "Book Bag",
@@ -672,12 +679,33 @@
     "class": null,
     "icon": "ability_monk_rushingjadewind"
   },
+  "chastise": {
+    "name": "Chastise",
+    "type": "spell",
+    "kind": "ability",
+    "class": "priest",
+    "icon": "spell_holy_chastise"
+  },
   "chat channels": null,
   "check out episode": null,
   "chill: redesigned": null,
   "cinder": null,
   "city of dalaran": null,
   "claim your world of warcraft": null,
+  "clam chowder": {
+    "name": "Clam Chowder",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_potion_01"
+  },
+  "clam linguine": {
+    "name": "Clam Linguine",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_bowl_01"
+  },
   "class": null,
   "class deep dives": null,
   "classic designer tim jones": null,
@@ -940,6 +968,7 @@
     "type": "spell",
     "icon": "spell_holy_powerinfusion_shadow"
   },
+  "darkmoon faire": null,
   "darkshire": null,
   "darkspear": {
     "name": "Darkspear",
@@ -1478,6 +1507,13 @@
   "felsteed": null,
   "fen creepers": null,
   "fen creepers in wetlands": null,
+  "fengus' ferocity": {
+    "name": "Fengus' Ferocity",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_nature_undyingstrength"
+  },
   "feral charge": {
     "name": "Feral Charge",
     "type": "spell",
@@ -1490,6 +1526,7 @@
     "class": "druid",
     "icon": "spell_nature_spiritwolf"
   },
+  "feralheart": null,
   "ferocious bite": {
     "name": "Ferocious Bite",
     "type": "spell",
@@ -1503,6 +1540,13 @@
     "kind": "talent",
     "class": "druid",
     "icon": "ability_hunter_pet_hyena"
+  },
+  "filcher's cowl": {
+    "name": "Filcher's Cowl",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_cape_02"
   },
   "find herb": null,
   "find minerals": {
@@ -1802,6 +1846,13 @@
     "type": "spell",
     "icon": "spell_shadow_curse"
   },
+  "giant clam scorcho": {
+    "name": "Giant Clam Scorcho",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_ammo_firetar"
+  },
   "gift of the earthmother": {
     "name": "Gift of the Earthmother",
     "type": "spell",
@@ -1822,6 +1873,27 @@
     "icon": "inv_gauntlets_06"
   },
   "gnolls": null,
+  "gnome engineer's renewal gift": {
+    "name": "Gnome Engineer's Renewal Gift",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_gift_05"
+  },
+  "goblin deviled clams": {
+    "name": "Goblin Deviled Clams",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_shell_01"
+  },
+  "goblin engineer's renewal gift": {
+    "name": "Goblin Engineer's Renewal Gift",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_gift_04"
+  },
   "gold": null,
   "gold mine": null,
   "gor'marok": null,
@@ -2449,6 +2521,13 @@
   "instrument of law": null,
   "instrument of law removed": null,
   "intellect to attack power": null,
+  "intensity": {
+    "name": "Intensity",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warlock",
+    "icon": "spell_fire_lavaspawn"
+  },
   "interact": null,
   "into dungeons with devs": null,
   "invite-a-friend code": null,
@@ -2922,6 +3001,13 @@
     "class": null,
     "icon": "inv_staff_05"
   },
+  "mortal strike": {
+    "name": "Mortal Strike",
+    "type": "spell",
+    "kind": "talent",
+    "class": "warrior",
+    "icon": "ability_warrior_savageblow"
+  },
   "mosh'gra": null,
   "most": null,
   "motes of unstable magic": null,
@@ -2940,6 +3026,13 @@
   },
   "murloc": null,
   "murloc eyes": null,
+  "murloc fin soup": {
+    "name": "Murloc Fin Soup",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_bowl_01"
+  },
   "murloc tideskimmers": null,
   "mutilate": {
     "name": "Mutilate",
@@ -3043,6 +3136,7 @@
     "icon": "spell_holy_greaterblessingoflight"
   },
   "oath of light in row": null,
+  "obsidian sentinel": null,
   "oceanic": null,
   "oceanic players": null,
   "october": null,
@@ -3131,6 +3225,13 @@
     "icon": "ability_mount_jungletiger"
   },
   "pathfinding: this": null,
+  "pattern: centaur hoofwarmers": {
+    "name": "Pattern: Centaur Hoofwarmers",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_scroll_06"
+  },
   "pdt": null,
   "peace tea": {
     "name": "Peace Tea",
@@ -4609,6 +4710,13 @@
   "under": null,
   "under baseline abilities": null,
   "undercity canal": null,
+  "undermine clam chowder": {
+    "name": "Undermine Clam Chowder",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_drink_17"
+  },
   "underway": null,
   "unit frames": null,
   "units": null,
@@ -4799,6 +4907,7 @@
   "welcome to the world of warcraft": null,
   "welcome to the wow": null,
   "welcome to world of warcraft: forever": null,
+  "well-fed": null,
   "wetlands": null,
   "whether": null,
   "whirlwind": {
@@ -4855,6 +4964,7 @@
   "winter's chill: bonus": null,
   "winter's chill: bonus to cone of cold": null,
   "winter's chill: redesigned": null,
+  "wisp form": null,
   "witch doctor ti'ik": null,
   "witch doctor zum'rah": null,
   "with devs": null,
@@ -4882,6 +4992,7 @@
   },
   "word pain": null,
   "wording": null,
+  "world buffs": null,
   "world of warcraft": null,
   "world of warcraft: forever": null,
   "world of warcraft: forever- the future of skyborne visual updates": null,
