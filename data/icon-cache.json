@@ -708,6 +708,7 @@
   },
   "class": null,
   "class deep dives": null,
+  "classes": null,
   "classic designer tim jones": null,
   "claw": {
     "name": "Claw",
@@ -2349,6 +2350,13 @@
     "class": "priest",
     "icon": "spell_shadow_soulleech_2"
   },
+  "improved moonfire": {
+    "name": "Improved Moonfire",
+    "type": "spell",
+    "kind": "talent",
+    "class": "druid",
+    "icon": "spell_nature_starfall"
+  },
   "improved power word: shield": {
     "name": "Improved Power Word: Shield",
     "type": "spell",
@@ -2448,6 +2456,13 @@
     "kind": "talent",
     "class": "hunter",
     "icon": "ability_rogue_trip"
+  },
+  "improved wrath": {
+    "name": "Improved Wrath",
+    "type": "spell",
+    "kind": "talent",
+    "class": "druid",
+    "icon": "spell_nature_abolishmagic"
   },
   "in-game tutorials": null,
   "in-game voice mode": null,
@@ -2981,6 +2996,8 @@
   "modifier sides: swaps": null,
   "money trade": null,
   "money transactions in wow": null,
+  "moon": null,
+  "moon and stars": null,
   "moonkin aura": {
     "name": "Moonkin Aura",
     "type": "spell",
@@ -4240,6 +4257,8 @@
     "icon": "spell_arcane_starfire"
   },
   "starfire: base": null,
+  "starlight wrath": null,
+  "stars": null,
   "starshards": {
     "name": "Starshards",
     "type": "spell",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T12:30:18Z",
+  "generatedAt": "2026-11-25T19:09:04Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -22,6 +22,70 @@
     }
   ],
   "days": [
+    {
+      "date": "2026-11-25",
+      "kind": "dev",
+      "title": null,
+      "sourceUrl": null,
+      "label": "November 25, 2026",
+      "changes": [
+        {
+          "id": "2026-11-25-d001",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Balance Druid Adjustments - November 25",
+          "notes": [
+            "With changes that are now live, we’ve adjusted Druid talents to improve the talent flow and experience for players as they’re leveling up Balance.",
+            "Druid"
+          ],
+          "url": "https://us.forums.blizzard.com/en/wow/t/balance-druid-adjustments-november-25/2429007/1",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 1,
+          "subjects": [
+            {
+              "name": "Improved Wrath",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_abolishmagic",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Starfire",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_arcane_starfire",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Improved Moonfire",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_starfall",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent",
+            "other"
+          ]
+        }
+      ]
+    },
     {
       "date": "2026-11-23",
       "kind": "hotfix",
