@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T19:09:04Z",
+  "generatedAt": "2026-11-26T03:31:49Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -22,6 +22,1494 @@
     }
   ],
   "days": [
+    {
+      "date": "2026-11-25",
+      "kind": "hotfix",
+      "title": null,
+      "sourceUrl": "https://news.blizzard.com/en-us/article/24315281",
+      "label": "November 25, 2026",
+      "changes": [
+        {
+          "id": "2026-11-25-001",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": null,
+          "group": null,
+          "text": "Hurricane now correctly lands its final hit.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Hurricane",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_cyclone",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid"
+          ]
+        },
+        {
+          "id": "2026-11-25-002",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "balance",
+          "group": null,
+          "text": "Improved Wrath is now renamed Starlight Wrath.",
+          "notes": [
+            "Starlight Wrath also reduces the cast time of Starfire by 0.1/0.2/0.3/0.4/0.5 seconds."
+          ],
+          "subjects": [
+            {
+              "name": "Improved Wrath",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_abolishmagic",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Starfire",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_arcane_starfire",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-25-003",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "balance",
+          "group": null,
+          "text": "Improved Moonfire is now renamed Moon and Stars.",
+          "notes": [
+            "Moon and Stars also grants Starfire a 50/100% chance not lose casting time when the Druid takes damage."
+          ],
+          "subjects": [
+            {
+              "name": "Improved Moonfire",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_starfall",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Starfire",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_arcane_starfire",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-25-004",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "balance",
+          "group": null,
+          "text": "Improved Starfire reduced from to 2 points (was 5 points), and now grants 8/15% chance with 1/2 talent points. Druids with 3 or more points spent in this talent will have all their talent points reset and unspent.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Improved Starfire",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_arcane_starfire",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-25-005",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "balance",
+          "group": null,
+          "text": "Eclipse now also increases the critical strike chance of Wrath by 7/13/20% at all times.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Eclipse",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "ability_druid_eclipse",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Wrath",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_abolishmagic",
+              "source": "client"
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-25-006",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "balance",
+          "group": null,
+          "text": "Moonfury talent removed and replaced with Dreamstate.",
+          "notes": [
+            "Dreamstate grants the Druid 20/40/60/80/100% of the benefit of Innervate when casting Innervate on a target other than self."
+          ],
+          "subjects": [
+            {
+              "name": "Moonfury",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_moonglow",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Dreamstate",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "ability_druid_dreamstate",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Innervate",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_nature_lightning",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-25-007",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "balance",
+          "group": null,
+          "text": "Moonkin Form now also increases Arcane and Nature damage done by 10% while in that form.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Moonkin Form",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_forceofnature",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-25-008",
+          "scope": "class",
+          "category": "Classes",
+          "class": "druid",
+          "spec": "balance",
+          "group": null,
+          "text": "Fixed a bug where Genesis was not increasing the damage of Hurricane or the healing of Tranquility.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Genesis",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_arcane_arcane03",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Hurricane",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_cyclone",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Tranquility",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "restoration",
+              "icon": "spell_nature_tranquility",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "spec:druid/balance",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-009",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where pets had 0% critical strike chance on melee basic attacks.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:hunter",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-010",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": "beast-mastery",
+          "group": null,
+          "text": "Summoned Hawks now attack the target they're summoned on even if the player's pet is set to Passive.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:hunter",
+            "spec:hunter/beast-mastery"
+          ]
+        },
+        {
+          "id": "2026-11-25-011",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": "beast-mastery",
+          "group": null,
+          "text": "Summoned Hawks are now dismissed when the Dismiss Pet spell is completed.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Dismiss Pet",
+              "type": "spell",
+              "kind": "ability",
+              "class": "hunter",
+              "tree": "beast-mastery",
+              "icon": "spell_nature_spiritwolf",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:hunter",
+            "spec:hunter/beast-mastery"
+          ]
+        },
+        {
+          "id": "2026-11-25-012",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": "beast-mastery",
+          "group": null,
+          "text": "Summoned Hawks can also be dismissed by right-clicking their icon below the Hunter's portrait.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:hunter",
+            "spec:hunter/beast-mastery"
+          ]
+        },
+        {
+          "id": "2026-11-25-013",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": "beast-mastery",
+          "group": null,
+          "text": "Summoned Hawks will attack your current target if they are not actively attacking a target.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:hunter",
+            "spec:hunter/beast-mastery"
+          ]
+        },
+        {
+          "id": "2026-11-25-014",
+          "scope": "class",
+          "category": "Classes",
+          "class": "hunter",
+          "spec": "beast-mastery",
+          "group": null,
+          "text": "Fixed an issue where Summoned Hawks had ~5% less critical strike chance than intended.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:hunter",
+            "spec:hunter/beast-mastery",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-015",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Judgements on enemies failed to refresh from attacks if they dropped below a 20 second duration.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:paladin",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-016",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Exorcism was not able to critically strike.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Exorcism",
+              "type": "spell",
+              "kind": "ability",
+              "class": "paladin",
+              "tree": "holy",
+              "icon": "spell_holy_excorcism_02",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:paladin",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-017",
+          "scope": "class",
+          "category": "Classes",
+          "class": "paladin",
+          "spec": "holy",
+          "group": null,
+          "text": "Oath of Light duration increased to 60 minutes.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Oath of Light",
+              "type": "spell",
+              "kind": "talent",
+              "class": "paladin",
+              "tree": "holy",
+              "icon": "spell_holy_greaterblessingoflight",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:paladin",
+            "spec:paladin/holy",
+            "talent"
+          ]
+        },
+        {
+          "id": "2026-11-25-018",
+          "scope": "class",
+          "category": "Classes",
+          "class": "rogue",
+          "spec": null,
+          "group": null,
+          "text": "All Rogue Poisons and Blinding Powder are temporarily bind-on-pickup, while we work to fix a bug.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Blinding Powder",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_ammo_gunpowder_02",
+              "source": "client",
+              "verified": false
+            }
+          ],
+          "tags": [
+            "class:rogue"
+          ]
+        },
+        {
+          "id": "2026-11-25-019",
+          "scope": "class",
+          "category": "Classes",
+          "class": "rogue",
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug where Poised was not being removed when the Rogue casts Sap or Distract while in Stealth.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Poised",
+              "type": "spell",
+              "kind": "ability",
+              "class": "rogue",
+              "tree": "subtlety",
+              "icon": "ability_rogue_fleetfooted",
+              "source": "client",
+              "verified": false
+            },
+            {
+              "name": "Sap",
+              "type": "spell",
+              "kind": "ability",
+              "class": "rogue",
+              "tree": "subtlety",
+              "icon": "ability_sap",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Distract",
+              "type": "spell",
+              "kind": "ability",
+              "class": "rogue",
+              "tree": "subtlety",
+              "icon": "ability_rogue_distract",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Stealth",
+              "type": "spell",
+              "kind": "ability",
+              "class": "rogue",
+              "tree": "subtlety",
+              "icon": "ability_stealth",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:rogue",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-020",
+          "scope": "class",
+          "category": "Classes",
+          "class": "shaman",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Chain Lightning would not consume Clearcasting if the Shaman had both Clearcasting and 5 stacks of Maelstrom Weapon active at the same time.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Chain Lightning",
+              "type": "spell",
+              "kind": "ability",
+              "class": "shaman",
+              "tree": null,
+              "icon": "spell_nature_chainlightning",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Clearcasting",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_shadow_manaburn",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Maelstrom Weapon",
+              "type": "spell",
+              "kind": "talent",
+              "class": "shaman",
+              "tree": "enhancement",
+              "icon": "spell_shaman_maelstromweapon",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:shaman",
+            "spec:shaman/enhancement",
+            "talent",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-021",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warlock",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where pets had 0% critical strike chance on melee basic attacks.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:warlock",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-022",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warlock",
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Succubus and Incubus had 5% higher critical strike chance than intended.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:warlock",
+            "bugfix"
+          ]
+        },
+        {
+          "id": "2026-11-25-023",
+          "scope": "class",
+          "category": "Classes",
+          "class": "warrior",
+          "spec": "arms",
+          "group": null,
+          "text": "The Weaponmaster talent no longer fails to reapply when the Warrior dies in Battlegrounds.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Weaponmaster",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warrior",
+              "tree": "arms",
+              "icon": "inv_sword_27",
+              "source": "client",
+              "verified": false
+            }
+          ],
+          "tags": [
+            "class:warrior",
+            "spec:warrior/arms",
+            "talent",
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-024",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "Blackfathom Deeps",
+          "text": "The Altar of the Deeps should now resume its interactability after 3 seconds and properly grant the Blessing of Blackfathom.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Blessing of Blackfathom",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_frost_frostward",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-25-025",
+          "scope": "general",
+          "category": "Dungeons",
+          "class": null,
+          "spec": null,
+          "group": "The Temple of Atal'Hakkar",
+          "text": "The Avatar of Hakkar should no longer fail to spawn.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Avatar of Hakkar",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "trade_engineering",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "dungeons"
+          ]
+        },
+        {
+          "id": "2026-11-25-026",
+          "scope": "general",
+          "category": "Enemies and NPCs",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Desolace - The centaurs in Magram Village now respawn more quickly.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "world"
+          ]
+        },
+        {
+          "id": "2026-11-25-027",
+          "scope": "general",
+          "category": "Enemies and NPCs",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Duskwood - Fixed an issue where the Lost Knight would sometimes spawn inside a tree.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "world"
+          ]
+        },
+        {
+          "id": "2026-11-25-028",
+          "scope": "general",
+          "category": "Enemies and NPCs",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Riverglades - Clubtoe in Sunnyglade no longer flags players for PvP.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp",
+            "world"
+          ]
+        },
+        {
+          "id": "2026-11-25-029",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Unerring Purpose can now be sold to vendors for more than 2 copper.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Unerring Purpose",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_sword_20",
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-25-030",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Totem of the Storm has been renamed Totem of the Maelstrom.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Totem of the Storm",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_relics_totemofrage",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Totem of the Maelstrom",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "spell_shaman_stormtotem",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-25-031",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Blackblade of Shahram will now correctly perform its haste buff, but only to the wielder of the Blackblade.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Blackblade of Shahram",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_sword_29",
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-25-032",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug causing Libram of Law to not affect Judgement of Command.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Libram of Law",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_book_04",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Judgement of Command",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "ability_warrior_innerrage",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "bugfix",
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-25-033",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed an issue where Chained Essence of Eranikus' was going through immunities.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Chained Essence of Eranikus",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_stone_03",
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "bugfix",
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-25-034",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Blackhand's Breadth's trinket can no longer be resisted.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Blackhand's Breadth",
+              "type": "item",
+              "kind": "item",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_armorkit_09",
+              "source": "wowhead"
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-25-035",
+          "scope": "general",
+          "category": "Items",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "The Night Watchman's Torch can once again be used while mounted, casting spells, etc. This was an unintended side-effect of a separate bug fix. Ride on!",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Night Watchman's Torch",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_torch_lit",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "items"
+          ]
+        },
+        {
+          "id": "2026-11-25-036",
+          "scope": "general",
+          "category": "Legacy System",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug that caused PvP Legacy achievements to not grant credit once you have reached Exalted.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "pvp",
+            "systems"
+          ]
+        },
+        {
+          "id": "2026-11-25-037",
+          "scope": "general",
+          "category": "Legacy System",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Players who complete Lord Valthalak Laid to Rest should now correctly receive Legacy credit.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "systems"
+          ]
+        },
+        {
+          "id": "2026-11-25-038",
+          "scope": "general",
+          "category": "Legacy System",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Reinforce now correctly reduces the amount of durability lost by 8/16/24/32/40%.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Reinforce",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_armorkit_17",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "systems"
+          ]
+        },
+        {
+          "id": "2026-11-25-039",
+          "scope": "general",
+          "category": "Legacy System",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug where The Quick and the Dead was not causing Shadowform, Moonkin Form, Travel Form, and Trueshot Aura to be free, as intended.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "The Quick and the Dead",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_shadow_deadofnight",
+              "source": "client",
+              "verified": false
+            },
+            {
+              "name": "Shadowform",
+              "type": "spell",
+              "kind": "talent",
+              "class": "priest",
+              "tree": "shadow",
+              "icon": "spell_shadow_shadowform",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Moonkin Form",
+              "type": "spell",
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
+              "icon": "spell_nature_forceofnature",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Travel Form",
+              "type": "spell",
+              "kind": "ability",
+              "class": "druid",
+              "tree": "feral",
+              "icon": "ability_druid_travelform",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Trueshot Aura",
+              "type": "spell",
+              "kind": "talent",
+              "class": "hunter",
+              "tree": "marksmanship",
+              "icon": "ability_trueshot",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:druid",
+            "class:hunter",
+            "class:priest",
+            "spec:druid/balance",
+            "spec:hunter/marksmanship",
+            "spec:priest/shadow",
+            "talent",
+            "bugfix",
+            "systems"
+          ]
+        },
+        {
+          "id": "2026-11-25-040",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Storm Crystals and other Alterac Valley lootable quest items are no longer mailed to players if left unlooted.",
+          "notes": [
+            "Developers’ notes: We’ve seen that players in Alterac Valley were frequently completing the battleground without capturing the objectives, so we’ve made some adjustments to incentivize a focus on the objectives rather than rushing to kill the enemy faction’s General. The intent with these adjustments is for Honor gains to be relatively the same and reputation to be increased per match, so that it feels more meaningful even with longer match lengths. Additionally, the difficulty of enemy creatures inside Alterac Valley has been lower than intended, so we’ve increased that, and we’ve made some adjustments to how the Warmasters/Marshals and Faction Generals behave to improve their sturdiness."
+          ],
+          "subjects": [
+            {
+              "name": "General",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "achievement_pvp_h_12",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "pvp",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-25-041",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Reputation and Honor from killing the enemy faction General has been significantly reduced. The reputation from objectives (Towers, Graveyards, and Mines) has been increased to compensate. Honor from these objectives has been slightly increased as a redistribution.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "General",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "achievement_pvp_h_12",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-042",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Reputation from killing enemy NPCs has been increased.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-043",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Reputation gained by defeating Lieutenants has been significantly increased.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-044",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Shortened the threshold for a “long match” bonus reputation to 20 minutes (was 60 minutes in Era and prior to today’s adjustments). This results in significant reputation earnings when you hold graveyards and mines at the end of long matches.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-045",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Damage and Health has been increased for all enemy creatures in Alterac Valley.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-046",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Warmasters/Marshals will now leash if they leave their respective rooms, and they now aggro from further away.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-047",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Generals and Warmasters/Marshals all are stronger if the objectives are present. This buff lasts for 20 minutes and starts with 4 stacks. Each objective taken removes a stack.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-048",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Generals now deal more damage.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-049",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Fixed a bug where some Generals were not as powerfully defensive as intended.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-050",
+          "scope": "general",
+          "category": "Player versus Player",
+          "class": null,
+          "spec": null,
+          "group": "Alterac Valley",
+          "text": "Generals now have increased stealth detection.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-051",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Enchanting",
+          "text": "The Revelation weapon enchant no longer rolls its proc chance for every target struck by an area of effect spell. It now rolls once per wave.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Revelation",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_holy_heal",
+              "source": "client",
+              "verified": false
+            }
+          ],
+          "tags": [
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-25-052",
+          "scope": "general",
+          "category": "Professions",
+          "class": null,
+          "spec": null,
+          "group": "Enchanting",
+          "text": "The Revelation enchant no longer affects the entire duration of channeled spells.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Revelation",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_holy_heal",
+              "source": "client",
+              "verified": false
+            }
+          ],
+          "tags": [
+            "professions"
+          ]
+        },
+        {
+          "id": "2026-11-25-053",
+          "scope": "general",
+          "category": "Races and Reputations",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Gnomes, Humans, Night Elves, and Dwarves can no longer go to war with the Kirin Tor.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "other"
+          ]
+        },
+        {
+          "id": "2026-11-25-054",
+          "scope": "general",
+          "category": "Races and Reputations",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Dwarves can no longer go to war with the Wildhammer Clan. Been there, done that.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "other"
+          ]
+        },
+        {
+          "id": "2026-11-25-055",
+          "scope": "general",
+          "category": "Riding",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Paladins and Warlocks should now be granted their Journeyman Riding Skill when completing one of the following quests.",
+          "notes": [
+            "“Justice and Retribution” (Forsaken Paladins)",
+            "“Judgment and Redemption” (Dwarf and Human Paladins)",
+            "“Dreadsteed of Xoroth” (All Warlocks)"
+          ],
+          "subjects": [],
+          "tags": [
+            "class:paladin",
+            "class:warlock",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-25-056",
+          "scope": "general",
+          "category": "Riding",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Any player who has already completed these quests can speak with the following NPCs to get a special gossip option to allow them to learn Journeyman Riding for free.",
+          "notes": [
+            "Danitha Morr in Bandarion Keep (Forsaken Paladins)",
+            "Lord Grayson Shadowbreaker in the Stormwind Cathedral (Alliance Paladins)",
+            "Zevrost at the Cleft of Shadow in Orgrimmar (Horde Warlocks)",
+            "Ursula Deline at the Slaughtered Lamb in Stormwind (Alliance Warlocks)"
+          ],
+          "subjects": [
+            {
+              "name": "Journeyman Riding",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_nature_swiftness",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-25-057",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Mount Hyjal - Explosive Runeshard should no longer dramatically increase the damage of Mortal Strike used by Felguard Sentinel on “Blind Vengeance”.",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Explosive Runeshard",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "inv_misc_ahnqirajtrinket_04",
+              "source": "client",
+              "verified": true
+            },
+            {
+              "name": "Mortal Strike",
+              "type": "spell",
+              "kind": "talent",
+              "class": "warrior",
+              "tree": "arms",
+              "icon": "ability_warrior_savageblow",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "class:warrior",
+            "spec:warrior/arms",
+            "talent",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-25-058",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Hunter - The Horde version of \"Saving the Best for Last\" can now be properly completed.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "class:hunter",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-25-059",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Fixed a bug that prevented Encrypted Twilight Texts from dropping in Silithus for the quests \"Secret Communication\", \"True Believers\", and \"Still Believing\".",
+          "notes": [
+            "Developers’ notes: The repeatable \"Encrypted Twilight Texts\" for Cenarion Circle reputation is intentionally unavailable, but you can do \"Still Believing\" for a chance at recipes from the mail reward that is delivered later."
+          ],
+          "subjects": [],
+          "tags": [
+            "bugfix",
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-25-060",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Searing Gorge – Players on \"STOLEN: Smithing Tuyere and Lookout's Spyglass\" will find that the Dark Iron have recruited additional Steamsmiths to support their efforts.",
+          "notes": [],
+          "subjects": [],
+          "tags": [
+            "quests"
+          ]
+        },
+        {
+          "id": "2026-11-25-061",
+          "scope": "general",
+          "category": "Quests",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Western Plaguelands - The Scarlet Illusion granted during the quest \"Scarlet Subterfuge\" now lasts an hour (was 30 minutes).",
+          "notes": [],
+          "subjects": [
+            {
+              "name": "Scarlet Illusion",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "spell_holy_prayerofhealing",
+              "source": "client",
+              "verified": false
+            }
+          ],
+          "tags": [
+            "quests"
+          ]
+        }
+      ]
+    },
     {
       "date": "2026-11-25",
       "kind": "dev",
@@ -82,6 +1570,58 @@
             "spec:druid/balance",
             "talent",
             "other"
+          ]
+        },
+        {
+          "id": "2026-11-25-d002",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Alterac Valley Adjustments - November 25",
+          "notes": [
+            "We’ve seen that players in Alterac Valley were frequently completing the battleground without capturing the objectives, so we’ve made some adjustments to incentivize a focus on the objectives rather than rushing to kill the enemy faction’s General. The intent with these adjustments is for Honor gains to be relatively the same and reputation to be increased per match. Additionally, the difficulty…"
+          ],
+          "url": "https://us.forums.blizzard.com/en/wow/t/alterac-valley-adjustments-november-25/2429074/1",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 1,
+          "subjects": [
+            {
+              "name": "General",
+              "type": "spell",
+              "kind": "spell",
+              "class": null,
+              "tree": null,
+              "icon": "achievement_pvp_h_12",
+              "source": "client",
+              "verified": true
+            }
+          ],
+          "tags": [
+            "pvp"
+          ]
+        },
+        {
+          "id": "2026-11-25-d003",
+          "scope": "general",
+          "category": "Dev Posts",
+          "class": null,
+          "spec": null,
+          "group": null,
+          "text": "Reply in “Alterac Valley Adjustments - November 25”",
+          "notes": [
+            "With additional hotfixes that are now live, we have further increased the amount of reputation gained from defeating Lieutenants and holding graveyards and mines at the end of long matches, and we’ve shortened the threshold for a “long match” bonus reputation to 20 minutes (was 60 minutes in Era and prior to today’s adjustments).",
+            "The overall intent for all of these changes was for games to feel…"
+          ],
+          "url": "https://us.forums.blizzard.com/en/wow/t/alterac-valley-adjustments-november-25/2429074/567",
+          "author": "Kaivax",
+          "authorTitle": "Community Manager",
+          "postNumber": 567,
+          "subjects": [],
+          "tags": [
+            "pvp"
           ]
         }
       ]
@@ -431,7 +1971,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_gift_04",
-              "source": "wowhead"
+              "source": "client",
+              "verified": true
             },
             {
               "name": "Gnome Engineer's Renewal Gift",
@@ -440,7 +1981,8 @@
               "class": null,
               "tree": null,
               "icon": "inv_misc_gift_05",
-              "source": "wowhead"
+              "source": "client",
+              "verified": true
             }
           ],
           "tags": [

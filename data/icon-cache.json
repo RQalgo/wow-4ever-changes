@@ -70,6 +70,7 @@
   "alliance in eu roleplay-pvp": null,
   "alliance outrunners": null,
   "alliance-equivalent": null,
+  "altar of the deeps": null,
   "alterac valley": null,
   "ambush": {
     "name": "Ambush",
@@ -200,6 +201,13 @@
     "class": "hunter",
     "icon": "ability_whirlwind"
   },
+  "avatar of hakkar": {
+    "name": "Avatar of Hakkar",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "trade_engineering"
+  },
   "azeroth": null,
   "azeroth in world of warcraft": null,
   "back": null,
@@ -278,6 +286,7 @@
     "icon": "ability_warrior_offensivestance"
   },
   "battleground marks of honor": null,
+  "battlegrounds": null,
   "bear": null,
   "bear form": {
     "name": "Bear Form",
@@ -286,6 +295,7 @@
   },
   "bear form and dire bear form: threat": null,
   "beasts": null,
+  "been": null,
   "begin": null,
   "benefits": null,
   "berard's bookshelf": null,
@@ -339,7 +349,22 @@
     "class": null,
     "icon": "inv_misc_bag_07_black"
   },
+  "blackblade": null,
+  "blackblade of shahram": {
+    "name": "Blackblade of Shahram",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_sword_29"
+  },
   "blackfathom deeps": null,
+  "blackhand's breadth": {
+    "name": "Blackhand's Breadth",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_armorkit_09"
+  },
   "blackmaw hold": null,
   "blackmaw hold and the drowned city": null,
   "blackrock supplies": {
@@ -385,12 +410,26 @@
     "type": "item",
     "icon": "inv_jewelry_ring_60"
   },
+  "blessing of blackfathom": {
+    "name": "Blessing of Blackfathom",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "spell_frost_frostward"
+  },
   "blessing of light": {
     "name": "Blessing of Light",
     "type": "spell",
     "icon": "spell_holy_prayerofhealing02"
   },
   "blessing of salvation": null,
+  "blinding powder": {
+    "name": "Blinding Powder",
+    "type": "spell",
+    "kind": "spell",
+    "class": "rogue",
+    "icon": "inv_misc_ammo_gunpowder_01"
+  },
   "blink": {
     "name": "Blink",
     "type": "spell",
@@ -620,6 +659,7 @@
   "cat form only": null,
   "catching up on classes": null,
   "cd": null,
+  "cenarion circle": null,
   "cenarion moondust": {
     "name": "Cenarion Moondust",
     "type": "item",
@@ -655,6 +695,13 @@
     "kind": "ability",
     "class": "shaman",
     "icon": "spell_nature_chainlightning"
+  },
+  "chained essence of eranikus": {
+    "name": "Chained Essence of Eranikus",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_stone_03"
   },
   "chaining spells": null,
   "challenge master spelunker": null,
@@ -733,12 +780,15 @@
     "icon": "ability_warrior_cleave"
   },
   "cleave and whirlwind": null,
+  "cleft of shadow": null,
+  "cleft of shadow in orgrimmar": null,
   "clicking": null,
   "cloak of the fleshborer": {
     "name": "Cloak of the Fleshborer",
     "type": "item",
     "icon": "inv_misc_cape_11"
   },
+  "clubtoe in sunnyglade": null,
   "coarse grinding stone": {
     "name": "Coarse Grinding Stone",
     "type": "item",
@@ -955,6 +1005,8 @@
     "class": "mage",
     "icon": "spell_nature_abolishmagic"
   },
+  "danitha morr": null,
+  "danitha morr in bandarion keep": null,
   "dark inspiration": {
     "name": "Dark Inspiration",
     "type": "spell",
@@ -962,6 +1014,7 @@
     "class": "priest",
     "icon": "spell_warlock_demonsoul"
   },
+  "dark iron": null,
   "dark iron ambushers": null,
   "dark lady": null,
   "dark sacrifice": {
@@ -1170,6 +1223,13 @@
     "class": "hunter",
     "icon": "ability_rogue_feint"
   },
+  "dismiss pet": {
+    "name": "Dismiss Pet",
+    "type": "spell",
+    "kind": "ability",
+    "class": "hunter",
+    "icon": "spell_nature_spiritwolf"
+  },
   "dispel magic": {
     "name": "Dispel Magic",
     "type": "spell",
@@ -1251,6 +1311,13 @@
     "type": "spell",
     "icon": "inv_weapon_shortblade_92"
   },
+  "dreamstate": {
+    "name": "Dreamstate",
+    "type": "spell",
+    "kind": "talent",
+    "class": "druid",
+    "icon": "ability_druid_dreamstate"
+  },
   "drop of stolen life": {
     "name": "Drop of Stolen Life",
     "type": "item",
@@ -1285,6 +1352,7 @@
   "duskwood": null,
   "dustwallow marsh": null,
   "dwarf": null,
+  "dwarves": null,
   "dying in arathi basin gold mine": null,
   "early": null,
   "early demise": {
@@ -1317,6 +1385,13 @@
     "kind": "spell",
     "class": null,
     "icon": "spell_holy_sealofwrath"
+  },
+  "eclipse": {
+    "name": "Eclipse",
+    "type": "spell",
+    "kind": "talent",
+    "class": "druid",
+    "icon": "ability_druid_eclipse"
   },
   "economy hold": null,
   "economy holds for rmt": null,
@@ -1370,6 +1445,7 @@
   "enchant boots": null,
   "enchant bracer": null,
   "enchant weapon": null,
+  "encrypted twilight texts": null,
   "end of beta special": null,
   "endurance": {
     "name": "Endurance",
@@ -1425,6 +1501,7 @@
     "icon": "ability_rogue_eviscerate"
   },
   "eww": null,
+  "exalted": null,
   "excavation site: wetlands": null,
   "execute": {
     "name": "Execute",
@@ -1434,6 +1511,13 @@
     "icon": "inv_sword_48"
   },
   "executioner morg": null,
+  "exorcism": {
+    "name": "Exorcism",
+    "type": "spell",
+    "kind": "ability",
+    "class": "paladin",
+    "icon": "spell_holy_excorcism_02"
+  },
   "expeditionary force": null,
   "experience": null,
   "expertise": null,
@@ -1442,6 +1526,13 @@
   "explore the legacy system in world of warcraft": null,
   "explore the new dungeons of world of warcraft": null,
   "explore wow": null,
+  "explosive runeshard": {
+    "name": "Explosive Runeshard",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_ahnqirajtrinket_04"
+  },
   "explosive trap": {
     "name": "Explosive Trap",
     "type": "spell",
@@ -1468,6 +1559,7 @@
   },
   "face down": null,
   "faction": null,
+  "faction generals": null,
   "faerie fire": {
     "name": "Faerie Fire",
     "type": "spell",
@@ -1505,6 +1597,7 @@
     "class": "hunter",
     "icon": "ability_rogue_feigndeath"
   },
+  "felguard sentinel": null,
   "felsteed": null,
   "fen creepers": null,
   "fen creepers in wetlands": null,
@@ -1823,9 +1916,18 @@
   "gelkis": null,
   "gelkis and magram": null,
   "gelkis and the magram": null,
+  "general": {
+    "name": "General",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "achievement_pvp_h_12"
+  },
   "general discussion": null,
   "general discussion forum": null,
   "general macros": null,
+  "generals": null,
+  "generals and warmasters": null,
   "genesis": {
     "name": "Genesis",
     "type": "spell",
@@ -1881,6 +1983,7 @@
     "class": null,
     "icon": "inv_misc_gift_05"
   },
+  "gnomes": null,
   "goblin deviled clams": {
     "name": "Goblin Deviled Clams",
     "type": "item",
@@ -1914,6 +2017,7 @@
   "grand marshal": null,
   "gravelsnout diggers": null,
   "gravelysnout digger": null,
+  "grayson shadowbreaker in the stormwind cathedral": null,
   "greater blessing of salvation": null,
   "greater friend of the library": null,
   "greater heal": {
@@ -2168,10 +2272,18 @@
   "human": null,
   "human spirit": null,
   "human warriors": null,
+  "humans": null,
   "hunter's mark": {
     "name": "Hunter's Mark",
     "type": "spell",
     "icon": "ability_hunter_snipershot"
+  },
+  "hurricane": {
+    "name": "Hurricane",
+    "type": "spell",
+    "kind": "ability",
+    "class": "druid",
+    "icon": "spell_nature_cyclone"
   },
   "hyjal owl nests": null,
   "hyjal summit": null,
@@ -2428,6 +2540,13 @@
     "class": "rogue",
     "icon": "ability_rogue_sprint"
   },
+  "improved starfire": {
+    "name": "Improved Starfire",
+    "type": "spell",
+    "kind": "talent",
+    "class": "druid",
+    "icon": "spell_arcane_starfire"
+  },
   "improved stings": {
     "name": "Improved Stings",
     "type": "spell",
@@ -2595,6 +2714,7 @@
     "class": null,
     "icon": "spell_nature_swiftness"
   },
+  "journeyman riding skill": null,
   "judgement": null,
   "judgement of command": {
     "name": "Judgement of Command",
@@ -2645,6 +2765,8 @@
   },
   "lacerating strikes: this": null,
   "lady sylvanas windrunner": null,
+  "laid to rest": null,
+  "lamb in stormwind": null,
   "landing": null,
   "lasher sproutlings": null,
   "last stand": {
@@ -2681,6 +2803,7 @@
     "type": "spell",
     "icon": "inv_misc_armorkit_17"
   },
+  "legacy": null,
   "legacy challenge master spelunker": null,
   "legacy of valor": {
     "name": "Legacy of Valor",
@@ -2740,6 +2863,13 @@
     "icon": "ability_criticalstrike"
   },
   "ley line": null,
+  "libram of law": {
+    "name": "Libram of Law",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_misc_book_04"
+  },
   "lieutenant's insignia": {
     "name": "Lieutenant's Insignia",
     "type": "item",
@@ -2747,6 +2877,7 @@
     "class": null,
     "icon": "inv_misc_rune_04"
   },
+  "lieutenants": null,
   "life": null,
   "life tap": {
     "name": "Life Tap",
@@ -2806,8 +2937,13 @@
   },
   "look": null,
   "looking for group ui": null,
+  "lord grayson shadowbreaker": null,
+  "lord grayson shadowbreaker in the stormwind cathedral": null,
   "lord melenas": null,
+  "lord valthalak laid": null,
+  "lord valthalak laid to rest": null,
   "lore-ing out": null,
+  "lost knight": null,
   "lotheluum starbreeze": null,
   "lowered": null,
   "lt": null,
@@ -2844,6 +2980,7 @@
   },
   "magic": null,
   "magram": null,
+  "magram village": null,
   "main": null,
   "main hand weapon": null,
   "malduko cloudcrush": null,
@@ -2878,6 +3015,7 @@
   "map": null,
   "maraudine scouts": null,
   "marks of honor": null,
+  "marshals": null,
   "mass salvation": null,
   "mass: this": null,
   "master axesmith": {
@@ -2998,6 +3136,13 @@
   "money transactions in wow": null,
   "moon": null,
   "moon and stars": null,
+  "moonfury": {
+    "name": "Moonfury",
+    "type": "spell",
+    "kind": "ability",
+    "class": "druid",
+    "icon": "spell_nature_moonglow"
+  },
   "moonkin aura": {
     "name": "Moonkin Aura",
     "type": "spell",
@@ -3018,6 +3163,7 @@
     "class": null,
     "icon": "inv_staff_05"
   },
+  "morr in bandarion keep": null,
   "mortal strike": {
     "name": "Mortal Strike",
     "type": "spell",
@@ -3113,6 +3259,7 @@
     "type": "item",
     "icon": "inv_misc_pocketwatch_01"
   },
+  "night elves": null,
   "night watchman's torch": {
     "name": "Night Watchman's Torch",
     "type": "spell",
@@ -3175,6 +3322,7 @@
   },
   "ongeku": null,
   "onyxia's lair": null,
+  "op": null,
   "opening": {
     "name": "Opening",
     "type": "spell",
@@ -3463,6 +3611,7 @@
     "icon": "inv_misc_herb_17"
   },
   "pvp episode": null,
+  "pvp legacy": null,
   "pvp progression": null,
   "pvp progression in world of warcraft": null,
   "pylon protectors": null,
@@ -3609,6 +3758,13 @@
     "type": "spell",
     "icon": "spell_nature_resistnature"
   },
+  "reinforce": {
+    "name": "Reinforce",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "inv_misc_armorkit_17"
+  },
   "rejuvenation": {
     "name": "Rejuvenation",
     "type": "spell",
@@ -3661,6 +3817,8 @@
     "icon": "inv_weapon_rifle_22"
   },
   "reply": null,
+  "reputation": null,
+  "reputation and honor": null,
   "research": {
     "name": "Research",
     "type": "spell",
@@ -3710,7 +3868,9 @@
     "icon": "spell_holy_divineillumination"
   },
   "revoke": null,
+  "ride": null,
   "ridgeshade lurkers": null,
+  "riding skill": null,
   "right this way": null,
   "righteous fury": {
     "name": "Righteous Fury",
@@ -3848,6 +4008,13 @@
     "class": null,
     "icon": "inv_farm_pumpkinseed_blue"
   },
+  "scarlet illusion": {
+    "name": "Scarlet Illusion",
+    "type": "spell",
+    "kind": "spell",
+    "class": null,
+    "icon": "ability_rogue_disguise"
+  },
   "scout": null,
   "scroll of liminal passage": {
     "name": "Scroll of Liminal Passage",
@@ -3938,6 +4105,7 @@
     "class": "warlock",
     "icon": "spell_shadow_shadowbolt"
   },
+  "shadow in orgrimmar": null,
   "shadow infinity": null,
   "shadow mastery": {
     "name": "Shadow Mastery",
@@ -3967,6 +4135,7 @@
     "class": "priest",
     "icon": "spell_shadow_shadowwordpain"
   },
+  "shadowbreaker in the stormwind cathedral": null,
   "shadowfang keep": null,
   "shadowform": {
     "name": "Shadowform",
@@ -4044,6 +4213,7 @@
   },
   "shocks": null,
   "short story": null,
+  "shortened": null,
   "shot: base": null,
   "shot: bonus": null,
   "shouts": null,
@@ -4073,6 +4243,7 @@
   },
   "silence resolve": null,
   "silithid hive drone": null,
+  "silithus": null,
   "sinister strike": {
     "name": "Sinister Strike",
     "type": "spell",
@@ -4109,6 +4280,8 @@
     "class": "warrior",
     "icon": "ability_warrior_decisivestrike"
   },
+  "slaughtered lamb": null,
+  "slaughtered lamb in stormwind": null,
   "slice and dice": {
     "name": "Slice and Dice",
     "type": "spell",
@@ -4283,6 +4456,7 @@
     "class": "rogue",
     "icon": "ability_stealth"
   },
+  "steamsmiths": null,
   "sting: attack power": null,
   "stitches": null,
   "stoicism": {
@@ -4295,6 +4469,7 @@
   "stolen weapons": null,
   "stones in shen'dar highlands": null,
   "stonetalon mountains": null,
+  "storm crystals": null,
   "stormshroud armor": {
     "name": "Stormshroud Armor",
     "type": "item",
@@ -4308,6 +4483,7 @@
     "icon": "ability_shaman_stormstrike"
   },
   "stormwind": null,
+  "stormwind cathedral": null,
   "stratholme": null,
   "stratholme and eastern plaguelands": null,
   "strength of earth totem": {
@@ -4341,6 +4517,7 @@
   "subjective": null,
   "subtlety: this": null,
   "succubus": null,
+  "succubus and incubus": null,
   "sumi": null,
   "summit of eternity": null,
   "summon hawk": {
@@ -4363,6 +4540,7 @@
     "class": null,
     "icon": "spell_shadow_raisedead"
   },
+  "summoned hawks": null,
   "sunday": null,
   "sunder armor": {
     "name": "Sunder Armor",
@@ -4509,6 +4687,7 @@
   },
   "the ruins of lordaeron": null,
   "the shrieklings of zephras": null,
+  "the stormwind cathedral": null,
   "the world of warcraft": null,
   "the wow": null,
   "the wow portal room": null,
@@ -4588,6 +4767,20 @@
   "tooltip of life tap": null,
   "toron rockhoof": null,
   "total": null,
+  "totem of the maelstrom": {
+    "name": "Totem of the Maelstrom",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "spell_shaman_stormtotem"
+  },
+  "totem of the storm": {
+    "name": "Totem of the Storm",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_relics_totemofrage"
+  },
   "totem: buff": null,
   "totemic call": {
     "name": "Totemic Call",
@@ -4646,6 +4839,13 @@
   "transmog": null,
   "transmog collection": null,
   "traps": null,
+  "travel form": {
+    "name": "Travel Form",
+    "type": "spell",
+    "kind": "ability",
+    "class": "druid",
+    "icon": "ability_druid_travelform"
+  },
   "trial by fire": {
     "name": "Trial by Fire",
     "type": "spell",
@@ -4677,6 +4877,7 @@
     "icon": "spell_holy_healingfocus"
   },
   "twilight forgemaster": null,
+  "twilight texts": null,
   "twilight's shroud": null,
   "twin disciplines": {
     "name": "Twin Disciplines",
@@ -4737,6 +4938,13 @@
     "icon": "inv_drink_17"
   },
   "underway": null,
+  "unerring purpose": {
+    "name": "Unerring Purpose",
+    "type": "item",
+    "kind": "item",
+    "class": null,
+    "icon": "inv_sword_20"
+  },
   "unit frames": null,
   "units": null,
   "unleashed fury": {
@@ -4761,10 +4969,12 @@
     "icon": "spell_holy_unyieldingfaith"
   },
   "up on classes": null,
+  "ursula deline": null,
   "use compact action bar": null,
   "users": null,
   "valanaar": null,
   "vale screamers": null,
+  "valthalak laid to rest": null,
   "vampiric embrace": {
     "name": "Vampiric Embrace",
     "type": "spell",
@@ -4872,6 +5082,7 @@
   "warcraft: forever": null,
   "warcraft: forever- the future of skyborne visual updates": null,
   "warlock voidwalkers": null,
+  "warmasters": null,
   "warriors' dual wield specialization": null,
   "warsong gulch": null,
   "watch forging forever": null,
@@ -4956,6 +5167,7 @@
   "wild growth: now": null,
   "wild: the": null,
   "wildflowers": null,
+  "wildhammer clan": null,
   "wind-blessed haste": null,
   "windfury": null,
   "windfury totem": {
@@ -5061,5 +5273,6 @@
     "icon": "achievement_dungeon_skywall"
   },
   "zeppelins": null,
+  "zevrost": null,
   "zul'farrak": null
 }
