@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T03:31:49Z",
+  "generatedAt": "2026-11-27T01:40:28Z",
   "source": {
     "title": "WoW: Forever Hotfixes",
     "url": "https://news.blizzard.com/en-us/article/24315281"
@@ -220,9 +220,9 @@
             {
               "name": "Dreamstate",
               "type": "spell",
-              "kind": "spell",
-              "class": null,
-              "tree": null,
+              "kind": "talent",
+              "class": "druid",
+              "tree": "balance",
               "icon": "ability_druid_dreamstate",
               "source": "client",
               "verified": true
